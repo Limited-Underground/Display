@@ -127,6 +127,15 @@ hardware performance remain unresolved.
 
 Rendering must be non-blocking relative to receive/cache updates. It should use bounded allocation, measurable frame/update budgets, dirty-region or suitable refresh strategies, and a conspicuous stale/error presentation. Configuration is schema-versioned, validated, recoverable, and stored locally.
 
+The host-tested `OGL0` layout record explicitly serializes one through eight
+validated widgets into 576 canonical bytes. A two-slot store selects the unique
+highest generation, falls back visibly on corruption/I/O/equal-generation
+conflict, writes only an empty/invalid or older slot, and requires full
+readback, byte comparison, and decode before accepting a save. CRC detects
+accidental corruption only. Schema migration, generation persistence,
+unchanged-write suppression, backend binding, security, and physical
+power-cut/endurance evidence remain unresolved.
+
 ## GPS and auxiliary modules
 
 The GPS role publishes normalized speed, position, altitude, heading, UTC, fix quality, and age. Consumers must distinguish unavailable/stale values.
