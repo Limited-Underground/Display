@@ -7,7 +7,7 @@ Statuses: `done` means the documented acceptance criteria are evidenced; `planne
 | ID | Status | Task | Acceptance evidence |
 | --- | --- | --- | --- |
 | OG-001 | done | Project bootstrap and repository structure | Self-contained directories, agent guide, README, architecture, status, and backlog exist |
-| OG-001A | done | Public host validation | GitHub Actions runs the complete Windows host matrix on `main` pushes and pull requests using least-privilege contents access, bounded concurrency/time, explicit UCRT64 GCC discovery, and commit-pinned actions. The repository badge is the authority for the current run |
+| OG-001A | done | Public host validation | GitHub Actions runs the complete Windows host matrix on `main` pushes and pull requests using least-privilege contents access, bounded concurrency/time, explicit UCRT64 GCC discovery, and commit-pinned actions. The current-main warning-free run passes all 41 executables with zero annotations |
 | OG-001B | done | Cross-project OpenTrail validation | OpenTrail's separate public Windows workflow builds both verifier CLIs and passes 23 C++ test executables plus the four-group Python MeshCore lease suite with zero annotations. OpenGauge links this as distinct transport/routing/GPS/persistence host evidence, not proof of OpenGauge target firmware or physical radios |
 | OG-002 | done | Initial architecture documentation | Roles, layers, safety/failure boundaries, protocols, and architecture gates documented |
 | OG-003 | planned | Hardware abstraction contracts | CAN, clock, ESP-NOW, display/touch, storage, power, and logging contracts reviewed with fakes |

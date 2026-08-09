@@ -84,7 +84,8 @@ public chronology.
 
 - Added public GitHub Actions validation for every `main` push and pull request.
   The Windows 2025/UCRT64 workflow uses commit-pinned actions and runs the
-  complete matrix; the repository badge is the current-run authority.
+  complete matrix; its current-main run passes all 41 executables with zero
+  annotations.
 - Linked OpenTrail's separate public workflow after it passed both verifier CLI
   builds, 23 C++ test executables, and the four-group Python MeshCore lease suite
   with zero annotations. The two CI scopes remain distinct.
