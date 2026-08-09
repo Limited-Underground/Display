@@ -25,6 +25,7 @@ physical transport, displays, and hardware remain unvalidated.
 - OpenTrail receives normalized critical events and never needs J1939 knowledge.
 - The OpenTrail alert v0 frame is a fixed 64-byte explicit codec with canonical units and separate event/condition IDs. CRC is corruption detection only; transport authentication and authorization remain mandatory.
 - OTA is not accepted until rollback and physical recovery are designed and tested.
+- Project software and documentation are published under Apache-2.0; external contributions follow `CONTRIBUTING.md`, and sensitive reports follow `SECURITY.md`.
 
 ## Candidate but unverified hardware
 
@@ -66,7 +67,7 @@ No hardware is considered supported until repeatable test evidence is recorded.
 ### Optional integrations and governance
 
 - GPS topology, APU protocol/control safety, OpenTrail physical event transport/key lifecycle/replay protection, cellular/SMS scope; the semantic v0 schema is host-tested
-- License, contribution/security policy, CI, releases, supported hardware/vehicle evidence, and safety/legal disclaimers
+- Code of conduct, CI, release process, supported hardware/vehicle evidence, and safety/legal disclaimers; Apache-2.0 licensing, contribution guidance, and security reporting are established
 
 ## Next decision checkpoint
 
