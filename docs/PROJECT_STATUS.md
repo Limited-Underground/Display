@@ -19,12 +19,11 @@ exporter, an opaque
 encrypted-unicast ESP-NOW transport contract/fake, an explicit 96-byte
 telemetry packet codec, a bounded per-gauge publication scheduler, a
 cache-cursor-to-radio publisher, bounded CAN-to-radio gateway loop, bounded
-gauge receiver/latest-state store, fail-visible eight-widget gauge view model,
-fixed-memory typed diagnostics core, versioned recoverable two-slot gauge
+gauge receiver/latest-state store, fail-visible eight-widget view model and
+four-series trend buffer, fixed-memory typed diagnostics core, versioned recoverable two-slot gauge
 layout store, transport-neutral GPS fix/quality/age tracker, OTA
 trial-confirmation/rollback guard, and opaque-handle peer authorization
-registry now have
-deterministic host tests. Physical vehicle acquisition,
+registry now have deterministic host tests. Physical vehicle acquisition,
 normalization from captured/real signals,
 on-device performance, physical transport, keys, displays, and hardware remain
 unvalidated.
@@ -47,6 +46,7 @@ unvalidated.
 - The gateway telemetry loop composes at most 16 CAN receives, eight decoded signals/frame, cache writes plus one poll, one enqueue attempt for each of eight peers, and one transport service call per cooperative cycle. Nine host groups cover rollback/restart, bounded fairness, bad/unsupported traffic, real EEC1-to-fake-radio delivery, unavailable/stale no-value behavior, bus-off, retry, and overflow diagnostics. ESP-IDF task/ISR ownership, timing, and physical adapters remain.
 - The gauge receiver admits only one configured peer with encrypted metadata, expected channel, and encoded gateway ID; drains at most four datagrams; rejects malformed/unauthorized input without store mutation; tracks duplicate/out-of-order/gap/session sequence state; and stores 16 latest signals with gateway source age plus receiver-local elapsed time. Eight host groups cover trust metadata, fake delivery, exact stale/no-value reads, malformed input, sequence gaps, session clear, drain budget, and freshness errors. ESP-IDF RF/key binding remains.
 - The display-neutral gauge view model validates at most eight registered-signal widgets and atomically projects expected type/unit, session/sequence/age, and distinct valid, suspect, missing, stale, unavailable, error, out-of-range, or unknown state. Values survive only valid/suspect state, and all nonvalid state is fail-visible. Seven host groups cover configuration/lifecycle, missing metadata, value/attention behavior, exact staleness, invalid-quality metadata, shared signals, and atomic output preservation on capacity/receiver failure. Rendering, touch, persistence, localization, and physical display performance remain.
+- The display-neutral trend core holds four fixed 2-120-point rings with independent exact sampling intervals, oldest-first reads, coalescing and overwrite counters, and shared-signal support. Valid/suspect points keep values; every nonvalid state is a no-value gap. Eight host groups plus 100 repeat runs cover lifecycle/configuration, values/gaps, interval/ring order, shared signals, malformed/clock atomicity, read capacity, and clear. Renderer axes/decimation, RAM/timing/locking, persistence/privacy, and physical display acceptance remain.
 - The typed diagnostics core stores 32 oldest-first fixed events with five-level filtering, monotonic time, reset-cause capture, overwrite accounting, atomic snapshots, and 16 saturating subsystem counters. It accepts no text, byte buffers, addresses, credentials, or identifiers. Eight host groups plus 100 repeat runs cover lifecycle, filtering/time, wrap/order/sequences, counter ownership/saturation, canonical records, snapshot/clear, restart, and fixed pointer-free payload. Adapter binding, concurrency/timing, formatting/persistence, and production redaction audit remain.
 - The explicit 576-byte `OGL0` schema-v1 gauge layout record serializes one through eight validated widgets with generation/layout identity, brightness/theme, canonical zero padding, and CRC-32. A two-slot store writes only an empty/invalid or older slot and requires readback, byte equality, and decode before commit; boot selects the unique highest generation and visibly falls back on empty/corrupt/I/O/equal-generation conflict. Nine host groups plus 100 repeat runs cover codec/malformed/atomic decode, safe default, strict generations, slot rotation/write counts, interruption/corrupt-success recovery, I/O, and reset. Migration, import UX, unchanged-write suppression, generation persistence/exhaustion, backend binding, power-cut/endurance, and configuration authenticity remain.
 - The transport-neutral GPS latest-fix tracker validates no-fix/2D/3D/differential/RTK/estimated quality and explicit integer position/altitude/speed/heading/accuracy/UTC presence, tracks source session/sequence/gaps/wrap, combines bounded source age only with receiver-local elapsed time, and strips every position/time value at exact staleness. Eight host groups plus 100 repeat runs cover boundaries, partial/no-fix state, lifecycle, loss/order/restart, clock regression, and age overflow. Candidate topology/rate/privacy are documented; parser/transport/authentication and physical GNSS/antenna/accuracy/power remain.
@@ -112,7 +112,7 @@ Bind the completed host gateway and alarm-cache loops to selected ESP-IDF tasks
 and CAN/radio adapters
 while recording the exact target vehicle/use case and reconciling the EEC1 fixture against
 licensed/current J1939 data and legally obtained captured traffic. The
-completed OG-004, OG-005, OG-006, OG-007, OG-008, OG-009, OG-010, OG-010B, OG-010C, OG-010D, OG-010E, OG-011A, OG-012B, OG-013A, OG-014, OG-014A, OG-015, OG-016A, OG-017, OG-018, and OG-018A contracts are inputs to
+completed OG-004, OG-005, OG-006, OG-007, OG-008, OG-009, OG-010, OG-010B, OG-010C, OG-010D, OG-010E, OG-011A, OG-012B, OG-012C, OG-013A, OG-014, OG-014A, OG-015, OG-016A, OG-017, OG-018, and OG-018A contracts are inputs to
 later layers rather than substitutes for physical CAN, on-device performance,
 display, or transport validation. Incoming candidate boards follow
 `hardware/INVENTORY.md` before any support claim.

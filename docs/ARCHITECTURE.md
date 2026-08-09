@@ -134,6 +134,13 @@ states retain a value; missing still carries expected type/unit for stable UI
 chrome without inventing a measurement. Rendering, localization, touch, and
 hardware performance remain unresolved.
 
+A host-tested volatile trend core retains up to four fixed series of 2 through
+120 points with independent exact minimum intervals. Valid/suspect points keep
+their value; missing/stale/unavailable/error/out-of-range/unknown points are
+explicit no-value gaps. Rings overwrite only the oldest point and read
+oldest-first atomically. Renderer axes/decimation, memory/timing/locking,
+persistence/privacy, and physical display acceptance remain unresolved.
+
 Rendering must be non-blocking relative to receive/cache updates. It should use bounded allocation, measurable frame/update budgets, dirty-region or suitable refresh strategies, and a conspicuous stale/error presentation. Configuration is schema-versioned, validated, recoverable, and stored locally.
 
 The host-tested `OGL0` layout record explicitly serializes one through eight
