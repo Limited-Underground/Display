@@ -74,6 +74,20 @@ Invoke-HostTest `
     )
 
 Invoke-HostTest `
+    -Name 'critical_alarm_exporter_tests' `
+    -Description 'Alarm-to-critical-alert exporter' `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\alarm\include'),
+        (Join-Path $projectRoot 'firmware\components\integration\include'),
+        (Join-Path $projectRoot 'firmware\components\telemetry\include')
+    ) `
+    -Sources @(
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alarm_exporter.cpp'),
+        (Join-Path $projectRoot 'tests\host\critical_alarm_exporter_tests.cpp')
+    )
+
+Invoke-HostTest `
     -Name 'alarm_engine_tests' `
     -Description 'Bounded normalized-signal alarm engine' `
     -IncludeDirectories @(
