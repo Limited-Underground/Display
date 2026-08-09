@@ -243,6 +243,11 @@ preparation, and final completion only after the next ACK sequence. State was
 still reconstructed after both responses, not held durably across the radio
 wait.
 
+OG-018M replaced reconstruction with one live OpenGauge host process started
+before the first physical send. Its real authorization, replay, and outbox state
+remained alive through rejection, exact backoff, retry, and final completion in
+both roles. Coordinated durable restart recovery and on-device state remain.
+
 ## Updates and recovery
 
 OTA design must include image authenticity/integrity, hardware target compatibility, version policy, sufficient partition/storage layout, atomic boot selection, health confirmation, rollback, interruption handling, and a documented USB/physical recovery path. Update coordination must never simultaneously remove all useful instrumentation by default.
