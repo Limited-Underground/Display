@@ -74,6 +74,17 @@ Invoke-HostTest `
     )
 
 Invoke-HostTest `
+    -Name 'diagnostics_tests' `
+    -Description 'Bounded diagnostics foundation' `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\diagnostics\include')
+    ) `
+    -Sources @(
+        (Join-Path $projectRoot 'firmware\components\diagnostics\src\diagnostics.cpp'),
+        (Join-Path $projectRoot 'tests\host\diagnostics_tests.cpp')
+    )
+
+Invoke-HostTest `
     -Name 'critical_alarm_exporter_tests' `
     -Description 'Alarm-to-critical-alert exporter' `
     -IncludeDirectories @(

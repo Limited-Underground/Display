@@ -153,6 +153,13 @@ OTA design must include image authenticity/integrity, hardware target compatibil
 
 Logging levels are `ERROR`, `WARN`, `INFO`, `DEBUG`, and `TRACE`, with release filtering and secret redaction. Counters should cover CAN errors/overflow, unknown/invalid PGNs/SPNs, cache stale transitions, ESP-NOW send/receive/loss, decoder time, render timing, reset reason, and update state.
 
+The host-tested v0 diagnostics core provides a typed 32-record overwrite ring,
+five-level filtering, monotonic time, reset-cause capture, atomic oldest-first
+snapshots, and 16 saturating health counters. Its event API has no free-form
+text, buffers, addresses, credentials, or identifiers. ESP-IDF adapter binding,
+task ownership, timing, formatting/persistence, and an end-to-end production
+redaction audit remain unresolved.
+
 - Gateway loss makes gauge values stale/unknown; it does not freeze the last value as current.
 - Display failure does not affect acquisition or other displays.
 - GPS/APU/OpenTrail absence does not impair core instrumentation.

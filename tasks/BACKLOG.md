@@ -10,7 +10,7 @@ Statuses: `done` means the documented acceptance criteria are evidenced; `planne
 | OG-002 | done | Initial architecture documentation | Roles, layers, safety/failure boundaries, protocols, and architecture gates documented |
 | OG-003 | planned | Hardware abstraction contracts | CAN, clock, ESP-NOW, display/touch, storage, power, and logging contracts reviewed with fakes |
 | OG-003A | planned | Hardware/use-case inventory | Candidate acquisition inventory plus arrival procedures now record two Waveshare SKU 31262 non-GPS displays, an Espressif DevKitC bench mule, and the on-hand Veepeak generic OBD-II adapter with recovery/read-only evidence boundaries. Remains planned until exact received units, vehicle, desired signals, CAN interface, wiring, power, and environment constraints are recorded |
-| OG-017 | planned | Diagnostics/logging foundation | Levels/filtering/redaction plus CAN, wireless, cache, decoder, render, and reset counters tested |
+| OG-017 | done | Diagnostics/logging foundation | A pointer-free typed 32-event ring provides five-level filtering, monotonic time, reset-reason capture, oldest-first atomic snapshots, overwrite accounting, and 16 saturating CAN/decoder/cache/wireless/render/update/reset counters. Eight host groups plus 100 repeat runs cover lifecycle, filtering, time regression, wrap/order/sequences, saturation, service-owned counters, canonical records, snapshot/clear, restart, and fixed payload shape. Adapter binding, concurrency/timing, formatting, persistence, and production redaction audit remain |
 
 ## CAN/J1939 and telemetry core
 
