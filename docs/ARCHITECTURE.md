@@ -99,6 +99,15 @@ Gauges use sequence/session and source age plus receiver-local elapsed time for
 loss and staleness. ESP-IDF target-task binding, pairing, real peer limits,
 encryption/key handling, channel coexistence, and recovery remain unresolved.
 
+A host-tested logical authorization registry now bounds eight peers and one
+local approval window. It stores opaque logical IDs and secure-key handles,
+never raw keys/PINs/addresses, and checks role-scoped permission plus key handle
+and channel on each authorization decision. Exact timeout, capacity, duplicate
+peer/key rejection, revoke/forget/replacement, and strictly increasing key
+rotation epochs are covered. Discovery/UI/local presence, protected key
+storage, persistence/recovery, rate limits, ESP-NOW binding, and physical
+provisioning remain unresolved.
+
 A host-tested cooperative gateway loop now composes passive receive, J1939
 dispatch, normalized cache writes, one cache poll, at most one enqueue for each
 of eight peers, and one transport service call. Its configurable drain limit is

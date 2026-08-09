@@ -218,6 +218,17 @@ Invoke-HostTest `
     )
 
 Invoke-HostTest `
+    -Name 'peer_authorization_tests' `
+    -Description 'Bounded peer approval and authorization registry' `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\identity\include')
+    ) `
+    -Sources @(
+        (Join-Path $projectRoot 'firmware\components\identity\src\peer_authorization.cpp'),
+        (Join-Path $projectRoot 'tests\host\peer_authorization_tests.cpp')
+    )
+
+Invoke-HostTest `
     -Name 'telemetry_packet_tests' `
     -Description 'Gateway-to-gauge telemetry packet' `
     -IncludeDirectories @(
