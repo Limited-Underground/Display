@@ -107,6 +107,13 @@ radio work. Input faults do not suppress cache aging, so bus-off still produces
 an explicit stale/no-value publication. ESP-IDF task/ISR ownership, watchdog,
 stack, timing, physical adapters, and concurrency remain unresolved.
 
+The host-tested gauge receiver admits only the configured peer, encrypted
+metadata, channel, and encoded gateway identity; drains at most four datagrams
+per cycle; tracks duplicate/out-of-order/gap/session transitions; and stores 16
+latest wire signals with source age plus receiver-local elapsed time. A new
+gateway session clears old store state, and exact staleness removes numeric
+display values. ESP-IDF callbacks/keys/RF and the display view model remain.
+
 ## Gauge rendering
 
 The rendering layer consumes a view model derived from the local signal cache. Layout definitions refer to stable signal IDs and units, never J1939 offsets. Proposed widgets include needle, number, bar, multi-value, warning, trend, and status.
