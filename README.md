@@ -13,10 +13,10 @@ Architecture/bootstrap phase. The transport-neutral OpenGauge-to-OpenTrail criti
 - Two role-reversed rate-limit rejection cycles released exactly one queued retry with zero acknowledgements/completions and no terminal failure.
 - Two four-leg role-reversed sequences then enforced exact backoff, prepared the same frame, retransmitted it, and completed only after a second physical accepted ACK.
 - The latest two sequences started one OpenGauge process before the first alert and kept its real authorization, replay, and outbox state live through all four physical legs.
-- Restart groundwork now includes a host-tested canonical 640-byte `OOC0` outbox checkpoint codec for eight queued/in-flight frames, attempts, and remaining timers; live import/storage is not yet connected.
+- Restart recovery now reaches the live outbox: boot-only atomic `OOC0` import/export reconstructs queued retry readiness, in-flight ACK timeout, maximum lifetime, exact frame, state, and attempts across a new monotonic-clock session. Prepared sends, corrupt records, configuration mismatch, and unrepresentable timers fail closed; durable storage is not yet connected.
 - Across each two-cycle set, radio loss/duplicates/errors were zero, SenseCAP recorded exact aggregate +4 flood RX/TX, repeat stayed enabled, and cleanup passed 4/4.
 
-The latest checkpoint kept real state live on the host, but still used host-supplied trust and did not survive restart. This is not durable authenticated on-device operation. See [the live-state physical evidence](tests/hardware/OG-018M-2026-08-09.md) and [the outbox checkpoint codec](docs/integration/CRITICAL_ALERT_OUTBOX_CHECKPOINT_V0.md).
+The latest checkpoint proves deterministic outbox reconstruction in a new host object, while the physical test still used host-supplied trust. It is not yet a coordinated durable or authenticated on-device restart. See [the live-state physical evidence](tests/hardware/OG-018M-2026-08-09.md) and [the outbox checkpoint integration](docs/integration/CRITICAL_ALERT_OUTBOX_CHECKPOINT_V0.md).
 
 Two Waveshare ESP32-S3-Touch-AMOLED-1.75-B units (SKU 31262) are reported ordered for evaluation. They remain candidate hardware until received, identified, built, benchmarked, and recovery-tested. Other candidate and missing hardware is tracked in [the evidence inventory](hardware/INVENTORY.md).
 

@@ -73,6 +73,16 @@ observed-age policy, and exact outbox correlation. These remain host contracts:
 the eventual adapter must provide the cryptographic authentication proof, and
 replay/authorization state is not yet persistent.
 
+## Restart checkpoint
+
+The canonical 640-byte `OOC0` checkpoint is now wired into this live outbox.
+Boot-only atomic import/export preserves exact queued/in-flight frames, attempts,
+remaining maximum lifetime, retry readiness, and ACK timeout across a new local
+monotonic origin. It refuses prepared-send ambiguity, corruption, configuration
+fingerprint mismatch, nonempty runtime, expired state, and v0-unrepresentable
+timers. See `CRITICAL_ALERT_OUTBOX_CHECKPOINT_V0.md` for the wire contract and
+remaining durable-storage/security gates.
+
 ## Host evidence
 
 `tests/host/critical_alert_outbox_tests.cpp` covers eight groups:
@@ -86,15 +96,17 @@ replay/authorization state is not yet persistent.
 7. abandoned prepare timeout without attempt consumption;
 8. exact maximum lifetime and monotonic clock regression.
 
-The refined suite repeated 100 times with zero failures.
+The refined outbox suite repeated 100 times with zero failures. The checkpoint
+suite adds seven codec and five live-integration groups; the full 29-executable
+matrix and 100 focused checkpoint repeats pass.
 
 ## Remaining physical-delivery gates
 
 - choose framed serial, authenticated local wireless, or another exact adapter;
 - compose alarm exporter -> outbox -> transport -> OpenTrail ingress -> ACK with
   queue loss, radio loss, duplicates, reordering, restart, and channel change;
-- persist critical entries/attempts if required, with corruption, wear, privacy,
-  power-loss, reset, and expiry policy;
+- persist the host-tested checkpoint with coordinated ACK/authorization
+  generation, corruption, wear, privacy, power-loss, reset, and expiry policy;
 - define bounded operator-visible terminal-failure behavior without distracting
   from vehicle operation;
 - validate actual two-Heltec delivery and the SenseCAP repeater topology without

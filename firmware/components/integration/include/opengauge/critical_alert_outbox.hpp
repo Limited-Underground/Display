@@ -5,6 +5,7 @@
 #include <cstdint>
 
 #include "opengauge/critical_alert_ack.hpp"
+#include "opengauge/critical_alert_outbox_checkpoint.hpp"
 
 namespace opengauge::integration {
 
@@ -21,6 +22,8 @@ enum class CriticalOutboxError : std::uint8_t {
     token_mismatch,
     acknowledgement_mismatch,
     clock_regression,
+    checkpoint_rejected,
+    checkpoint_incompatible,
 };
 
 enum class CriticalDeliveryFailure : std::uint8_t {
@@ -129,6 +132,15 @@ public:
         std::uint64_t now_ms);
     [[nodiscard]] CriticalOutboxAdvanceResult advance(
         std::uint64_t now_ms);
+    [[nodiscard]] CriticalOutboxError export_checkpoint(
+        std::uint64_t now_ms,
+        std::uint32_t configuration_fingerprint,
+        std::array<std::uint8_t, kCriticalAlertOutboxCheckpointBytes>& output);
+    [[nodiscard]] CriticalOutboxError import_checkpoint(
+        const std::uint8_t* checkpoint,
+        std::size_t checkpoint_size,
+        std::uint64_t now_ms,
+        std::uint32_t expected_configuration_fingerprint);
     [[nodiscard]] CriticalAlertOutboxStatus status() const;
 
 private:
@@ -144,7 +156,9 @@ private:
         CriticalAlert alert{};
         std::array<std::uint8_t, kCriticalAlertFrameBytes> frame{};
         std::uint64_t enqueued_ms{0};
+        std::uint64_t accumulated_age_ms{0};
         std::uint64_t state_changed_ms{0};
+        std::uint64_t accumulated_state_age_ms{0};
         std::uint64_t next_attempt_ms{0};
         std::uint32_t token{0};
         std::uint8_t attempts{0};
@@ -153,6 +167,12 @@ private:
     [[nodiscard]] CriticalOutboxError advance_clock(std::uint64_t now_ms);
     [[nodiscard]] std::size_t find_event(std::uint64_t event_id) const;
     [[nodiscard]] std::size_t find_token(std::uint32_t token) const;
+    [[nodiscard]] std::uint64_t age(
+        const Entry& entry,
+        std::uint64_t now_ms) const;
+    [[nodiscard]] std::uint64_t state_age(
+        const Entry& entry,
+        std::uint64_t now_ms) const;
     void remove_entry(std::size_t index);
     void refresh_counts();
 

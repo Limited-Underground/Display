@@ -133,7 +133,7 @@ PreparedCriticalAlert CriticalAlertOutbox::prepare(std::uint64_t now_ms) {
              static_cast<std::uint8_t>(entry.alert.severity) >
                  static_cast<std::uint8_t>(entries_[selected].alert.severity) ||
              (entry.alert.severity == entries_[selected].alert.severity &&
-              entry.enqueued_ms < entries_[selected].enqueued_ms))) {
+              age(entry, now_ms) > age(entries_[selected], now_ms)))) {
             selected = index;
         }
     }
@@ -148,6 +148,7 @@ PreparedCriticalAlert CriticalAlertOutbox::prepare(std::uint64_t now_ms) {
     }
     entry.state = EntryState::prepared;
     entry.state_changed_ms = now_ms;
+    entry.accumulated_state_age_ms = 0;
     entry.token = token;
     status_.send_prepared = true;
     refresh_counts();
@@ -176,6 +177,7 @@ CriticalOutboxError CriticalAlertOutbox::commit_local_send(
     auto& entry = entries_[index];
     entry.token = 0;
     entry.state_changed_ms = now_ms;
+    entry.accumulated_state_age_ms = 0;
     status_.send_prepared = false;
     if (locally_accepted) {
         entry.state = EntryState::in_flight;
@@ -260,6 +262,7 @@ CriticalRemoteRejectionResult CriticalAlertOutbox::apply_remote_rejection(
     if (action == CriticalRemoteRejectionAction::retry) {
         entry.state = EntryState::queued;
         entry.state_changed_ms = now_ms;
+        entry.accumulated_state_age_ms = 0;
         entry.next_attempt_ms = saturating_add(
             now_ms, configuration_.retry_backoff_ms);
         entry.token = 0;
@@ -302,7 +305,7 @@ CriticalOutboxAdvanceResult CriticalAlertOutbox::advance(
         if (entry.state == EntryState::empty) {
             continue;
         }
-        const auto lifetime = now_ms - entry.enqueued_ms;
+        const auto lifetime = age(entry, now_ms);
         if (lifetime >= configuration_.maximum_lifetime_ms) {
             result.failures[result.failure_count++] = {
                 entry.alert.event_id,
@@ -317,11 +320,12 @@ CriticalOutboxAdvanceResult CriticalAlertOutbox::advance(
             continue;
         }
         if (entry.state == EntryState::prepared &&
-            now_ms - entry.state_changed_ms >=
+            state_age(entry, now_ms) >=
                 configuration_.local_commit_timeout_ms) {
             entry.state = EntryState::queued;
             entry.token = 0;
             entry.state_changed_ms = now_ms;
+            entry.accumulated_state_age_ms = 0;
             entry.next_attempt_ms = saturating_add(
                 now_ms, configuration_.retry_backoff_ms);
             status_.send_prepared = false;
@@ -329,7 +333,7 @@ CriticalOutboxAdvanceResult CriticalAlertOutbox::advance(
             continue;
         }
         if (entry.state == EntryState::in_flight &&
-            now_ms - entry.state_changed_ms >=
+            state_age(entry, now_ms) >=
                 configuration_.acknowledgement_timeout_ms) {
             if (entry.attempts >= configuration_.maximum_attempts) {
                 result.failures[result.failure_count++] = {
@@ -342,6 +346,7 @@ CriticalOutboxAdvanceResult CriticalAlertOutbox::advance(
             } else {
                 entry.state = EntryState::queued;
                 entry.state_changed_ms = now_ms;
+                entry.accumulated_state_age_ms = 0;
                 entry.next_attempt_ms = saturating_add(
                     now_ms, configuration_.retry_backoff_ms);
                 ++result.retries_released;
@@ -355,6 +360,154 @@ CriticalOutboxAdvanceResult CriticalAlertOutbox::advance(
 
 CriticalAlertOutboxStatus CriticalAlertOutbox::status() const {
     return status_;
+}
+
+CriticalOutboxError CriticalAlertOutbox::export_checkpoint(
+    std::uint64_t now_ms,
+    std::uint32_t configuration_fingerprint,
+    std::array<std::uint8_t, kCriticalAlertOutboxCheckpointBytes>& output) {
+    if (!status_.running || status_.send_prepared ||
+        configuration_fingerprint == 0) {
+        return CriticalOutboxError::invalid_state;
+    }
+    if (configuration_.acknowledgement_timeout_ms >
+            std::numeric_limits<std::uint32_t>::max() ||
+        configuration_.retry_backoff_ms >
+            std::numeric_limits<std::uint32_t>::max() ||
+        configuration_.maximum_lifetime_ms >
+            std::numeric_limits<std::uint32_t>::max()) {
+        return CriticalOutboxError::checkpoint_incompatible;
+    }
+    const auto clock = advance_clock(now_ms);
+    if (clock != CriticalOutboxError::none) {
+        return clock;
+    }
+    CriticalAlertOutboxCheckpoint checkpoint{};
+    checkpoint.configuration_fingerprint = configuration_fingerprint;
+    for (std::size_t index = 0; index < entries_.size(); ++index) {
+        const auto& entry = entries_[index];
+        if (entry.state == EntryState::empty) {
+            continue;
+        }
+        if (entry.state != EntryState::queued &&
+            entry.state != EntryState::in_flight) {
+            return CriticalOutboxError::checkpoint_rejected;
+        }
+        const auto lifetime = age(entry, now_ms);
+        if (lifetime >= configuration_.maximum_lifetime_ms) {
+            return CriticalOutboxError::checkpoint_rejected;
+        }
+        auto& persisted = checkpoint.entries[index];
+        persisted.active = true;
+        persisted.state = entry.state == EntryState::queued
+            ? CriticalAlertOutboxCheckpointState::queued
+            : CriticalAlertOutboxCheckpointState::in_flight;
+        persisted.attempts = entry.attempts;
+        persisted.remaining_lifetime_ms = static_cast<std::uint32_t>(
+            configuration_.maximum_lifetime_ms - lifetime);
+        const auto remaining_action = entry.state == EntryState::queued
+            ? (entry.next_attempt_ms > now_ms
+                   ? entry.next_attempt_ms - now_ms
+                   : 0)
+            : (state_age(entry, now_ms) <
+                       configuration_.acknowledgement_timeout_ms
+                   ? configuration_.acknowledgement_timeout_ms -
+                         state_age(entry, now_ms)
+                   : 0);
+        persisted.remaining_action_ms =
+            static_cast<std::uint32_t>(remaining_action);
+        persisted.frame = entry.frame;
+    }
+    const auto encoded = encode_critical_alert_outbox_checkpoint(
+        checkpoint, output);
+    return encoded == CriticalAlertOutboxCheckpointError::none
+        ? CriticalOutboxError::none
+        : CriticalOutboxError::checkpoint_rejected;
+}
+
+CriticalOutboxError CriticalAlertOutbox::import_checkpoint(
+    const std::uint8_t* checkpoint,
+    std::size_t checkpoint_size,
+    std::uint64_t now_ms,
+    std::uint32_t expected_configuration_fingerprint) {
+    if (!status_.running || has_clock_ || status_.queued_count != 0 ||
+        status_.in_flight_count != 0 || status_.send_prepared) {
+        return CriticalOutboxError::invalid_state;
+    }
+    CriticalAlertOutboxCheckpoint decoded{};
+    const auto decoded_error = decode_critical_alert_outbox_checkpoint(
+        checkpoint, checkpoint_size, decoded);
+    if (decoded_error != CriticalAlertOutboxCheckpointError::none) {
+        return CriticalOutboxError::checkpoint_rejected;
+    }
+    if (expected_configuration_fingerprint == 0 ||
+        decoded.configuration_fingerprint !=
+            expected_configuration_fingerprint) {
+        return CriticalOutboxError::checkpoint_incompatible;
+    }
+
+    std::array<Entry, kCriticalAlertOutboxCapacity> candidate{};
+    std::size_t non_emergency_count = 0;
+    std::uint32_t active_count = 0;
+    for (std::size_t index = 0; index < decoded.entries.size(); ++index) {
+        const auto& persisted = decoded.entries[index];
+        if (!persisted.active) {
+            continue;
+        }
+        const auto frame = decode_critical_alert(
+            persisted.frame.data(), persisted.frame.size());
+        if (!frame.decoded() ||
+            persisted.remaining_lifetime_ms >
+                configuration_.maximum_lifetime_ms ||
+            (persisted.state == CriticalAlertOutboxCheckpointState::queued &&
+             (persisted.attempts >= configuration_.maximum_attempts ||
+              persisted.remaining_action_ms >
+                  configuration_.retry_backoff_ms)) ||
+            (persisted.state ==
+                 CriticalAlertOutboxCheckpointState::in_flight &&
+             (persisted.attempts == 0 ||
+              persisted.attempts > configuration_.maximum_attempts ||
+              persisted.remaining_action_ms >
+                  configuration_.acknowledgement_timeout_ms))) {
+            return CriticalOutboxError::checkpoint_incompatible;
+        }
+        if (frame.alert.severity != AlertSeverity::emergency) {
+            ++non_emergency_count;
+        }
+        auto& entry = candidate[index];
+        entry.state =
+            persisted.state == CriticalAlertOutboxCheckpointState::queued
+                ? EntryState::queued
+                : EntryState::in_flight;
+        entry.alert = frame.alert;
+        entry.frame = persisted.frame;
+        entry.enqueued_ms = now_ms;
+        entry.accumulated_age_ms =
+            configuration_.maximum_lifetime_ms -
+            persisted.remaining_lifetime_ms;
+        entry.state_changed_ms = now_ms;
+        entry.accumulated_state_age_ms =
+            persisted.state ==
+                    CriticalAlertOutboxCheckpointState::in_flight
+                ? configuration_.acknowledgement_timeout_ms -
+                      persisted.remaining_action_ms
+                : 0;
+        entry.next_attempt_ms = saturating_add(
+            now_ms, persisted.remaining_action_ms);
+        entry.attempts = persisted.attempts;
+        ++active_count;
+    }
+    if (non_emergency_count >
+        candidate.size() - configuration_.emergency_reserve) {
+        return CriticalOutboxError::checkpoint_incompatible;
+    }
+
+    entries_ = candidate;
+    has_clock_ = true;
+    last_monotonic_ms_ = now_ms;
+    status_.enqueued = active_count;
+    refresh_counts();
+    return CriticalOutboxError::none;
 }
 
 CriticalOutboxError CriticalAlertOutbox::advance_clock(std::uint64_t now_ms) {
@@ -384,6 +537,22 @@ std::size_t CriticalAlertOutbox::find_token(std::uint32_t token) const {
         }
     }
     return kNotFound;
+}
+
+std::uint64_t CriticalAlertOutbox::age(
+    const Entry& entry,
+    std::uint64_t now_ms) const {
+    return saturating_add(
+        entry.accumulated_age_ms,
+        now_ms - entry.enqueued_ms);
+}
+
+std::uint64_t CriticalAlertOutbox::state_age(
+    const Entry& entry,
+    std::uint64_t now_ms) const {
+    return saturating_add(
+        entry.accumulated_state_age_ms,
+        now_ms - entry.state_changed_ms);
 }
 
 void CriticalAlertOutbox::remove_entry(std::size_t index) {

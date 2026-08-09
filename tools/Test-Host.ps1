@@ -78,6 +78,7 @@ Invoke-HostTest `
         (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert.cpp'),
         (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_ack.cpp'),
         (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_outbox.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_outbox_checkpoint.cpp'),
         (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_ack_ingress.cpp'),
         (Join-Path $projectRoot 'tools\CriticalAlertRoundTripCli.cpp')
     ) `
@@ -103,6 +104,7 @@ Invoke-HostTest `
     -Sources @(
         (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert.cpp'),
         (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_outbox.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_outbox_checkpoint.cpp'),
         (Join-Path $projectRoot 'tests\host\critical_alert_outbox_tests.cpp')
     )
 
@@ -114,6 +116,8 @@ Invoke-HostTest `
     ) `
     -Sources @(
         (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_ack.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_outbox.cpp'),
         (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_outbox_checkpoint.cpp'),
         (Join-Path $projectRoot 'tests\host\critical_alert_outbox_checkpoint_tests.cpp')
     )
@@ -141,6 +145,7 @@ Invoke-HostTest `
         (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert.cpp'),
         (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_ack.cpp'),
         (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_outbox.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_outbox_checkpoint.cpp'),
         (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_ack_ingress.cpp'),
         (Join-Path $projectRoot 'tests\host\critical_alert_ack_ingress_tests.cpp')
     )
@@ -157,6 +162,7 @@ Invoke-HostTest `
         (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert.cpp'),
         (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_ack.cpp'),
         (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_outbox.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_outbox_checkpoint.cpp'),
         (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_ack_ingress.cpp'),
         (Join-Path $projectRoot 'tests\host\critical_alert_ack_checkpoint_tests.cpp')
     )
@@ -173,6 +179,7 @@ Invoke-HostTest `
         (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert.cpp'),
         (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_ack.cpp'),
         (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_outbox.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_outbox_checkpoint.cpp'),
         (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_ack_ingress.cpp'),
         (Join-Path $projectRoot 'tests\host\critical_alert_ack_rejection_policy_tests.cpp')
     )
@@ -190,6 +197,7 @@ Invoke-HostTest `
         (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert.cpp'),
         (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_ack.cpp'),
         (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_outbox.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_outbox_checkpoint.cpp'),
         (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_ack_ingress.cpp'),
         (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_ack_checkpoint_store.cpp'),
         (Join-Path $projectRoot 'firmware\components\integration\test_support\fake_critical_alert_ack_checkpoint_storage.cpp'),

@@ -1,8 +1,8 @@
 # Critical Alert Outbox Checkpoint v0
 
-Status: canonical codec with deterministic host evidence, 2026-08-09. This is
-not yet exported/imported by `CriticalAlertOutbox`, stored durably, coordinated
-with ACK replay/authorization state, authenticated, or rollback-resistant.
+Status: canonical codec and atomic live-outbox import/export with deterministic
+host evidence, 2026-08-09. This is not yet stored durably, coordinated with ACK
+replay/authorization state, authenticated, or rollback-resistant.
 
 ## Boundary
 
@@ -16,6 +16,24 @@ Absolute monotonic timestamps, prepared send tokens, raw keys, peer addresses,
 free text, locations, and diagnostics are excluded. A caller-supplied nonzero
 configuration fingerprint binds the record to the exact outbox policy before
 later import is permitted.
+
+## Live outbox integration
+
+`CriticalAlertOutbox::export_checkpoint` advances the live monotonic clock and
+exports only unambiguous queued/in-flight state. It preserves the exact frame,
+attempt count, remaining event lifetime, queued backoff, or in-flight ACK
+timeout. A prepared send has an unresolved local adapter outcome and therefore
+fails closed instead of persisting its process-local token. Zero fingerprints,
+expired entries, and timing policies larger than the v0 32-bit fields are also
+refused without changing caller output.
+
+`import_checkpoint` is boot-only: the outbox must be running but must not have
+accepted a clock value or entry. Decode and policy validation finish into a
+candidate array before any live state changes. The expected nonzero
+configuration fingerprint must match exactly. Import reconstructs elapsed
+lifetime and in-flight state age against the caller's new monotonic origin, so
+an ACK timeout, retry deadline, and maximum lifetime occur after their exact
+persisted remaining duration rather than being restarted.
 
 ## Wire layout
 
@@ -43,15 +61,16 @@ malformed alert frames, and duplicate event IDs. Decoding additionally rejects
 wrong size/magic/version, noncanonical padding/inactive slots, count mismatch,
 and CRC failure. Caller output changes only after the candidate passes.
 
-Seven host groups cover deterministic round trip, canonical empty state,
+Seven codec groups cover deterministic round trip, canonical empty state,
 configuration/entry invariants, frame/event validation, shape/version/CRC/
-padding rejection, count/atomicity, and inactive-slot canonicalization. The full
-29-executable matrix and 100 focused repeats pass.
+padding rejection, count/atomicity, and inactive-slot canonicalization. Five
+integration groups cover queued retry, in-flight ACK timeout, maximum lifetime,
+boot-only atomic corruption/fingerprint handling, prepared-send refusal, and
+unrepresentable timing policy. The full 29-executable matrix and 100 focused
+repeats pass.
 
 ## Remaining gates
 
-- Add atomic outbox export/import using remaining-time reconstruction and
-  fail-closed handling of a prepared send.
 - Coordinate this with the authorization-epoch-aware ACK replay checkpoint as
   one generation/transaction.
 - Add recoverable two-slot target storage, readback verification, wear policy,
