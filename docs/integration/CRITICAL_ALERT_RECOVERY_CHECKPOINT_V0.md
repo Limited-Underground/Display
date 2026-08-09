@@ -55,6 +55,10 @@ against a private component copy. Only after both preflights succeed does it
 restore the outbox and ACK replay binding from those same bytes. No concurrent
 component mutation is permitted between preflight and commit.
 
-Next place `OCR0` in a verified two-slot store with newest-unique-generation
-selection and interruption injection. Target storage, power-cut/wear evidence,
-secure integrity, and trusted rollback protection remain separate gates.
+The later two-slot `OCR0` store now supplies newest-unique selection,
+interruption recovery, store-owned generations, and uncertain-commit
+reconciliation. The newer [`ORS0` system recovery boundary](CRITICAL_ALERT_SYSTEM_RECOVERY_V0.md)
+binds this exact `OCR0` to the peer-authorization checkpoint required for ACK
+epoch validation. Recoverable `ORS0` storage, target binding, power-cut/wear
+evidence, secure integrity, and trusted rollback protection remain separate
+gates.

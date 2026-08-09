@@ -310,6 +310,23 @@ CriticalAlertAckIngress::validate_checkpoint_import(
     return candidate.import_checkpoint(checkpoint, checkpoint_size);
 }
 
+CriticalAlertAckIngressError
+CriticalAlertAckIngress::validate_checkpoint_import_with_dependencies(
+    const std::uint8_t* checkpoint,
+    std::size_t checkpoint_size,
+    identity::PeerAuthorizationRegistry& authorization,
+    CriticalAlertOutbox& outbox) const {
+    if (!status_.running || authorization_ == nullptr || outbox_ == nullptr ||
+        has_clock_ || status_.processed != 0) {
+        return CriticalAlertAckIngressError::invalid_state;
+    }
+    CriticalAlertAckIngress candidate{};
+    const auto started = candidate.start(
+        configuration_, authorization, outbox);
+    if (started != CriticalAlertAckIngressError::none) return started;
+    return candidate.import_checkpoint(checkpoint, checkpoint_size);
+}
+
 CriticalAlertAckIngressResult CriticalAlertAckIngress::receive(
     const std::uint8_t* frame,
     std::size_t frame_size,

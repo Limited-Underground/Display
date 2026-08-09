@@ -121,6 +121,15 @@ public:
     [[nodiscard]] CriticalAlertAckIngressError validate_checkpoint_import(
         const std::uint8_t* checkpoint,
         std::size_t checkpoint_size) const;
+    // System-recovery preflight against candidate dependencies. The live
+    // ingress must still be in boot-import state; neither it nor the supplied
+    // dependency candidates are mutated.
+    [[nodiscard]] CriticalAlertAckIngressError
+    validate_checkpoint_import_with_dependencies(
+        const std::uint8_t* checkpoint,
+        std::size_t checkpoint_size,
+        identity::PeerAuthorizationRegistry& authorization,
+        CriticalAlertOutbox& outbox) const;
 
     [[nodiscard]] CriticalAlertAckIngressResult receive(
         const std::uint8_t* frame,

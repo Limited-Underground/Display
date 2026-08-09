@@ -22,6 +22,10 @@ public chronology.
   Automatic generations, exact readback, ten interrupted-write boundaries,
   full-write error reconciliation, conflict/exhaustion handling, the complete
   34-executable matrix, and 100 focused repeats pass.
+- Added the 1280-byte `ORS0` system checkpoint, binding exact `OPA0` peer
+  authorization to exact `OCR0` ACK/outbox state under one generation. Private,
+  dependency-correct candidates preflight all three owners before live import;
+  the complete 35-executable matrix and 100 focused repeats pass.
 - Kept all target claims bounded: there is no ESP-IDF storage/radio/CAN binding,
   protected on-device key persistence, physical power-cut evidence, or vehicle
   validation yet.
