@@ -74,6 +74,18 @@ Invoke-HostTest `
     )
 
 Invoke-HostTest `
+    -Name 'critical_alert_outbox_tests' `
+    -Description 'Application-acknowledged critical alert outbox' `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\integration\include')
+    ) `
+    -Sources @(
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_outbox.cpp'),
+        (Join-Path $projectRoot 'tests\host\critical_alert_outbox_tests.cpp')
+    )
+
+Invoke-HostTest `
     -Name 'diagnostics_tests' `
     -Description 'Bounded diagnostics foundation' `
     -IncludeDirectories @(

@@ -180,6 +180,15 @@ round-trip in OpenTrail's independent decoder. CRC-32 detects corruption only;
 the selected serial or local-wireless adapter must provide authenticated and
 authorized producer identity plus replay protection before production use.
 
+A host-tested eight-entry outbox now separates local transport rejection,
+local acceptance, and exact OpenTrail application acknowledgement. It reserves
+capacity for emergency alerts, prepares oldest emergency before oldest ready
+critical state, counts only locally accepted attempts, accepts a correlated
+late ACK before terminal removal, and emits explicit failure at exact
+attempt/lifetime bounds. The ACK model is not a wire format: authenticated ACK
+codec/authorization/replay, transport composition, persistence, and physical
+end-to-end delivery remain unresolved.
+
 ## Updates and recovery
 
 OTA design must include image authenticity/integrity, hardware target compatibility, version policy, sufficient partition/storage layout, atomic boot selection, health confirmation, rollback, interruption handling, and a documented USB/physical recovery path. Update coordination must never simultaneously remove all useful instrumentation by default.
