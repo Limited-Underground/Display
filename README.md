@@ -4,7 +4,7 @@ OpenGauge is a proposed free/open-source ESP32 vehicle instrumentation and telem
 
 ## Project status
 
-Architecture/bootstrap phase. The transport-neutral OpenGauge-to-OpenTrail critical-alert v0 codec has deterministic host evidence in both projects. A bounded Classical J1939 identifier parser, fixed decoder registry with one EEC1 engine-speed fixture, and normalized signal model are also host-tested. There is still no production firmware, validated CAN hardware, supported display, frozen ESP-NOW protocol, supported-vehicle list, physical alert transport, or validated OTA flow.
+Architecture/bootstrap phase. The transport-neutral OpenGauge-to-OpenTrail critical-alert v0 codec has deterministic host evidence in both projects. A bounded Classical J1939 identifier parser, fixed decoder registry with one EEC1 engine-speed fixture, normalized signal model, and thread-safe fixed-capacity telemetry cache are also host-tested. There is still no production firmware, validated CAN hardware, supported display, frozen ESP-NOW protocol, supported-vehicle list, physical alert transport, or validated OTA flow.
 
 Two Waveshare ESP32-S3-Touch-AMOLED-1.75-B units (SKU 31262) are reported ordered for evaluation. They remain candidate hardware until received, identified, built, benchmarked, and recovery-tested. Other candidate and missing hardware is tracked in [the evidence inventory](hardware/INVENTORY.md).
 
@@ -21,10 +21,10 @@ Two Waveshare ESP32-S3-Touch-AMOLED-1.75-B units (SKU 31262) are reported ordere
 These are design goals, not verified capabilities.
 
 The bounded critical-alert semantic interface, Classical J1939 identifier
-rules, one narrow EEC1 engine-speed fixture, and normalized signal invariants
-have host evidence. These contracts do not validate vehicle acquisition,
-captured vehicle data, a decoder catalog, cache behavior, display hardware, or
-physical delivery.
+rules, one narrow EEC1 engine-speed fixture, normalized signal invariants, and
+cache state/staleness/concurrency rules have host evidence. These contracts do
+not validate vehicle acquisition, captured vehicle data, a decoder catalog,
+on-device cache performance, display hardware, or physical delivery.
 
 ## Repository layout
 
@@ -45,7 +45,7 @@ OpenGauge owns vehicle acquisition, decode/normalization, gauge display, vehicle
 
 ## Start here
 
-Read [the architecture](docs/ARCHITECTURE.md), [project status and assumptions](docs/PROJECT_STATUS.md), [the hardware evidence inventory](hardware/INVENTORY.md), [the J1939 identifier contract](docs/can/J1939_IDENTIFIER_V0.md), [the decoder registry and EEC1 fixture](docs/can/J1939_DECODER_REGISTRY_V0.md), [the normalized signal contract](docs/telemetry/NORMALIZED_SIGNAL_MODEL_V0.md), [the OpenTrail critical-alert v0 contract](docs/integration/OPENGAUGE_CRITICAL_ALERT_V0.md), and [the backlog](tasks/BACKLOG.md). The next core work is a bounded telemetry cache before any vehicle attachment.
+Read [the architecture](docs/ARCHITECTURE.md), [project status and assumptions](docs/PROJECT_STATUS.md), [the hardware evidence inventory](hardware/INVENTORY.md), [the J1939 identifier contract](docs/can/J1939_IDENTIFIER_V0.md), [the decoder registry and EEC1 fixture](docs/can/J1939_DECODER_REGISTRY_V0.md), [the normalized signal contract](docs/telemetry/NORMALIZED_SIGNAL_MODEL_V0.md), [the telemetry cache contract](docs/telemetry/TELEMETRY_CACHE_V0.md), [the OpenTrail critical-alert v0 contract](docs/integration/OPENGAUGE_CRITICAL_ALERT_V0.md), and [the backlog](tasks/BACKLOG.md). The next core work is a transport abstraction and explicit wireless packet budget, while hardware candidates follow their arrival checklist.
 
 ## License and contributions
 

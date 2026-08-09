@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "opengauge/j1939_decoder.hpp"
+#include "opengauge/telemetry_cache.hpp"
 
 namespace {
 
@@ -197,6 +198,38 @@ void test_unknown_pgn_and_invalid_decoder_output_fail_closed() {
     EXPECT(result.signal_count == 0);
 }
 
+void test_decoded_engine_speed_flows_through_cache() {
+    J1939DecoderRegistry registry{};
+    EXPECT(registry.register_decoder(
+               kEec1Pgn,
+               decode_eec1_engine_speed) == J1939DecodeError::none);
+    TelemetryCache cache{};
+    NormalizedSignal output{};
+
+    auto message = eec1_message(8000U);
+    message.received_at_ms = 100;
+    EXPECT(registry.decode(message, &output, 1).decoded());
+    EXPECT(cache.upsert(output, 500).accepted());
+    auto cached = cache.read("engine.speed", 599);
+    EXPECT(cached.found());
+    EXPECT(cached.snapshot.effective_quality == SignalQuality::valid);
+    EXPECT(cached.snapshot.signal.value.raw_value == 1000000);
+
+    cached = cache.read("engine.speed", 600);
+    EXPECT(cached.found());
+    EXPECT(cached.snapshot.effective_quality == SignalQuality::stale);
+
+    message = eec1_message(0xFFFFU);
+    message.received_at_ms = 700;
+    EXPECT(registry.decode(message, &output, 1).decoded());
+    EXPECT(cache.upsert(output, 500).accepted());
+    cached = cache.read("engine.speed", 700);
+    EXPECT(cached.found());
+    EXPECT(cached.snapshot.effective_quality ==
+           SignalQuality::unavailable);
+    EXPECT(!cached.snapshot.signal.value.present);
+}
+
 }  // namespace
 
 int main() {
@@ -205,11 +238,12 @@ int main() {
     test_eec1_special_encodings_remain_non_numeric();
     test_dispatch_rejects_bad_frames_and_capacity();
     test_unknown_pgn_and_invalid_decoder_output_fail_closed();
+    test_decoded_engine_speed_flows_through_cache();
 
     if (failures != 0) {
         std::cerr << failures << " J1939 decoder assertion(s) failed\n";
         return EXIT_FAILURE;
     }
-    std::cout << "PASS: 5 J1939 decoder scenario groups\n";
+    std::cout << "PASS: 6 J1939 decoder scenario groups\n";
     return EXIT_SUCCESS;
 }

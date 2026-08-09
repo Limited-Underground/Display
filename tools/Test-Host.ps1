@@ -106,5 +106,18 @@ Invoke-HostTest `
         (Join-Path $projectRoot 'firmware\components\can\src\j1939_identifier.cpp'),
         (Join-Path $projectRoot 'firmware\components\can\src\j1939_decoder.cpp'),
         (Join-Path $projectRoot 'firmware\components\telemetry\src\normalized_signal.cpp'),
+        (Join-Path $projectRoot 'firmware\components\telemetry\src\telemetry_cache.cpp'),
         (Join-Path $projectRoot 'tests\host\j1939_decoder_tests.cpp')
+    )
+
+Invoke-HostTest `
+    -Name 'telemetry_cache_tests' `
+    -Description 'Telemetry cache' `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\telemetry\include')
+    ) `
+    -Sources @(
+        (Join-Path $projectRoot 'firmware\components\telemetry\src\normalized_signal.cpp'),
+        (Join-Path $projectRoot 'firmware\components\telemetry\src\telemetry_cache.cpp'),
+        (Join-Path $projectRoot 'tests\host\telemetry_cache_tests.cpp')
     )
