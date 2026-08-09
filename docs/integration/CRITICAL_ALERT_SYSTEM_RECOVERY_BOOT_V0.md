@@ -72,6 +72,6 @@ The complete 38-executable host matrix passes, and the focused boot suite passes
 - exact ESP32/ESP-IDF board and task composition;
 - protected-key and rollback-resistant generation implementations;
 - physical power interruption at storage/trust update boundaries;
-- authorized repair, reset, and replacement workflow;
+- authorized reset/replacement and unreadable-media service workflow;
 - operator-visible safe-mode and service presentation; and
 - proof that the physical radio transport stays disabled until operational.

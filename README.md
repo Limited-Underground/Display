@@ -13,10 +13,10 @@ OpenGauge is a proposed free/open-source ESP32 vehicle instrumentation and telem
 - **Latest physical result:** accepted, terminal-rejection, retryable-rejection,
   retry-to-accept, and live-state alert/ACK cycles completed with zero observed
   message loss, duplicates, or new radio errors.
-- **Latest software result:** boot recovery now treats an unreadable peer slot as
-  service-only because it could conceal a newer committed generation. Known
-  empty/corrupt peer media can still restore visibly degraded. The complete
-  38-executable host matrix and 100 focused boot repeats pass.
+- **Latest software result:** known empty/checksum-invalid peer media can now be
+  repaired only from an exact operationally degraded boot result. Repair writes
+  and verifies a new generation, advances/readbacks trust, and proves both slots
+  valid. The complete 39-executable host matrix and 100 focused repeats pass.
 - **Public validation:** GitHub Actions now runs the complete Windows host matrix
   on every `main` push and pull request. The first warning-free public run passed
   all 38 executables with zero annotations.
@@ -50,6 +50,7 @@ Architecture/bootstrap phase. The transport-neutral OpenGauge-to-OpenTrail criti
 - Target-style restore now accepts a protected-key validator. Only active peers are presented as logical metadata plus opaque handle; revoked entries are skipped. Unavailable, wrong-purpose, and backend-failed handles produce typed peer-specific evidence before outbox/ACK preflight or any live import. Eight system and eleven store groups, the unchanged 36-executable matrix, and 100 focused repeats each pass; no raw key or concrete protected backend is claimed.
 - A host-tested [system-recovery boot coordinator](docs/integration/CRITICAL_ALERT_SYSTEM_RECOVERY_BOOT_V0.md) now combines provisioning state, trusted-generation state, two-slot inspection, protected-key validation, and `ORS0` restore. Exactly empty slots plus independently unprovisioned trust are required for first boot; rollback/conflict enter safe mode, missing keys/storage/trust require service, degraded restore remains visible, and interrupted trusted-floor advancement is read back exactly before transport is enabled. Ten focused groups, the full 38-executable matrix, and 100 repeats pass; no target task or protected backend is claimed.
 - Boot degradation now distinguishes known media state from uncertainty. A surviving checkpoint beside an empty or checksum-invalid slot may be operational with repair required; a surviving checkpoint beside an unreadable slot remains service-only, does not advance trust, and cannot enable transport because the unreadable slot may hide a newer committed generation. Ten boot groups, the full 38-executable matrix, and 100 repeats pass.
+- A host-tested [known-degraded repair coordinator](docs/integration/CRITICAL_ALERT_SYSTEM_RECOVERY_REPAIR_V0.md) accepts only an exact operational `restored_degraded` boot result whose current store still has one matching valid generation and one known empty/invalid peer slot. It commits the next `ORS0`, advances and reads back trust, then proves both slots valid before reporting repaired. Healthy, unreadable, service, and stale evidence cannot write; uncertain commit/trust update requires reboot reconciliation. Five groups, the full 39-executable matrix, and 100 repeats pass.
 - A host-tested [system-recovery save coordinator](docs/integration/CRITICAL_ALERT_SYSTEM_RECOVERY_SAVE_V0.md) now enforces the complementary ordering. It requires exact local/trusted generation agreement, writes and verifies the next `ORS0`, advances trust only afterward, and verifies exact trust readback. Local-ahead and uncertain commits require reboot reconciliation; local-behind is rollback; missing recovery and failed trust/storage stay service-visible. Eight groups, the full 38-executable matrix, and 100 repeats pass; no physical durability is claimed.
 - Across each two-cycle set, radio loss/duplicates/errors were zero, SenseCAP recorded exact aggregate +4 flood RX/TX, repeat stayed enabled, and cleanup passed 4/4.
 

@@ -100,6 +100,20 @@ provisioning state independently agree that no prior generation existed.
 The coordinator enforces this by requiring uninitialized trust, an explicitly
 unprovisioned caller state, and two exactly empty inspected slots.
 
+## Known-degraded repair
+
+The host layer now provides `CriticalAlertSystemRecoveryRepairCoordinator` for
+the narrow repairable case. It accepts only a current operational
+`restored_degraded` result with one valid selected generation and one peer slot
+that is known empty or checksum-invalid. It rechecks that evidence, uses the
+verified save coordinator to create the next generation and advance trust, then
+requires both slots to inspect valid before reporting repaired.
+
+Unreadable storage is never admitted because it may hide a newer committed
+generation. Healthy/service/safe-mode boot results and stale boot evidence are
+also non-writable. Commit uncertainty or trust-update failure routes back to
+boot reconciliation instead of retrying in place.
+
 ## Save and trusted-floor ordering
 
 Normal persistence should:

@@ -69,6 +69,6 @@ The complete 38-executable host matrix passes, and the focused save suite passes
 - exact ESP-IDF storage and trusted-generation implementations;
 - physical interruption at every slot and trust update boundary;
 - task-level exclusive ownership and transport disablement;
-- bounded repair/retry and operator service workflow;
+- bounded repair scheduling and operator service workflow;
 - endurance and generation-exhaustion policy; and
 - authorized first provisioning, reset, and replacement.

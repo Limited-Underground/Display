@@ -57,6 +57,11 @@ public chronology.
   checksum-invalid peer media remains known degraded state, but an unreadable
   peer slot now requires service with transport disabled and no trusted-floor
   advancement. Ten boot groups, the 38-executable matrix, and 100 repeats pass.
+- Added bounded automatic repair for known empty/checksum-invalid peer media.
+  Only a current operationally degraded boot result may write; repair commits a
+  new `ORS0`, advances/readbacks trust, and verifies both slots valid. Unreadable,
+  healthy, service, stale, and uncertain cases fail closed. Five groups, the
+  39-executable matrix, and 100 repeats pass.
 - Added public GitHub Actions validation for every `main` push and pull request.
   The Windows 2025/UCRT64 workflow uses commit-pinned actions, passed the full
   38-executable matrix on its first warning-free run, and returned zero
