@@ -180,8 +180,7 @@ CriticalAlertSystemRecoveryStore::restore(
     CriticalAlertAckIngress& ingress,
     CriticalAlertOutbox& outbox,
     std::uint64_t now_ms) {
-    return restore_at_or_above(
-        authorization, ingress, outbox, now_ms, 0);
+    return restore_impl(authorization, ingress, outbox, now_ms, 0, nullptr);
 }
 
 CriticalAlertSystemRecoveryLoadResult
@@ -191,6 +190,32 @@ CriticalAlertSystemRecoveryStore::restore_at_or_above(
     CriticalAlertOutbox& outbox,
     std::uint64_t now_ms,
     std::uint64_t minimum_trusted_generation) {
+    return restore_impl(
+        authorization, ingress, outbox, now_ms, minimum_trusted_generation,
+        nullptr);
+}
+
+CriticalAlertSystemRecoveryLoadResult
+CriticalAlertSystemRecoveryStore::restore_at_or_above_validating_keys(
+    identity::PeerAuthorizationRegistry& authorization,
+    CriticalAlertAckIngress& ingress,
+    CriticalAlertOutbox& outbox,
+    std::uint64_t now_ms,
+    std::uint64_t minimum_trusted_generation,
+    CriticalAlertSystemRecoveryKeyValidator& key_validator) {
+    return restore_impl(
+        authorization, ingress, outbox, now_ms, minimum_trusted_generation,
+        &key_validator);
+}
+
+CriticalAlertSystemRecoveryLoadResult
+CriticalAlertSystemRecoveryStore::restore_impl(
+    identity::PeerAuthorizationRegistry& authorization,
+    CriticalAlertAckIngress& ingress,
+    CriticalAlertOutbox& outbox,
+    std::uint64_t now_ms,
+    std::uint64_t minimum_trusted_generation,
+    CriticalAlertSystemRecoveryKeyValidator* key_validator) {
     const auto a = inspect_slot(storage_, 0);
     const auto b = inspect_slot(storage_, 1);
     CriticalAlertSystemRecoveryLoadResult result{};
@@ -242,9 +267,13 @@ CriticalAlertSystemRecoveryStore::restore_at_or_above(
                 b.state == CriticalAlertSystemRecoverySlotState::io_failure
             ? CriticalAlertSystemRecoveryStoreError::storage_failure
             : CriticalAlertSystemRecoveryStoreError::none;
-    result.recovery = import_critical_alert_system_recovery_checkpoint(
-        selected->bytes.data(), selected->bytes.size(), authorization,
-        ingress, outbox, now_ms);
+    result.recovery = key_validator == nullptr
+        ? import_critical_alert_system_recovery_checkpoint(
+              selected->bytes.data(), selected->bytes.size(), authorization,
+              ingress, outbox, now_ms)
+        : import_critical_alert_system_recovery_checkpoint_validating_keys(
+              selected->bytes.data(), selected->bytes.size(), authorization,
+              ingress, outbox, now_ms, *key_validator);
     if (!result.recovery.completed()) {
         result.error = CriticalAlertSystemRecoveryStoreError::checkpoint_rejected;
         result.recovery_required = true;

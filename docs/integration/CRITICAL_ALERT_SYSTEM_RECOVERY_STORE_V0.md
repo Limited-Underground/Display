@@ -46,6 +46,10 @@ handle.
 - The selected record is passed through the full dependency-correct `ORS0`
   preflight and live import. A peer/outbox/ingress policy rejection leaves all
   three live owners unchanged.
+- `restore_at_or_above_validating_keys` additionally requires every active
+  restored opaque key handle to pass an injected protected-key validator before
+  any live import. The nested typed key failure is returned as checkpoint
+  rejection; revoked entries are not resolved.
 - Reset attempts to erase both slots and reports either failure.
 
 The interface requires exclusive ownership for inspection, save, and restore.
@@ -54,7 +58,7 @@ policy.
 
 ## Host evidence
 
-`tests/host/critical_alert_system_recovery_store_tests.cpp` covers ten groups:
+`tests/host/critical_alert_system_recovery_store_tests.cpp` covers eleven groups:
 
 1. canonical first save and empty-store behavior;
 2. monotonic rotation and newest joint three-owner restore;
@@ -68,7 +72,10 @@ policy.
 8. corrupt readback as uncertain verification failure plus reset failure;
 9. accepted exact-floor restore and rejected below-floor rollback with no live
    mutation; and
-10. new-save allocation above trusted/local generations and trusted exhaustion.
+10. new-save allocation above trusted/local generations and trusted exhaustion;
+    and
+11. protected-key rejection with zero live mutation followed by successful
+    validated restore.
 
 The complete 36-executable host matrix passes, and the focused store suite
 passes 100 consecutive repeats.

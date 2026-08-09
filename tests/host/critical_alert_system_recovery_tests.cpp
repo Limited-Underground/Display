@@ -27,15 +27,35 @@ void expect(bool condition, const char* expression, int line) {
 }
 #define EXPECT(expression) expect((expression), #expression, __LINE__)
 
+class FakeKeyValidator final : public CriticalAlertSystemRecoveryKeyValidator {
+public:
+    CriticalAlertSystemRecoveryKeyValidationError response{
+        CriticalAlertSystemRecoveryKeyValidationError::none};
+    std::size_t calls{0};
+    std::uint32_t last_peer_id{0};
+
+    CriticalAlertSystemRecoveryKeyValidationError validate(
+        const PeerAuthorizationEntry& peer) override {
+        ++calls;
+        last_peer_id = peer.logical_peer_id;
+        EXPECT(peer.active);
+        EXPECT(peer.secure_key_handle != 0);
+        return response;
+    }
+};
+
 void approve_bridge(PeerAuthorizationRegistry& registry,
+                    std::uint32_t request = 1,
+                    std::uint32_t peer = kPeerId,
+                    std::uint32_t key = kKeyHandle,
                     std::uint32_t epoch = 1) {
     const PairingCandidate bridge{
-        1, kPeerId, PeerRole::trail_bridge,
+        request, peer, PeerRole::trail_bridge,
         permission_bit(PeerPermission::receive_critical_alert) |
             permission_bit(PeerPermission::publish_alarm_ack),
         kChannel};
     EXPECT(registry.begin_approval(bridge, 0) == PeerAuthorizationError::none);
-    EXPECT(registry.approve(1, kKeyHandle, epoch, 0) ==
+    EXPECT(registry.approve(request, key, epoch, 0) ==
            PeerAuthorizationError::none);
 }
 
@@ -88,6 +108,8 @@ void start_source(PeerAuthorizationRegistry& registry,
                   CriticalAlertAckIngress& ingress) {
     EXPECT(registry.start({1000}) == PeerAuthorizationError::none);
     approve_bridge(registry);
+    approve_bridge(registry, 2, 20, 200);
+    EXPECT(registry.revoke(20) == PeerAuthorizationError::none);
     EXPECT(outbox.start({50, 100, 25, 10000, 3, 1}) ==
            CriticalOutboxError::none);
     EXPECT(ingress.start({kProducerId, 1000}, registry, outbox) ==
@@ -324,6 +346,51 @@ void test_export_failures_preserve_output() {
     EXPECT(output == unchanged);
 }
 
+void test_key_preflight_accepts_active_and_skips_revoked() {
+    const auto encoded = checkpoint();
+    PeerAuthorizationRegistry registry{};
+    CriticalAlertOutbox outbox{};
+    CriticalAlertAckIngress ingress{};
+    start_target(registry, outbox, ingress);
+    FakeKeyValidator validator{};
+    const auto result =
+        import_critical_alert_system_recovery_checkpoint_validating_keys(
+            encoded.data(), encoded.size(), registry, ingress, outbox, 100,
+            validator);
+    EXPECT(result.completed());
+    EXPECT(validator.calls == 1);
+    EXPECT(validator.last_peer_id == kPeerId);
+    EXPECT(registry.status().peer_count == 2);
+}
+
+void test_key_preflight_failures_are_typed_and_atomic() {
+    const auto encoded = checkpoint();
+    constexpr std::array<CriticalAlertSystemRecoveryKeyValidationError, 3>
+        failures_to_inject{
+            CriticalAlertSystemRecoveryKeyValidationError::key_unavailable,
+            CriticalAlertSystemRecoveryKeyValidationError::purpose_mismatch,
+            CriticalAlertSystemRecoveryKeyValidationError::backend_failure};
+    for (const auto injected : failures_to_inject) {
+        PeerAuthorizationRegistry registry{};
+        CriticalAlertOutbox outbox{};
+        CriticalAlertAckIngress ingress{};
+        start_target(registry, outbox, ingress);
+        FakeKeyValidator validator{};
+        validator.response = injected;
+        const auto result =
+            import_critical_alert_system_recovery_checkpoint_validating_keys(
+                encoded.data(), encoded.size(), registry, ingress, outbox, 100,
+                validator);
+        EXPECT(result.error == CriticalAlertSystemRecoveryError::
+                                   authorization_key_preflight_failed);
+        EXPECT(result.key_validation_error == injected);
+        EXPECT(result.key_validation_peer_id == kPeerId);
+        EXPECT(result.generation == 7);
+        EXPECT(validator.calls == 1);
+        expect_empty(registry, outbox, ingress);
+    }
+}
+
 }  // namespace
 
 int main() {
@@ -333,10 +400,12 @@ int main() {
     test_epoch_mismatch_fails_before_any_live_import();
     test_policy_and_runtime_preflights_are_atomic();
     test_export_failures_preserve_output();
+    test_key_preflight_accepts_active_and_skips_revoked();
+    test_key_preflight_failures_are_typed_and_atomic();
     if (failures != 0) {
         std::cerr << failures << " system recovery assertion(s) failed\n";
         return EXIT_FAILURE;
     }
-    std::cout << "PASS: 6 critical alert system recovery scenario groups\n";
+    std::cout << "PASS: 8 critical alert system recovery scenario groups\n";
     return EXIT_SUCCESS;
 }

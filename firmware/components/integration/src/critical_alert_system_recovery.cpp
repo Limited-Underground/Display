@@ -1,57 +1,16 @@
 #include "opengauge/critical_alert_system_recovery.hpp"
 
 namespace opengauge::integration {
+namespace {
 
-CriticalAlertSystemRecoveryResult
-export_critical_alert_system_recovery_checkpoint(
-    identity::PeerAuthorizationRegistry& authorization,
-    CriticalAlertAckIngress& ingress,
-    CriticalAlertOutbox& outbox,
-    std::uint64_t now_ms,
-    std::uint64_t generation,
-    std::array<std::uint8_t, kCriticalAlertSystemRecoveryCheckpointBytes>& output) {
-    if (generation == 0)
-        return {CriticalAlertSystemRecoveryError::invalid_generation};
-    CriticalAlertSystemRecoveryCheckpoint candidate{};
-    candidate.generation = generation;
-    const auto authorization_error =
-        authorization.export_checkpoint(candidate.authorization);
-    if (authorization_error != identity::PeerAuthorizationError::none) {
-        CriticalAlertSystemRecoveryResult result{
-            CriticalAlertSystemRecoveryError::authorization_export_failed};
-        result.authorization_error = authorization_error;
-        return result;
-    }
-    const auto critical = export_critical_alert_recovery_checkpoint(
-        ingress, outbox, now_ms, generation, candidate.critical);
-    if (!critical.completed()) {
-        CriticalAlertSystemRecoveryResult result{
-            CriticalAlertSystemRecoveryError::critical_export_failed};
-        result.critical = critical;
-        return result;
-    }
-    const auto encoded = encode_critical_alert_system_recovery_checkpoint(
-        candidate, output);
-    if (encoded != CriticalAlertSystemRecoveryCheckpointError::none) {
-        CriticalAlertSystemRecoveryResult result{
-            CriticalAlertSystemRecoveryError::checkpoint_rejected};
-        result.checkpoint_error = encoded;
-        return result;
-    }
-    CriticalAlertSystemRecoveryResult result{
-        CriticalAlertSystemRecoveryError::none};
-    result.generation = generation;
-    return result;
-}
-
-CriticalAlertSystemRecoveryResult
-import_critical_alert_system_recovery_checkpoint(
+CriticalAlertSystemRecoveryResult import_system_recovery(
     const std::uint8_t* checkpoint,
     std::size_t checkpoint_size,
     identity::PeerAuthorizationRegistry& authorization,
     CriticalAlertAckIngress& ingress,
     CriticalAlertOutbox& outbox,
-    std::uint64_t now_ms) {
+    std::uint64_t now_ms,
+    CriticalAlertSystemRecoveryKeyValidator* key_validator) {
     CriticalAlertSystemRecoveryCheckpoint decoded{};
     const auto decoded_error = decode_critical_alert_system_recovery_checkpoint(
         checkpoint, checkpoint_size, decoded);
@@ -82,6 +41,38 @@ import_critical_alert_system_recovery_checkpoint(
         result.authorization_error = authorization_preflight;
         result.generation = decoded.generation;
         return result;
+    }
+    if (key_validator != nullptr) {
+        std::array<identity::PeerAuthorizationEntry,
+                   identity::kMaximumAuthorizedPeers> peers{};
+        std::size_t peer_count = 0;
+        const auto snapshot = authorization_candidate.snapshot(
+            peers.data(), peers.size(), peer_count);
+        if (snapshot != identity::PeerAuthorizationError::none) {
+            CriticalAlertSystemRecoveryResult result{
+                CriticalAlertSystemRecoveryError::
+                    authorization_key_preflight_failed};
+            result.authorization_error = snapshot;
+            result.key_validation_error =
+                CriticalAlertSystemRecoveryKeyValidationError::
+                    registry_snapshot_failed;
+            result.generation = decoded.generation;
+            return result;
+        }
+        for (std::size_t index = 0; index < peer_count; ++index) {
+            if (!peers[index].active) continue;
+            const auto key_error = key_validator->validate(peers[index]);
+            if (key_error !=
+                CriticalAlertSystemRecoveryKeyValidationError::none) {
+                CriticalAlertSystemRecoveryResult result{
+                    CriticalAlertSystemRecoveryError::
+                        authorization_key_preflight_failed};
+                result.key_validation_error = key_error;
+                result.key_validation_peer_id = peers[index].logical_peer_id;
+                result.generation = decoded.generation;
+                return result;
+            }
+        }
     }
     auto outbox_candidate = outbox;
     const auto outbox_preflight = outbox_candidate.import_checkpoint(
@@ -146,6 +137,77 @@ import_critical_alert_system_recovery_checkpoint(
     result.critical.generation = decoded.generation;
     result.generation = decoded.generation;
     return result;
+}
+
+}  // namespace
+
+CriticalAlertSystemRecoveryResult
+export_critical_alert_system_recovery_checkpoint(
+    identity::PeerAuthorizationRegistry& authorization,
+    CriticalAlertAckIngress& ingress,
+    CriticalAlertOutbox& outbox,
+    std::uint64_t now_ms,
+    std::uint64_t generation,
+    std::array<std::uint8_t, kCriticalAlertSystemRecoveryCheckpointBytes>& output) {
+    if (generation == 0)
+        return {CriticalAlertSystemRecoveryError::invalid_generation};
+    CriticalAlertSystemRecoveryCheckpoint candidate{};
+    candidate.generation = generation;
+    const auto authorization_error =
+        authorization.export_checkpoint(candidate.authorization);
+    if (authorization_error != identity::PeerAuthorizationError::none) {
+        CriticalAlertSystemRecoveryResult result{
+            CriticalAlertSystemRecoveryError::authorization_export_failed};
+        result.authorization_error = authorization_error;
+        return result;
+    }
+    const auto critical = export_critical_alert_recovery_checkpoint(
+        ingress, outbox, now_ms, generation, candidate.critical);
+    if (!critical.completed()) {
+        CriticalAlertSystemRecoveryResult result{
+            CriticalAlertSystemRecoveryError::critical_export_failed};
+        result.critical = critical;
+        return result;
+    }
+    const auto encoded = encode_critical_alert_system_recovery_checkpoint(
+        candidate, output);
+    if (encoded != CriticalAlertSystemRecoveryCheckpointError::none) {
+        CriticalAlertSystemRecoveryResult result{
+            CriticalAlertSystemRecoveryError::checkpoint_rejected};
+        result.checkpoint_error = encoded;
+        return result;
+    }
+    CriticalAlertSystemRecoveryResult result{
+        CriticalAlertSystemRecoveryError::none};
+    result.generation = generation;
+    return result;
+}
+
+CriticalAlertSystemRecoveryResult
+import_critical_alert_system_recovery_checkpoint(
+    const std::uint8_t* checkpoint,
+    std::size_t checkpoint_size,
+    identity::PeerAuthorizationRegistry& authorization,
+    CriticalAlertAckIngress& ingress,
+    CriticalAlertOutbox& outbox,
+    std::uint64_t now_ms) {
+    return import_system_recovery(
+        checkpoint, checkpoint_size, authorization, ingress, outbox, now_ms,
+        nullptr);
+}
+
+CriticalAlertSystemRecoveryResult
+import_critical_alert_system_recovery_checkpoint_validating_keys(
+    const std::uint8_t* checkpoint,
+    std::size_t checkpoint_size,
+    identity::PeerAuthorizationRegistry& authorization,
+    CriticalAlertAckIngress& ingress,
+    CriticalAlertOutbox& outbox,
+    std::uint64_t now_ms,
+    CriticalAlertSystemRecoveryKeyValidator& key_validator) {
+    return import_system_recovery(
+        checkpoint, checkpoint_size, authorization, ingress, outbox, now_ms,
+        &key_validator);
 }
 
 }  // namespace opengauge::integration

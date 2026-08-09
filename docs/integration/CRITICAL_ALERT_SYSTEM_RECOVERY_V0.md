@@ -50,11 +50,14 @@ Import under caller-provided exclusive ownership performs these steps:
 1. decode and validate the complete `ORS0` envelope;
 2. import `OPA0` into a private registry candidate;
 3. import nested `OOC0` into a private outbox candidate;
-4. construct a temporary ACK ingress with the live ingress configuration but
+4. for target-style restore, enumerate only active peers from the private
+   registry and validate each opaque key handle through the injected protected-
+   key boundary; revoked entries are never resolved;
+5. construct a temporary ACK ingress with the live ingress configuration but
    pointed at those two private candidates;
-5. import nested `OAI0` into that temporary ingress, including authorization-
+6. import nested `OAI0` into that temporary ingress, including authorization-
    epoch revalidation;
-6. only after every preflight succeeds, deterministically import authorization,
+7. only after every preflight succeeds, deterministically import authorization,
    outbox, and ACK state into the three live owners.
 
 The live ingress must itself remain eligible for boot import. A stopped or
@@ -64,7 +67,7 @@ between preflight and commit.
 
 ## Host evidence
 
-`tests/host/critical_alert_system_recovery_tests.cpp` covers six groups:
+`tests/host/critical_alert_system_recovery_tests.cpp` covers eight groups:
 
 1. exact layout, nested identities, decode, and generation binding;
 2. joint restoration of peer authorization, ACK replay, and queued retry state;
@@ -74,9 +77,13 @@ between preflight and commit.
 5. peer policy, outbox policy, and live-ingress eligibility failures with all
    live owners unchanged; and
 6. invalid-generation and pending-approval export failures with unchanged
-   output.
+   output;
+7. successful active-key validation while revoked authorization history is
+   skipped; and
+8. typed unavailable, wrong-purpose, and backend failures with zero live-owner
+   mutation.
 
-The complete 35-executable host matrix passes, and the focused `ORS0` suite
+The complete 36-executable host matrix passes, and the focused `ORS0` suite
 passes 100 consecutive repeats.
 
 The separate [two-slot system-recovery store](CRITICAL_ALERT_SYSTEM_RECOVERY_STORE_V0.md)

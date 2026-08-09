@@ -28,6 +28,20 @@ void expect(bool condition, const char* expression, int line) {
 }
 #define EXPECT(expression) expect((expression), #expression, __LINE__)
 
+class FakeKeyValidator final : public CriticalAlertSystemRecoveryKeyValidator {
+public:
+    CriticalAlertSystemRecoveryKeyValidationError response{
+        CriticalAlertSystemRecoveryKeyValidationError::none};
+    std::size_t calls{0};
+
+    CriticalAlertSystemRecoveryKeyValidationError validate(
+        const PeerAuthorizationEntry& peer) override {
+        ++calls;
+        EXPECT(peer.active && peer.secure_key_handle != 0);
+        return response;
+    }
+};
+
 PairingCandidate bridge(std::uint32_t request, std::uint32_t peer) {
     return {request, peer, PeerRole::trail_bridge,
             permission_bit(PeerPermission::receive_critical_alert) |
@@ -421,6 +435,46 @@ void test_trusted_generation_advances_new_saves() {
     EXPECT(storage.writes(0) + storage.writes(1) == writes_before);
 }
 
+void test_store_restore_preflights_protected_key_handles() {
+    PeerAuthorizationRegistry source{};
+    CriticalAlertOutbox source_outbox{};
+    CriticalAlertAckIngress source_ingress{};
+    start_source(source, source_outbox, source_ingress);
+    FakeCriticalAlertSystemRecoveryStorage storage{};
+    CriticalAlertSystemRecoveryStore store{storage};
+    EXPECT(store.save_next(source, source_ingress, source_outbox, 1).saved());
+
+    PeerAuthorizationRegistry rejected{};
+    CriticalAlertOutbox rejected_outbox{};
+    CriticalAlertAckIngress rejected_ingress{};
+    start_target(rejected, rejected_outbox, rejected_ingress);
+    FakeKeyValidator unavailable{};
+    unavailable.response =
+        CriticalAlertSystemRecoveryKeyValidationError::key_unavailable;
+    const auto failed = store.restore_at_or_above_validating_keys(
+        rejected, rejected_ingress, rejected_outbox, 100, 1, unavailable);
+    EXPECT(!failed.restored);
+    EXPECT(failed.error ==
+           CriticalAlertSystemRecoveryStoreError::checkpoint_rejected);
+    EXPECT(failed.recovery.error == CriticalAlertSystemRecoveryError::
+                                         authorization_key_preflight_failed);
+    EXPECT(failed.recovery.key_validation_error ==
+           CriticalAlertSystemRecoveryKeyValidationError::key_unavailable);
+    EXPECT(unavailable.calls == 1);
+    expect_empty(rejected, rejected_outbox, rejected_ingress);
+
+    PeerAuthorizationRegistry accepted{};
+    CriticalAlertOutbox accepted_outbox{};
+    CriticalAlertAckIngress accepted_ingress{};
+    start_target(accepted, accepted_outbox, accepted_ingress);
+    FakeKeyValidator available{};
+    const auto loaded = store.restore_at_or_above_validating_keys(
+        accepted, accepted_ingress, accepted_outbox, 100, 1, available);
+    EXPECT(loaded.restored && loaded.generation == 1);
+    EXPECT(available.calls == 1);
+    expect_restored(accepted, accepted_outbox, accepted_ingress);
+}
+
 }  // namespace
 
 int main() {
@@ -434,10 +488,11 @@ int main() {
     test_verification_failure_and_reset();
     test_trusted_restore_floor_rejects_rollback();
     test_trusted_generation_advances_new_saves();
+    test_store_restore_preflights_protected_key_handles();
     if (failures != 0) {
         std::cerr << failures << " system recovery store assertion(s) failed\n";
         return EXIT_FAILURE;
     }
-    std::cout << "PASS: 10 critical alert system recovery store scenario groups\n";
+    std::cout << "PASS: 11 critical alert system recovery store scenario groups\n";
     return EXIT_SUCCESS;
 }

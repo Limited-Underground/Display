@@ -51,6 +51,12 @@ wear behavior, and what an interrupted API call can leave behind.
 - make key-store loss distinguishable from an empty first boot; and
 - coordinate replacement and factory reset with authorization epochs.
 
+The host recovery API now exposes
+`CriticalAlertSystemRecoveryKeyValidator` and a key-validating direct/store
+restore path. It presents only active `PeerAuthorizationEntry` metadata and the
+opaque handle before any live import. The concrete target implementation and
+key-store selection remain open.
+
 ### Trusted generation source
 
 The caller-supplied trusted value must not be stored only inside the same two

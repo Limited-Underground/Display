@@ -115,9 +115,24 @@ public:
         CriticalAlertOutbox& outbox,
         std::uint64_t now_ms,
         std::uint64_t minimum_trusted_generation);
+    [[nodiscard]] CriticalAlertSystemRecoveryLoadResult
+    restore_at_or_above_validating_keys(
+        identity::PeerAuthorizationRegistry& authorization,
+        CriticalAlertAckIngress& ingress,
+        CriticalAlertOutbox& outbox,
+        std::uint64_t now_ms,
+        std::uint64_t minimum_trusted_generation,
+        CriticalAlertSystemRecoveryKeyValidator& key_validator);
     [[nodiscard]] CriticalAlertSystemRecoveryStoreError reset();
 
 private:
+    [[nodiscard]] CriticalAlertSystemRecoveryLoadResult restore_impl(
+        identity::PeerAuthorizationRegistry& authorization,
+        CriticalAlertAckIngress& ingress,
+        CriticalAlertOutbox& outbox,
+        std::uint64_t now_ms,
+        std::uint64_t minimum_trusted_generation,
+        CriticalAlertSystemRecoveryKeyValidator* key_validator);
     CriticalAlertSystemRecoveryStorage& storage_;
 };
 

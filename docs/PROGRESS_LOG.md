@@ -38,6 +38,10 @@ public chronology.
   semantics, protected key-handle resolution, separate trusted-generation
   authority, boot/save ordering, coordinated reset, and physical interruption
   evidence. No ESP-IDF target implementation is claimed.
+- Added dependency-injected protected key-handle preflight to direct and stored
+  `ORS0` restore. Active handles must validate before any live owner changes;
+  revoked peers are skipped, and unavailable/purpose/backend failures remain
+  typed. Eight system and eleven store groups plus 100 repeats each pass.
 - Kept all target claims bounded: there is no ESP-IDF storage/radio/CAN binding,
   protected on-device key persistence, physical power-cut evidence, or vehicle
   validation yet.
