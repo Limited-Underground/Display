@@ -419,6 +419,20 @@ Invoke-HostTest `
     )
 
 Invoke-HostTest `
+    -Name 'recovery_status_diagnostics_tests' `
+    -Description 'Versioned redacted recovery status diagnostics' `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\diagnostics\include'),
+        (Join-Path $projectRoot 'firmware\components\identity\include'),
+        (Join-Path $projectRoot 'firmware\components\integration\include')
+    ) `
+    -Sources @(
+        (Join-Path $projectRoot 'firmware\components\diagnostics\src\diagnostics.cpp'),
+        (Join-Path $projectRoot 'firmware\components\diagnostics\src\recovery_status_diagnostics.cpp'),
+        (Join-Path $projectRoot 'tests\host\recovery_status_diagnostics_tests.cpp')
+    )
+
+Invoke-HostTest `
     -Name 'critical_alarm_exporter_tests' `
     -Description 'Alarm-to-critical-alert exporter' `
     -IncludeDirectories @(

@@ -73,13 +73,18 @@ public chronology.
   excluding peer IDs, key handles, addresses, credentials, and raw checkpoint
   bytes. Unknown or incoherent results fail closed. Seven groups, the complete
   40-executable matrix, and 100 focused repeats pass locally.
+- Bound that redacted status to the existing diagnostics ring as one atomic,
+  magic/versioned 32-bit `configuration_recovery / state_code` event. The word
+  round-trips coarse outcome and severity while omitting generations and all
+  identity-bearing fields; malformed or incoherent words fail closed. Eight
+  groups, the complete 41-executable matrix, and 100 focused repeats pass
+  locally.
 
 ### Public validation and project operations
 
 - Added public GitHub Actions validation for every `main` push and pull request.
   The Windows 2025/UCRT64 workflow uses commit-pinned actions and runs the
-  complete matrix; its current-main run passes all 40 executables with zero
-  annotations.
+  complete matrix; the repository badge is the current-run authority.
 - Linked OpenTrail's separate public workflow after it passed both verifier CLI
   builds, 23 C++ test executables, and the four-group Python MeshCore lease suite
   with zero annotations. The two CI scopes remain distinct.
