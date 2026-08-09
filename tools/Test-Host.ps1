@@ -74,6 +74,19 @@ Invoke-HostTest `
     )
 
 Invoke-HostTest `
+    -Name 'alarm_engine_tests' `
+    -Description 'Bounded normalized-signal alarm engine' `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\alarm\include'),
+        (Join-Path $projectRoot 'firmware\components\telemetry\include')
+    ) `
+    -Sources @(
+        (Join-Path $projectRoot 'firmware\components\alarm\src\alarm_engine.cpp'),
+        (Join-Path $projectRoot 'firmware\components\telemetry\src\normalized_signal.cpp'),
+        (Join-Path $projectRoot 'tests\host\alarm_engine_tests.cpp')
+    )
+
+Invoke-HostTest `
     -Name 'j1939_identifier_tests' `
     -Description 'J1939 identifier parser' `
     -IncludeDirectories @(
