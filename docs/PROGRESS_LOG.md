@@ -53,6 +53,10 @@ public chronology.
   next `ORS0` before advancing and exactly reading back trust. Ahead/uncertain
   state requires boot reconciliation; behind is rollback; missing state fails
   visibly. Eight groups, the 38-executable matrix, and 100 repeats pass.
+- Added public GitHub Actions validation for every `main` push and pull request.
+  The Windows 2025/UCRT64 workflow uses commit-pinned actions, passed the full
+  38-executable matrix on its first warning-free run, and returned zero
+  annotations.
 - Kept all target claims bounded: there is no ESP-IDF storage/radio/CAN binding,
   protected on-device key persistence, physical power-cut evidence, or vehicle
   validation yet.

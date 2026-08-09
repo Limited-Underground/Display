@@ -1,5 +1,7 @@
 # OpenGauge
 
+[![Host validation](https://github.com/nbjelanovic/OpenGauge/actions/workflows/host-validation.yml/badge.svg)](https://github.com/nbjelanovic/OpenGauge/actions/workflows/host-validation.yml)
+
 OpenGauge is a proposed free/open-source ESP32 vehicle instrumentation and telemetry platform. Its baseline architecture separates a listen-only CAN/J1939 gateway from independently operating wireless gauge displays.
 
 ## Current snapshot — 2026-08-09
@@ -16,6 +18,9 @@ OpenGauge is a proposed free/open-source ESP32 vehicle instrumentation and telem
   generation. Missing, ahead, behind, uncertain-commit, and failed trust-update
   states remain explicit. The complete 38-executable host matrix and 100
   focused save repeats pass.
+- **Public validation:** GitHub Actions now runs the complete Windows host matrix
+  on every `main` push and pull request. The first warning-free public run passed
+  all 38 executables with zero annotations.
 - **Still unproved:** ESP-IDF target adapters, protected on-device keys/storage,
   physical power-cut behavior, real CAN/J1939 vehicle input, displays, and field
   radio performance.
