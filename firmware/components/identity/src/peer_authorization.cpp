@@ -7,6 +7,54 @@ namespace opengauge::identity {
 namespace {
 
 constexpr std::size_t kNotFound = std::numeric_limits<std::size_t>::max();
+constexpr std::array<std::uint8_t, 4> kCheckpointMagic{{'O', 'P', 'A', '0'}};
+constexpr std::size_t kCheckpointHeaderBytes = 24;
+constexpr std::size_t kCheckpointEntryBytes = 24;
+constexpr std::size_t kCheckpointEntriesOffset = kCheckpointHeaderBytes;
+constexpr std::size_t kCheckpointTailOffset =
+    kCheckpointEntriesOffset + kMaximumAuthorizedPeers * kCheckpointEntryBytes;
+constexpr std::size_t kCheckpointCrcOffset =
+    kPeerAuthorizationCheckpointBytes - 4;
+
+void write_u16(std::uint8_t* output, std::uint16_t value) {
+    output[0] = static_cast<std::uint8_t>(value);
+    output[1] = static_cast<std::uint8_t>(value >> 8U);
+}
+
+void write_u32(std::uint8_t* output, std::uint32_t value) {
+    for (std::size_t index = 0; index < 4; ++index)
+        output[index] = static_cast<std::uint8_t>(value >> (index * 8U));
+}
+
+void write_u64(std::uint8_t* output, std::uint64_t value) {
+    for (std::size_t index = 0; index < 8; ++index)
+        output[index] = static_cast<std::uint8_t>(value >> (index * 8U));
+}
+
+std::uint16_t read_u16(const std::uint8_t* input) {
+    return static_cast<std::uint16_t>(input[0]) |
+           static_cast<std::uint16_t>(input[1] << 8U);
+}
+
+std::uint32_t read_u32(const std::uint8_t* input) {
+    std::uint32_t value = 0;
+    for (std::size_t index = 0; index < 4; ++index)
+        value |= static_cast<std::uint32_t>(input[index]) << (index * 8U);
+    return value;
+}
+
+std::uint64_t read_u64(const std::uint8_t* input) {
+    std::uint64_t value = 0;
+    for (std::size_t index = 0; index < 8; ++index)
+        value |= static_cast<std::uint64_t>(input[index]) << (index * 8U);
+    return value;
+}
+
+bool all_zero(const std::uint8_t* data, std::size_t size) {
+    return std::all_of(data, data + size, [](std::uint8_t value) {
+        return value == 0;
+    });
+}
 
 bool known_role(PeerRole role) {
     const auto value = static_cast<std::uint8_t>(role);
@@ -50,6 +98,22 @@ void saturating_increment(std::uint32_t& value) {
 }
 
 }  // namespace
+
+std::uint32_t peer_authorization_checkpoint_crc32(
+    const std::uint8_t* data,
+    std::size_t size) {
+    if (data == nullptr && size != 0) return 0;
+    std::uint32_t crc = 0xFFFFFFFFU;
+    for (std::size_t index = 0; index < size; ++index) {
+        crc ^= data[index];
+        for (std::uint8_t bit = 0; bit < 8; ++bit) {
+            const auto mask = static_cast<std::uint32_t>(
+                -(static_cast<std::int32_t>(crc & 1U)));
+            crc = (crc >> 1U) ^ (0xEDB88320U & mask);
+        }
+    }
+    return ~crc;
+}
 
 PeerAuthorizationError PeerAuthorizationRegistry::start(
     const PeerAuthorizationConfiguration& configuration) {
@@ -285,6 +349,127 @@ PeerAuthorizationError PeerAuthorizationRegistry::snapshot(
     }
     output_count = status_.peer_count;
     return PeerAuthorizationError::none;
+}
+
+PeerAuthorizationError PeerAuthorizationRegistry::export_checkpoint(
+    std::array<std::uint8_t, kPeerAuthorizationCheckpointBytes>& output) {
+    if (!status_.running || status_.approval_pending) {
+        return PeerAuthorizationError::invalid_state;
+    }
+    std::array<std::uint8_t, kPeerAuthorizationCheckpointBytes> candidate{};
+    std::copy(kCheckpointMagic.begin(), kCheckpointMagic.end(), candidate.begin());
+    candidate[4] = kPeerAuthorizationCheckpointVersion;
+    candidate[5] = static_cast<std::uint8_t>(status_.peer_count);
+    candidate[6] = static_cast<std::uint8_t>(status_.active_peer_count);
+    write_u64(candidate.data() + 8, configuration_.approval_window_ms);
+    for (std::size_t index = 0; index < status_.peer_count; ++index) {
+        const auto& peer = peers_[index];
+        auto* entry = candidate.data() + kCheckpointEntriesOffset +
+                      index * kCheckpointEntryBytes;
+        entry[0] = peer.active ? 1 : 2;
+        entry[1] = static_cast<std::uint8_t>(peer.role);
+        entry[2] = peer.channel;
+        write_u16(entry + 4, peer.permissions);
+        write_u32(entry + 8, peer.logical_peer_id);
+        write_u32(entry + 12, peer.secure_key_handle);
+        write_u32(entry + 16, peer.authorization_epoch);
+    }
+    write_u32(candidate.data() + kCheckpointCrcOffset,
+              peer_authorization_checkpoint_crc32(
+                  candidate.data(), kCheckpointCrcOffset));
+    output = candidate;
+    saturating_increment(status_.checkpoint_exports);
+    return PeerAuthorizationError::none;
+}
+
+PeerAuthorizationError PeerAuthorizationRegistry::import_checkpoint(
+    const std::uint8_t* checkpoint,
+    std::size_t checkpoint_size) {
+    const auto reject = [this](PeerAuthorizationError error) {
+        saturating_increment(status_.checkpoint_rejections);
+        return error;
+    };
+    if (!status_.running || status_.approval_pending || status_.peer_count != 0 ||
+        status_.approvals_completed != 0 || status_.approvals_expired != 0 ||
+        status_.authorization_denials != 0 || status_.revocations != 0 ||
+        status_.key_rotations != 0 || status_.checkpoint_exports != 0 ||
+        status_.checkpoint_imports != 0) {
+        return PeerAuthorizationError::invalid_state;
+    }
+    if (checkpoint == nullptr ||
+        checkpoint_size != kPeerAuthorizationCheckpointBytes ||
+        !std::equal(kCheckpointMagic.begin(), kCheckpointMagic.end(), checkpoint)) {
+        return reject(PeerAuthorizationError::checkpoint_malformed);
+    }
+    if (checkpoint[4] != kPeerAuthorizationCheckpointVersion ||
+        read_u64(checkpoint + 8) != configuration_.approval_window_ms) {
+        return reject(PeerAuthorizationError::checkpoint_incompatible);
+    }
+    if (checkpoint[5] > kMaximumAuthorizedPeers || checkpoint[6] > checkpoint[5] ||
+        checkpoint[7] != 0 || !all_zero(checkpoint + 16, 8) ||
+        !all_zero(checkpoint + kCheckpointTailOffset,
+                  kCheckpointCrcOffset - kCheckpointTailOffset)) {
+        return reject(PeerAuthorizationError::checkpoint_malformed);
+    }
+    if (read_u32(checkpoint + kCheckpointCrcOffset) !=
+        peer_authorization_checkpoint_crc32(checkpoint, kCheckpointCrcOffset)) {
+        return reject(PeerAuthorizationError::checkpoint_integrity_failure);
+    }
+    std::array<PeerAuthorizationEntry, kMaximumAuthorizedPeers> candidate{};
+    std::size_t active_count = 0;
+    for (std::size_t index = 0; index < candidate.size(); ++index) {
+        const auto* entry = checkpoint + kCheckpointEntriesOffset +
+                            index * kCheckpointEntryBytes;
+        if (index >= checkpoint[5]) {
+            if (!all_zero(entry, kCheckpointEntryBytes))
+                return reject(PeerAuthorizationError::checkpoint_malformed);
+            continue;
+        }
+        const auto active = entry[0] == 1;
+        const auto revoked = entry[0] == 2;
+        PeerAuthorizationEntry peer{};
+        peer.active = active;
+        peer.role = static_cast<PeerRole>(entry[1]);
+        peer.channel = entry[2];
+        peer.permissions = read_u16(entry + 4);
+        peer.logical_peer_id = read_u32(entry + 8);
+        peer.secure_key_handle = read_u32(entry + 12);
+        peer.authorization_epoch = read_u32(entry + 16);
+        if ((!active && !revoked) || entry[3] != 0 || entry[6] != 0 ||
+            entry[7] != 0 || !all_zero(entry + 20, 4) ||
+            !known_role(peer.role) ||
+            !valid_permissions(peer.role, peer.permissions) ||
+            peer.channel == 0 || peer.channel > 14 ||
+            peer.logical_peer_id == 0 || peer.authorization_epoch == 0 ||
+            (active && peer.secure_key_handle == 0) ||
+            (revoked && peer.secure_key_handle != 0)) {
+            return reject(PeerAuthorizationError::checkpoint_malformed);
+        }
+        for (std::size_t prior = 0; prior < index; ++prior) {
+            if (candidate[prior].logical_peer_id == peer.logical_peer_id ||
+                (active && candidate[prior].active &&
+                 candidate[prior].secure_key_handle == peer.secure_key_handle)) {
+                return reject(PeerAuthorizationError::checkpoint_malformed);
+            }
+        }
+        candidate[index] = peer;
+        if (active) ++active_count;
+    }
+    if (active_count != checkpoint[6]) {
+        return reject(PeerAuthorizationError::checkpoint_malformed);
+    }
+    peers_ = candidate;
+    status_.peer_count = checkpoint[5];
+    status_.active_peer_count = active_count;
+    saturating_increment(status_.checkpoint_imports);
+    return PeerAuthorizationError::none;
+}
+
+PeerAuthorizationError PeerAuthorizationRegistry::validate_checkpoint_import(
+    const std::uint8_t* checkpoint,
+    std::size_t checkpoint_size) const {
+    auto candidate = *this;
+    return candidate.import_checkpoint(checkpoint, checkpoint_size);
 }
 
 PeerAuthorizationStatus PeerAuthorizationRegistry::status() const {

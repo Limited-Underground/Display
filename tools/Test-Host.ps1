@@ -431,6 +431,17 @@ Invoke-HostTest `
     )
 
 Invoke-HostTest `
+    -Name 'peer_authorization_checkpoint_tests' `
+    -Description 'Peer authorization restart checkpoint' `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\identity\include')
+    ) `
+    -Sources @(
+        (Join-Path $projectRoot 'firmware\components\identity\src\peer_authorization.cpp'),
+        (Join-Path $projectRoot 'tests\host\peer_authorization_checkpoint_tests.cpp')
+    )
+
+Invoke-HostTest `
     -Name 'gauge_telemetry_receiver_tests' `
     -Description 'Bounded gauge telemetry receiver' `
     -IncludeDirectories @(

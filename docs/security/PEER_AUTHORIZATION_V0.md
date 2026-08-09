@@ -85,7 +85,10 @@ authorization. It composes with those layers.
 7. unique key rotation with strictly increasing epoch;
 8. atomic snapshots and bounded opaque-handle entry shape.
 
-The suite also repeated 100 times with zero failures.
+The suite also repeated 100 times with zero failures. The separate
+[peer-authorization checkpoint](PEER_AUTHORIZATION_CHECKPOINT_V0.md) now
+provides a canonical boot-only record for logical peers, active/revoked state,
+opaque key handles, and authorization epochs.
 
 ## Remaining pairing gates
 
@@ -93,8 +96,9 @@ The suite also repeated 100 times with zero failures.
   board, including entropy and credential generation;
 - define local-presence proof, candidate comparison, accessibility, cancel,
   timeout, replacement, revoke, lost-node, and factory-reset workflows;
-- persist the registry and epochs with corruption/power-loss recovery and
-  rollback resistance, without publishing device-specific identities;
+- bind the canonical registry checkpoint to protected target storage with
+  corruption/power-loss recovery and rollback resistance, without publishing
+  device-specific identities;
 - rate-limit discovery/approval/authorization failures and connect typed
   redacted diagnostics;
 - fuzz radio/discovery adapters and test spoof, flood, replay, wrong key,

@@ -7,6 +7,8 @@
 namespace opengauge::identity {
 
 inline constexpr std::size_t kMaximumAuthorizedPeers = 8;
+inline constexpr std::uint8_t kPeerAuthorizationCheckpointVersion = 0;
+inline constexpr std::size_t kPeerAuthorizationCheckpointBytes = 256;
 
 enum class PeerRole : std::uint8_t {
     gateway = 1,
@@ -56,6 +58,9 @@ enum class PeerAuthorizationError : std::uint8_t {
     stale_authorization_epoch,
     insufficient_output_capacity,
     clock_regression,
+    checkpoint_malformed,
+    checkpoint_incompatible,
+    checkpoint_integrity_failure,
 };
 
 struct PeerAuthorizationConfiguration {
@@ -97,6 +102,9 @@ struct PeerAuthorizationStatus {
     std::uint32_t authorization_denials{0};
     std::uint32_t revocations{0};
     std::uint32_t key_rotations{0};
+    std::uint32_t checkpoint_exports{0};
+    std::uint32_t checkpoint_imports{0};
+    std::uint32_t checkpoint_rejections{0};
 };
 
 // Opaque logical IDs and secure-storage key handles only. Raw keys, PINs,
@@ -136,6 +144,14 @@ public:
         PeerAuthorizationEntry* output,
         std::size_t output_capacity,
         std::size_t& output_count) const;
+    [[nodiscard]] PeerAuthorizationError export_checkpoint(
+        std::array<std::uint8_t, kPeerAuthorizationCheckpointBytes>& output);
+    [[nodiscard]] PeerAuthorizationError import_checkpoint(
+        const std::uint8_t* checkpoint,
+        std::size_t checkpoint_size);
+    [[nodiscard]] PeerAuthorizationError validate_checkpoint_import(
+        const std::uint8_t* checkpoint,
+        std::size_t checkpoint_size) const;
     [[nodiscard]] PeerAuthorizationStatus status() const;
 
 private:
@@ -149,5 +165,9 @@ private:
     std::array<PeerAuthorizationEntry, kMaximumAuthorizedPeers> peers_{};
     PeerAuthorizationStatus status_{};
 };
+
+[[nodiscard]] std::uint32_t peer_authorization_checkpoint_crc32(
+    const std::uint8_t* data,
+    std::size_t size);
 
 }  // namespace opengauge::identity
