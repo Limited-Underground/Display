@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "fake_esp_now_transport.hpp"
+#include "opengauge/j1939_decoder.hpp"
 #include "opengauge/telemetry_gateway_publisher.hpp"
 
 namespace {
@@ -284,6 +285,53 @@ void test_end_to_end_local_acceptance_radio_loss_and_gap() {
     EXPECT(gap.missing_packets == 1);
 }
 
+void test_j1939_decoder_cache_to_registered_wire_signal() {
+    can::J1939DecoderRegistry registry{};
+    EXPECT(registry.register_decoder(
+               can::kEec1Pgn,
+               can::decode_eec1_engine_speed) == can::J1939DecodeError::none);
+    can::J1939Message message{};
+    message.raw_identifier = 0x0CF0042AU;
+    message.format = can::CanFrameFormat::extended;
+    message.payload.fill(0xFFU);
+    message.payload[3] = 0x40U;
+    message.payload[4] = 0x1FU;
+    message.data_length = 8;
+    message.received_at_ms = 0;
+    telemetry::NormalizedSignal decoded_signal{};
+    EXPECT(registry.decode(message, &decoded_signal, 1).decoded());
+    EXPECT(telemetry::signal_id_equals(decoded_signal.id, "engine.speed"));
+    EXPECT(decoded_signal.value.raw_value == 1000000);
+
+    telemetry::TelemetryCache cache{};
+    EXPECT(cache.upsert(decoded_signal, 1000).accepted());
+    wireless::TelemetryGatewayPublisher publisher{};
+    EXPECT(publisher.start({1, 2, 0}) ==
+           wireless::PublishSchedulerError::none);
+    const auto speed = subscription(
+        wireless::TelemetrySignalCode::engine_speed);
+    EXPECT(publisher.add_peer(peer(2), &speed, 1) ==
+           wireless::PublishSchedulerError::none);
+    const auto poll = publisher.poll_cache(cache, 0);
+    EXPECT(poll.polled());
+    EXPECT(poll.registered_signals_updated == 1);
+    EXPECT(poll.unregistered_signals_skipped == 0);
+
+    FakeEspNowTransport sender{};
+    FakeEspNowTransport receiver{};
+    start_transport_pair(sender, receiver);
+    EXPECT(publisher.service_peer(sender, peer(2), 0).queued());
+    sender.service(0);
+    const auto wire = receive_packet(receiver);
+    EXPECT(wire.decoded());
+    EXPECT(wire.batch.signal_count == 1);
+    EXPECT(wire.batch.signals[0].code ==
+           wireless::TelemetrySignalCode::engine_speed);
+    EXPECT(wire.batch.signals[0].value.raw_value == 1000000);
+    EXPECT(wire.batch.signals[0].unit ==
+           telemetry::SignalUnit::milli_revolutions_per_minute);
+}
+
 }  // namespace
 
 int main() {
@@ -293,11 +341,12 @@ int main() {
     test_initial_batch_is_paced_three_then_one();
     test_scheduler_derives_stale_packet_without_another_cache_poll();
     test_end_to_end_local_acceptance_radio_loss_and_gap();
+    test_j1939_decoder_cache_to_registered_wire_signal();
 
     if (failures != 0) {
         std::cerr << failures << " gateway publisher assertion(s) failed\n";
         return EXIT_FAILURE;
     }
-    std::cout << "PASS: 6 telemetry gateway publisher scenario groups\n";
+    std::cout << "PASS: 7 telemetry gateway publisher scenario groups\n";
     return EXIT_SUCCESS;
 }

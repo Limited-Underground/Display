@@ -34,11 +34,11 @@ telemetry::CachedSignalSnapshot snapshot(
     telemetry::SignalUnit unit = telemetry::SignalUnit::none;
     switch (code) {
         case wireless::TelemetrySignalCode::engine_speed:
-            id = "powertrain.engine_speed";
+            id = "engine.speed";
             unit = telemetry::SignalUnit::milli_revolutions_per_minute;
             break;
         case wireless::TelemetrySignalCode::engine_coolant_temperature:
-            id = "powertrain.engine_coolant_temperature";
+            id = "engine.coolant_temperature";
             type = telemetry::SignalValueType::signed_integer;
             unit = telemetry::SignalUnit::milli_celsius;
             break;
