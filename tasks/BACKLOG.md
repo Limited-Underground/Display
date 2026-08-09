@@ -9,7 +9,7 @@ Statuses: `done` means the documented acceptance criteria are evidenced; `planne
 | OG-001 | done | Project bootstrap and repository structure | Self-contained directories, agent guide, README, architecture, status, and backlog exist |
 | OG-002 | done | Initial architecture documentation | Roles, layers, safety/failure boundaries, protocols, and architecture gates documented |
 | OG-003 | planned | Hardware abstraction contracts | CAN, clock, ESP-NOW, display/touch, storage, power, and logging contracts reviewed with fakes |
-| OG-003A | planned | Hardware/use-case inventory | Exact vehicle, desired signals, board/display/CAN candidates, wiring/power/environment constraints recorded |
+| OG-003A | planned | Hardware/use-case inventory | Candidate acquisition inventory now records two Waveshare SKU 31262 displays, an Espressif DevKitC bench mule, and the on-hand Veepeak adapter with evidence boundaries. Remains planned until the exact vehicle, desired signals, CAN interface, wiring, power, and environment constraints are recorded |
 | OG-017 | planned | Diagnostics/logging foundation | Levels/filtering/redaction plus CAN, wireless, cache, decoder, render, and reset counters tested |
 
 ## CAN/J1939 and telemetry core
@@ -17,9 +17,9 @@ Statuses: `done` means the documented acceptance criteria are evidenced; `planne
 | ID | Status | Task | Acceptance evidence |
 | --- | --- | --- | --- |
 | OG-004 | planned | CAN driver abstraction | Listen-only receive/error/overflow metadata and fake-frame source demonstrated; no vehicle dependency |
-| OG-005 | planned | J1939 identifier parser | Recommended first task: host-tested 29-bit ID fields and PGN rules with PDU1/PDU2, boundary, malformed/unsupported cases |
+| OG-005 | done | J1939 identifier parser | Five host-test groups validate priority/DP/PF/PS/SA, PDU1 destination and PGN zeroing, PDU2 group extension, the PF boundary, DP=1, and fail-closed standard/out-of-range/J1939-22 identifiers |
 | OG-006 | planned | PGN decoder registry | Explicit decoder registration and one small reference PGN fixture set; unavailable/error encodings tested |
-| OG-007 | planned | Normalized signal model | Stable IDs, typed values, canonical units, quality/source/time/age, and invalid/unknown semantics tested |
+| OG-007 | done | Normalized signal model | Six host-test groups validate fixed namespaced IDs, typed integer/Boolean values, canonical units and bounds, explicit no-value quality states, protocol-specific J1939/OBD/GPS/synthetic provenance, sample/receive time, and exact stale/clock boundaries |
 | OG-008 | planned | Telemetry cache/subscriptions | Fresh/stale transitions, per-signal thresholds, update/change notifications, capacity, concurrency, and restart behavior tested |
 | OG-014 | planned | Alarm framework | Threshold, hysteresis, debounce, severity, latch/ack, stale behavior, and rate-limited events tested |
 
@@ -51,4 +51,8 @@ Statuses: `done` means the documented acceptance criteria are evidenced; `planne
 
 ## Recommended sequence
 
-Complete OG-003A, then OG-005 and OG-007 together, followed by OG-006 and OG-008. Only then bind OG-004 to selected physical CAN hardware. Start with synthetic/captured traffic and listen-only vehicle access.
+Complete the missing vehicle/power/CAN portions of OG-003A while implementing
+OG-006 and OG-008 against synthetic or legally obtained captured traffic. Only
+then bind OG-004 to selected physical CAN hardware. Incoming display work may
+begin with OG-012A vendor-example and recovery evidence, but does not bypass
+the normalized-data path.

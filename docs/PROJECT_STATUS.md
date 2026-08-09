@@ -10,8 +10,10 @@ Status date: 2026-08-09
 - Optional GPS, APU/auxiliary, OpenTrail event, and recoverable OTA modules
 
 The critical-alert semantic interface has bounded host validation in this and
-the OpenTrail repository. Vehicle acquisition, normalization from real signals,
-physical transport, displays, and hardware remain unvalidated.
+the OpenTrail repository. The Classical J1939 identifier parser and normalized
+signal model now have deterministic host tests. Vehicle acquisition,
+normalization from real signals, physical transport, displays, and hardware
+remain unvalidated.
 
 ## Decisions captured
 
@@ -20,6 +22,8 @@ physical transport, displays, and hardware remain unvalidated.
 - Raw J1939 frames are not the default gauge-network payload; the gateway publishes normalized selected signals.
 - Hardware adapters are isolated from parsing, decoding, caching, alarms, UI, and protocols.
 - J1939 unavailable/error/stale states remain explicit and cannot become plausible numeric readings.
+- The v0 J1939 parser is explicitly bounded to 29-bit Classical J1939: standard frames, out-of-range identifiers, and the J1939-22 extended data page fail closed.
+- The v0 normalized signal model uses fixed-capacity namespaced IDs, integer canonical units, explicit quality, protocol-specific provenance, and an exact `age >= threshold` stale boundary.
 - ESP-NOW and persistent formats use explicit versioned serialization, not raw C/C++ memory layouts.
 - Optional GPS and APU behavior remains modular; control functions are outside the initial core.
 - OpenTrail receives normalized critical events and never needs J1939 knowledge.
@@ -31,8 +35,10 @@ physical transport, displays, and hardware remain unvalidated.
 
 | Item | Current status | Required evidence |
 | --- | --- | --- |
-| ~1.75-inch round 466×466 touch AMOLED ESP32-S3, ~8 MB PSRAM/~16 MB flash | Candidate class only; exact board unknown | Exact SKU, display/touch drivers, flash/PSRAM, pins, power, availability, build and performance tests |
-| CAN/J1939 gateway ESP32 | Not selected | MCU/board, TWAI/external controller, transceiver, protection, isolation, connector, power conditioning, environmental suitability |
+| 2 x Waveshare ESP32-S3-Touch-AMOLED-1.75-B, SKU 31262 | Owner reports ordered; not received or tested | Exact unit/revision, display/touch/IMU, flash/PSRAM, pins, USB recovery, power, build and performance tests |
+| Espressif ESP32-S3-DevKitC-1-N8R8 | Owner reports ordered as a bench mule; not received or tested | Exact revision, USB/serial recovery, synthetic telemetry and interface smoke test |
+| Veepeak OBDCheck BLE, ASIN B073XKQQQW | Owner reports on hand; OpenGauge compatibility untested | Exact firmware/services and read-only generic OBD-II capability; not assumed to provide J1939 or raw CAN |
+| CAN/J1939 gateway interface | Not selected | MCU/board, TWAI/external controller, transceiver, protection, isolation, connector, power conditioning, environmental suitability |
 | GPS ESP32/module | Not selected | Receiver/module, update rate, antenna, interfaces, cold start, accuracy, power |
 
 No hardware is considered supported until repeatable test evidence is recorded.
@@ -71,4 +77,9 @@ No hardware is considered supported until repeatable test evidence is recorded.
 
 ## Next decision checkpoint
 
-Define a small reference signal set and obtain representative synthetic or captured J1939 frames. Complete OG-005 and OG-007 semantics on the host before selecting or attaching a physical CAN gateway to a vehicle. The completed OG-018 semantic contract becomes an input to the later alarm exporter and authenticated physical adapter rather than a substitute for them.
+Define a small reference signal set and implement one explicit PGN decoder
+fixture (OG-006), then exercise its normalized output through the bounded cache
+(OG-008). The completed OG-005, OG-007, and OG-018 contracts are inputs to
+those layers rather than substitutes for physical CAN, display, or transport
+validation. Incoming candidate boards follow `hardware/INVENTORY.md` before
+any support claim.

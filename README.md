@@ -4,9 +4,9 @@ OpenGauge is a proposed free/open-source ESP32 vehicle instrumentation and telem
 
 ## Project status
 
-Architecture/bootstrap phase. The transport-neutral OpenGauge-to-OpenTrail critical-alert v0 codec now has deterministic host evidence in both projects, but there is no production firmware, validated CAN hardware, selected display board, frozen ESP-NOW protocol, supported-vehicle list, physical alert transport, or validated OTA flow.
+Architecture/bootstrap phase. The transport-neutral OpenGauge-to-OpenTrail critical-alert v0 codec has deterministic host evidence in both projects. A bounded Classical J1939 identifier parser and normalized signal model are also host-tested. There is still no production firmware, validated CAN hardware, supported display, frozen ESP-NOW protocol, supported-vehicle list, physical alert transport, or validated OTA flow.
 
-The original display concept is approximately three round 1.75-inch, 466×466 touch AMOLED ESP32-S3 devices with roughly 8 MB PSRAM and 16 MB flash. This describes a candidate class, not a locked or tested board.
+Two Waveshare ESP32-S3-Touch-AMOLED-1.75-B units (SKU 31262) are reported ordered for evaluation. They remain candidate hardware until received, identified, built, benchmarked, and recovery-tested. Other candidate and missing hardware is tracked in [the evidence inventory](hardware/INVENTORY.md).
 
 ## Intended capabilities
 
@@ -20,9 +20,10 @@ The original display concept is approximately three round 1.75-inch, 466×466 to
 
 These are design goals, not verified capabilities.
 
-The exception is the bounded critical-alert semantic interface: its 64-byte
-codec, producer validation, mirrored fixtures, and OpenTrail ingress policy are
-host-tested. This does not validate vehicle acquisition or physical delivery.
+The bounded critical-alert semantic interface, Classical J1939 identifier
+rules, and normalized signal invariants have host evidence. These contracts do
+not validate vehicle acquisition, PGN/SPN decoding, cache behavior, display
+hardware, or physical delivery.
 
 ## Repository layout
 
@@ -43,7 +44,7 @@ OpenGauge owns vehicle acquisition, decode/normalization, gauge display, vehicle
 
 ## Start here
 
-Read [the architecture](docs/ARCHITECTURE.md), [project status and assumptions](docs/PROJECT_STATUS.md), [the OpenTrail critical-alert v0 contract](docs/integration/OPENGAUGE_CRITICAL_ALERT_V0.md), and [the backlog](tasks/BACKLOG.md). The next core implementation remains a host-tested J1939 identifier parser and normalized signal model using synthetic/captured frames, before connecting to a vehicle.
+Read [the architecture](docs/ARCHITECTURE.md), [project status and assumptions](docs/PROJECT_STATUS.md), [the hardware evidence inventory](hardware/INVENTORY.md), [the J1939 identifier contract](docs/can/J1939_IDENTIFIER_V0.md), [the normalized signal contract](docs/telemetry/NORMALIZED_SIGNAL_MODEL_V0.md), [the OpenTrail critical-alert v0 contract](docs/integration/OPENGAUGE_CRITICAL_ALERT_V0.md), and [the backlog](tasks/BACKLOG.md). The next core work is one small host-tested PGN decoder fixture and a bounded telemetry cache before any vehicle attachment.
 
 ## License and contributions
 
