@@ -58,6 +58,14 @@ a terminal timeout after the configured attempt limit. At exact maximum
 lifetime, any queued/prepared/in-flight entry emits terminal lifetime failure.
 Terminal failure is explicit diagnostic state, not silent success.
 
+Correlated remote rejection now follows a fixed policy. `rate_limited` and
+`internal_error` cancel any outstanding prepare and release the entry after the
+normal retry backoff while attempts remain. `unauthorized`, `stale`,
+`duplicate`, `conflict`, `malformed`, and `unsupported` terminate immediately.
+A retryable response at the configured attempt limit also terminates. Terminal
+evidence preserves event ID, condition ID, attempt count, and the typed remote
+reason. Rejection never increments the successful acknowledgement counter.
+
 The mirrored `OGK0` frame and ACK ingress now provide explicit serialization,
 adapter-authentication admission, logical peer/key-handle/channel/permission
 authorization, explicit consumer-session binding, a 32-sequence replay window,

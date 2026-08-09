@@ -66,6 +66,11 @@ struct CriticalAlertAckIngressResult {
     AlertAckDisposition disposition{AlertAckDisposition::accepted};
     AlertAckReason reason{AlertAckReason::none};
     bool outbox_completed{false};
+    CriticalRemoteRejectionAction remote_rejection_action{
+        CriticalRemoteRejectionAction::terminal};
+    bool retry_released{false};
+    bool terminal_failure{false};
+    CriticalDeliveryFailureEvent failure{};
 
     [[nodiscard]] constexpr bool processed() const {
         return error == CriticalAlertAckIngressError::none;
@@ -78,6 +83,8 @@ struct CriticalAlertAckIngressStatus {
     std::uint32_t processed{0};
     std::uint32_t accepted{0};
     std::uint32_t remote_rejections{0};
+    std::uint32_t remote_retries{0};
+    std::uint32_t remote_terminal_failures{0};
     std::uint32_t transport_denials{0};
     std::uint32_t codec_rejections{0};
     std::uint32_t identity_rejections{0};

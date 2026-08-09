@@ -392,6 +392,7 @@ CriticalAlertAckIngressResult CriticalAlertAckIngress::receive(
     }
 
     bool completed = false;
+    CriticalRemoteRejectionResult remote{};
     if (decoded.acknowledgement.disposition ==
         AlertAckDisposition::accepted) {
         outbox_error = outbox_->acknowledge(correlation, now_ms);
@@ -410,7 +411,29 @@ CriticalAlertAckIngressResult CriticalAlertAckIngress::receive(
         completed = true;
         saturating_increment(status_.accepted);
     } else {
+        remote = outbox_->apply_remote_rejection(
+            correlation,
+            decoded.acknowledgement.reason,
+            now_ms);
+        if (remote.error != CriticalOutboxError::none) {
+            saturating_increment(status_.outbox_rejections);
+            CriticalAlertAckIngressResult result{
+                remote.error == CriticalOutboxError::clock_regression
+                    ? CriticalAlertAckIngressError::clock_regression
+                    : CriticalAlertAckIngressError::outbox_mismatch};
+            result.outbox_error = remote.error;
+            if (remote.error == CriticalOutboxError::clock_regression) {
+                saturating_increment(status_.clock_regressions);
+            }
+            return result;
+        }
         saturating_increment(status_.remote_rejections);
+        if (remote.retry_released) {
+            saturating_increment(status_.remote_retries);
+        }
+        if (remote.terminal_failure) {
+            saturating_increment(status_.remote_terminal_failures);
+        }
     }
 
     binding.has_sequence = replay.has_sequence;
@@ -424,6 +447,13 @@ CriticalAlertAckIngressResult CriticalAlertAckIngress::receive(
     result.disposition = decoded.acknowledgement.disposition;
     result.reason = decoded.acknowledgement.reason;
     result.outbox_completed = completed;
+    if (decoded.acknowledgement.disposition ==
+        AlertAckDisposition::rejected) {
+        result.remote_rejection_action = remote.action;
+        result.retry_released = remote.retry_released;
+        result.terminal_failure = remote.terminal_failure;
+        result.failure = remote.failure;
+    }
     return result;
 }
 

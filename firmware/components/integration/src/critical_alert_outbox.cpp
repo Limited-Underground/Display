@@ -20,6 +20,28 @@ std::uint64_t saturating_add(std::uint64_t left, std::uint64_t right) {
     return right > maximum - left ? maximum : left + right;
 }
 
+bool rejection_action(
+    AlertAckReason reason,
+    CriticalRemoteRejectionAction& action) {
+    switch (reason) {
+        case AlertAckReason::rate_limited:
+        case AlertAckReason::internal_error:
+            action = CriticalRemoteRejectionAction::retry;
+            return true;
+        case AlertAckReason::unauthorized:
+        case AlertAckReason::stale:
+        case AlertAckReason::duplicate:
+        case AlertAckReason::conflict:
+        case AlertAckReason::malformed:
+        case AlertAckReason::unsupported:
+            action = CriticalRemoteRejectionAction::terminal;
+            return true;
+        case AlertAckReason::none:
+            return false;
+    }
+    return false;
+}
+
 }  // namespace
 
 CriticalOutboxError CriticalAlertOutbox::start(
@@ -205,6 +227,64 @@ CriticalOutboxError CriticalAlertOutbox::validate_acknowledgement(
         return CriticalOutboxError::acknowledgement_mismatch;
     }
     return CriticalOutboxError::none;
+}
+
+CriticalRemoteRejectionResult CriticalAlertOutbox::apply_remote_rejection(
+    const CriticalAlertAcknowledgement& acknowledgement,
+    AlertAckReason reason,
+    std::uint64_t now_ms) {
+    CriticalRemoteRejectionAction requested_action{};
+    if (!status_.running || !rejection_action(reason, requested_action)) {
+        return {status_.running ? CriticalOutboxError::invalid_configuration
+                               : CriticalOutboxError::invalid_state};
+    }
+    const auto clock = advance_clock(now_ms);
+    if (clock != CriticalOutboxError::none) {
+        return {clock};
+    }
+    const auto validation = validate_acknowledgement(acknowledgement);
+    if (validation != CriticalOutboxError::none) {
+        return {validation};
+    }
+
+    const auto index = find_event(acknowledgement.event_id);
+    auto& entry = entries_[index];
+    const auto action =
+        requested_action == CriticalRemoteRejectionAction::retry &&
+                entry.attempts < configuration_.maximum_attempts
+            ? CriticalRemoteRejectionAction::retry
+            : CriticalRemoteRejectionAction::terminal;
+    if (entry.state == EntryState::prepared) {
+        status_.send_prepared = false;
+    }
+    if (action == CriticalRemoteRejectionAction::retry) {
+        entry.state = EntryState::queued;
+        entry.state_changed_ms = now_ms;
+        entry.next_attempt_ms = saturating_add(
+            now_ms, configuration_.retry_backoff_ms);
+        entry.token = 0;
+        saturating_increment(status_.remote_retries);
+        refresh_counts();
+        CriticalRemoteRejectionResult result{CriticalOutboxError::none};
+        result.action = action;
+        result.retry_released = true;
+        return result;
+    }
+
+    CriticalRemoteRejectionResult result{CriticalOutboxError::none};
+    result.action = action;
+    result.failure = {
+        entry.alert.event_id,
+        entry.alert.condition_id,
+        CriticalDeliveryFailure::remote_rejection,
+        entry.attempts,
+        reason};
+    result.terminal_failure = true;
+    remove_entry(index);
+    saturating_increment(status_.remote_terminal_failures);
+    saturating_increment(status_.terminal_failures);
+    refresh_counts();
+    return result;
 }
 
 CriticalOutboxAdvanceResult CriticalAlertOutbox::advance(
