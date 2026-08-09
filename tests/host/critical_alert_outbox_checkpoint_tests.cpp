@@ -229,13 +229,13 @@ void test_queued_retry_survives_restart() {
            CriticalOutboxError::none);
 
     std::array<std::uint8_t, kCriticalAlertOutboxCheckpointBytes> encoded{};
-    EXPECT(original.export_checkpoint(20, 0x12345678U, encoded) ==
+    EXPECT(original.export_checkpoint(20, encoded) ==
            CriticalOutboxError::none);
 
     CriticalAlertOutbox restored{};
     EXPECT(restored.start(outbox_configuration()) == CriticalOutboxError::none);
     EXPECT(restored.import_checkpoint(
-               encoded.data(), encoded.size(), 1000, 0x12345678U) ==
+               encoded.data(), encoded.size(), 1000) ==
            CriticalOutboxError::none);
     EXPECT(restored.status().queued_count == 1);
     EXPECT(restored.prepare(1014).error ==
@@ -252,13 +252,13 @@ void test_in_flight_ack_timeout_survives_restart() {
            CriticalOutboxError::none);
 
     std::array<std::uint8_t, kCriticalAlertOutboxCheckpointBytes> encoded{};
-    EXPECT(original.export_checkpoint(50, 0x12345678U, encoded) ==
+    EXPECT(original.export_checkpoint(50, encoded) ==
            CriticalOutboxError::none);
 
     CriticalAlertOutbox restored{};
     EXPECT(restored.start(outbox_configuration()) == CriticalOutboxError::none);
     EXPECT(restored.import_checkpoint(
-               encoded.data(), encoded.size(), 1000, 0x12345678U) ==
+               encoded.data(), encoded.size(), 1000) ==
            CriticalOutboxError::none);
     EXPECT(restored.status().in_flight_count == 1);
     EXPECT(restored.advance(1059).retries_released == 0);
@@ -273,13 +273,13 @@ void test_maximum_lifetime_survives_restart() {
     EXPECT(original.start(outbox_configuration()) == CriticalOutboxError::none);
     EXPECT(original.enqueue(frame(13), 10) == CriticalOutboxError::none);
     std::array<std::uint8_t, kCriticalAlertOutboxCheckpointBytes> encoded{};
-    EXPECT(original.export_checkpoint(400, 0x12345678U, encoded) ==
+    EXPECT(original.export_checkpoint(400, encoded) ==
            CriticalOutboxError::none);
 
     CriticalAlertOutbox restored{};
     EXPECT(restored.start(outbox_configuration()) == CriticalOutboxError::none);
     EXPECT(restored.import_checkpoint(
-               encoded.data(), encoded.size(), 1000, 0x12345678U) ==
+               encoded.data(), encoded.size(), 1000) ==
            CriticalOutboxError::none);
     EXPECT(restored.advance(1109).failure_count == 0);
     const auto expired = restored.advance(1110);
@@ -294,26 +294,31 @@ void test_checkpoint_import_is_atomic_and_boot_only() {
     EXPECT(original.start(outbox_configuration()) == CriticalOutboxError::none);
     EXPECT(original.enqueue(frame(14), 0) == CriticalOutboxError::none);
     std::array<std::uint8_t, kCriticalAlertOutboxCheckpointBytes> encoded{};
-    EXPECT(original.export_checkpoint(0, 0x12345678U, encoded) ==
+    EXPECT(original.export_checkpoint(0, encoded) ==
            CriticalOutboxError::none);
 
+    auto incompatible_configuration = outbox_configuration();
+    ++incompatible_configuration.retry_backoff_ms;
     CriticalAlertOutbox restored{};
-    EXPECT(restored.start(outbox_configuration()) == CriticalOutboxError::none);
+    EXPECT(restored.start(incompatible_configuration) ==
+           CriticalOutboxError::none);
     EXPECT(restored.import_checkpoint(
-               encoded.data(), encoded.size(), 100, 0x87654321U) ==
+               encoded.data(), encoded.size(), 100) ==
            CriticalOutboxError::checkpoint_incompatible);
     EXPECT(restored.status().queued_count == 0);
     auto corrupt = encoded;
     corrupt[20] ^= 1;
     EXPECT(restored.import_checkpoint(
-               corrupt.data(), corrupt.size(), 100, 0x12345678U) ==
+               corrupt.data(), corrupt.size(), 100) ==
            CriticalOutboxError::checkpoint_rejected);
     EXPECT(restored.status().queued_count == 0);
+    restored.stop();
+    EXPECT(restored.start(outbox_configuration()) == CriticalOutboxError::none);
     EXPECT(restored.import_checkpoint(
-               encoded.data(), encoded.size(), 100, 0x12345678U) ==
+               encoded.data(), encoded.size(), 100) ==
            CriticalOutboxError::none);
     EXPECT(restored.import_checkpoint(
-               encoded.data(), encoded.size(), 100, 0x12345678U) ==
+               encoded.data(), encoded.size(), 100) ==
            CriticalOutboxError::invalid_state);
 }
 
@@ -326,7 +331,7 @@ void test_prepared_and_unrepresentable_exports_are_refused() {
     std::array<std::uint8_t, kCriticalAlertOutboxCheckpointBytes> output{};
     output.fill(0xA5);
     const auto unchanged = output;
-    EXPECT(prepared_outbox.export_checkpoint(0, 0x12345678U, output) ==
+    EXPECT(prepared_outbox.export_checkpoint(0, output) ==
            CriticalOutboxError::invalid_state);
     EXPECT(output == unchanged);
 
@@ -336,9 +341,31 @@ void test_prepared_and_unrepresentable_exports_are_refused() {
         1U;
     CriticalAlertOutbox oversized_outbox{};
     EXPECT(oversized_outbox.start(oversized) == CriticalOutboxError::none);
-    EXPECT(oversized_outbox.export_checkpoint(0, 1, output) ==
+    EXPECT(oversized_outbox.export_checkpoint(0, output) ==
            CriticalOutboxError::checkpoint_incompatible);
     EXPECT(output == unchanged);
+}
+
+void test_configuration_fingerprint_is_canonical_and_sensitive() {
+    const auto baseline = outbox_configuration();
+    const auto expected =
+        critical_alert_outbox_configuration_fingerprint(baseline);
+    EXPECT(expected != 0);
+    EXPECT(critical_alert_outbox_configuration_fingerprint(baseline) ==
+           expected);
+    for (std::size_t field = 0; field < 6; ++field) {
+        auto changed = baseline;
+        switch (field) {
+            case 0: ++changed.local_commit_timeout_ms; break;
+            case 1: ++changed.acknowledgement_timeout_ms; break;
+            case 2: ++changed.retry_backoff_ms; break;
+            case 3: ++changed.maximum_lifetime_ms; break;
+            case 4: ++changed.maximum_attempts; break;
+            case 5: ++changed.emergency_reserve; break;
+        }
+        EXPECT(critical_alert_outbox_configuration_fingerprint(changed) !=
+               expected);
+    }
 }
 
 }  // namespace
@@ -356,10 +383,11 @@ int main() {
     test_maximum_lifetime_survives_restart();
     test_checkpoint_import_is_atomic_and_boot_only();
     test_prepared_and_unrepresentable_exports_are_refused();
+    test_configuration_fingerprint_is_canonical_and_sensitive();
     if (failures != 0) {
         std::cerr << failures << " outbox checkpoint assertion(s) failed\n";
         return EXIT_FAILURE;
     }
-    std::cout << "PASS: 12 critical alert outbox checkpoint scenario groups\n";
+    std::cout << "PASS: 13 critical alert outbox checkpoint scenario groups\n";
     return EXIT_SUCCESS;
 }

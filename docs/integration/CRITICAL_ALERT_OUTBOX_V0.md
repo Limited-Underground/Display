@@ -78,7 +78,9 @@ replay/authorization state is not yet persistent.
 The canonical 640-byte `OOC0` checkpoint is now wired into this live outbox.
 Boot-only atomic import/export preserves exact queued/in-flight frames, attempts,
 remaining maximum lifetime, retry readiness, and ACK timeout across a new local
-monotonic origin. It refuses prepared-send ambiguity, corruption, configuration
+monotonic origin. The versioned nonzero compatibility fingerprint is derived
+from every timer, maximum attempts, and emergency reserve rather than supplied
+by a caller. Import refuses prepared-send ambiguity, corruption, policy
 fingerprint mismatch, nonempty runtime, expired state, and v0-unrepresentable
 timers. See `CRITICAL_ALERT_OUTBOX_CHECKPOINT_V0.md` for the wire contract and
 remaining durable-storage/security gates.
@@ -97,7 +99,7 @@ remaining durable-storage/security gates.
 8. exact maximum lifetime and monotonic clock regression.
 
 The refined outbox suite repeated 100 times with zero failures. The checkpoint
-suite adds seven codec and five live-integration groups; the full 29-executable
+suite adds seven codec and six live-integration groups; the full 29-executable
 matrix and 100 focused checkpoint repeats pass.
 
 ## Remaining physical-delivery gates

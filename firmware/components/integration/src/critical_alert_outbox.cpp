@@ -42,7 +42,34 @@ bool rejection_action(
     return false;
 }
 
+void write_u64(std::uint8_t* output, std::uint64_t value) {
+    for (std::size_t index = 0; index < 8; ++index) {
+        output[index] = static_cast<std::uint8_t>(
+            (value >> (index * 8U)) & 0xFFU);
+    }
+}
+
 }  // namespace
+
+std::uint32_t critical_alert_outbox_configuration_fingerprint(
+    const CriticalAlertOutboxConfiguration& configuration) {
+    std::array<std::uint8_t, 40> canonical{};
+    canonical[0] = 'O';
+    canonical[1] = 'C';
+    canonical[2] = 'F';
+    canonical[3] = '0';
+    canonical[5] = configuration.maximum_attempts;
+    canonical[6] = configuration.emergency_reserve;
+    write_u64(canonical.data() + 8, configuration.local_commit_timeout_ms);
+    write_u64(
+        canonical.data() + 16,
+        configuration.acknowledgement_timeout_ms);
+    write_u64(canonical.data() + 24, configuration.retry_backoff_ms);
+    write_u64(canonical.data() + 32, configuration.maximum_lifetime_ms);
+    const auto fingerprint = critical_alert_outbox_checkpoint_crc32(
+        canonical.data(), canonical.size());
+    return fingerprint == 0 ? 1 : fingerprint;
+}
 
 CriticalOutboxError CriticalAlertOutbox::start(
     const CriticalAlertOutboxConfiguration& configuration) {
@@ -364,10 +391,8 @@ CriticalAlertOutboxStatus CriticalAlertOutbox::status() const {
 
 CriticalOutboxError CriticalAlertOutbox::export_checkpoint(
     std::uint64_t now_ms,
-    std::uint32_t configuration_fingerprint,
     std::array<std::uint8_t, kCriticalAlertOutboxCheckpointBytes>& output) {
-    if (!status_.running || status_.send_prepared ||
-        configuration_fingerprint == 0) {
+    if (!status_.running || status_.send_prepared) {
         return CriticalOutboxError::invalid_state;
     }
     if (configuration_.acknowledgement_timeout_ms >
@@ -383,7 +408,8 @@ CriticalOutboxError CriticalAlertOutbox::export_checkpoint(
         return clock;
     }
     CriticalAlertOutboxCheckpoint checkpoint{};
-    checkpoint.configuration_fingerprint = configuration_fingerprint;
+    checkpoint.configuration_fingerprint =
+        critical_alert_outbox_configuration_fingerprint(configuration_);
     for (std::size_t index = 0; index < entries_.size(); ++index) {
         const auto& entry = entries_[index];
         if (entry.state == EntryState::empty) {
@@ -428,8 +454,7 @@ CriticalOutboxError CriticalAlertOutbox::export_checkpoint(
 CriticalOutboxError CriticalAlertOutbox::import_checkpoint(
     const std::uint8_t* checkpoint,
     std::size_t checkpoint_size,
-    std::uint64_t now_ms,
-    std::uint32_t expected_configuration_fingerprint) {
+    std::uint64_t now_ms) {
     if (!status_.running || has_clock_ || status_.queued_count != 0 ||
         status_.in_flight_count != 0 || status_.send_prepared) {
         return CriticalOutboxError::invalid_state;
@@ -440,9 +465,8 @@ CriticalOutboxError CriticalAlertOutbox::import_checkpoint(
     if (decoded_error != CriticalAlertOutboxCheckpointError::none) {
         return CriticalOutboxError::checkpoint_rejected;
     }
-    if (expected_configuration_fingerprint == 0 ||
-        decoded.configuration_fingerprint !=
-            expected_configuration_fingerprint) {
+    if (decoded.configuration_fingerprint !=
+        critical_alert_outbox_configuration_fingerprint(configuration_)) {
         return CriticalOutboxError::checkpoint_incompatible;
     }
 

@@ -13,9 +13,14 @@ send-attempt count, remaining maximum lifetime, and remaining time until retry
 readiness or acknowledgement timeout.
 
 Absolute monotonic timestamps, prepared send tokens, raw keys, peer addresses,
-free text, locations, and diagnostics are excluded. A caller-supplied nonzero
+free text, locations, and diagnostics are excluded. A canonical nonzero
 configuration fingerprint binds the record to the exact outbox policy before
 later import is permitted.
+
+The fingerprint is computed from the versioned `OCF0` canonical byte sequence:
+all four 64-bit timers in little-endian order, maximum attempts, and emergency
+reserve, with every reserved byte zero. Callers cannot supply or override it.
+Any policy-field change therefore fails import as incompatible.
 
 ## Live outbox integration
 
@@ -30,7 +35,7 @@ refused without changing caller output.
 `import_checkpoint` is boot-only: the outbox must be running but must not have
 accepted a clock value or entry. Decode and policy validation finish into a
 candidate array before any live state changes. The expected nonzero
-configuration fingerprint must match exactly. Import reconstructs elapsed
+derived configuration fingerprint must match exactly. Import reconstructs elapsed
 lifetime and in-flight state age against the caller's new monotonic origin, so
 an ACK timeout, retry deadline, and maximum lifetime occur after their exact
 persisted remaining duration rather than being restarted.
@@ -66,7 +71,8 @@ configuration/entry invariants, frame/event validation, shape/version/CRC/
 padding rejection, count/atomicity, and inactive-slot canonicalization. Five
 integration groups cover queued retry, in-flight ACK timeout, maximum lifetime,
 boot-only atomic corruption/fingerprint handling, prepared-send refusal, and
-unrepresentable timing policy. The full 29-executable matrix and 100 focused
+unrepresentable timing policy. A thirteenth group proves deterministic nonzero
+fingerprinting and sensitivity to every policy field. The full 29-executable matrix and 100 focused
 repeats pass.
 
 ## Remaining gates

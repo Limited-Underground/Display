@@ -46,6 +46,9 @@ struct CriticalAlertOutboxConfiguration {
     std::uint8_t emergency_reserve{0};
 };
 
+[[nodiscard]] std::uint32_t critical_alert_outbox_configuration_fingerprint(
+    const CriticalAlertOutboxConfiguration& configuration);
+
 struct PreparedCriticalAlert {
     CriticalOutboxError error{CriticalOutboxError::invalid_state};
     std::uint32_t token{0};
@@ -134,13 +137,11 @@ public:
         std::uint64_t now_ms);
     [[nodiscard]] CriticalOutboxError export_checkpoint(
         std::uint64_t now_ms,
-        std::uint32_t configuration_fingerprint,
         std::array<std::uint8_t, kCriticalAlertOutboxCheckpointBytes>& output);
     [[nodiscard]] CriticalOutboxError import_checkpoint(
         const std::uint8_t* checkpoint,
         std::size_t checkpoint_size,
-        std::uint64_t now_ms,
-        std::uint32_t expected_configuration_fingerprint);
+        std::uint64_t now_ms);
     [[nodiscard]] CriticalAlertOutboxStatus status() const;
 
 private:
