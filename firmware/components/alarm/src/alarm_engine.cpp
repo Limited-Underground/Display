@@ -245,35 +245,22 @@ AlarmEvaluationResult AlarmEngine::evaluate(
     if (events == nullptr && event_capacity != 0) {
         return {AlarmError::invalid_argument};
     }
-    if (telemetry::validate_normalized_signal(snapshot.signal) !=
-            telemetry::SignalModelError::none ||
-        !known_quality(snapshot.effective_quality) ||
-        !consistent_effective_quality(snapshot)) {
-        return {AlarmError::invalid_signal};
+    const auto validation = validate_snapshot(snapshot);
+    if (validation.error != AlarmError::none) {
+        return {validation.error, validation.rules_matched};
     }
-
-    std::size_t matching = 0;
+    const auto matching = validation.rules_matched;
     for (const auto& slot : rules_) {
         if (slot.occupied && telemetry::signal_id_equals(
                                  snapshot.signal.id,
                                  std::string_view(
                                      slot.rule.signal_id.bytes.data(),
                                      slot.rule.signal_id.length))) {
-            ++matching;
-            if (snapshot.signal.value.type != slot.rule.value_type ||
-                snapshot.signal.unit != slot.rule.unit) {
-                return {
-                    AlarmError::incompatible_signal,
-                    matching};
-            }
             if (slot.has_evaluated &&
                 now_ms < slot.last_evaluated_at_ms) {
                 return {AlarmError::clock_regressed, matching};
             }
         }
-    }
-    if (matching == 0) {
-        return {AlarmError::no_matching_rule};
     }
     if (event_capacity < matching) {
         return {
@@ -543,6 +530,38 @@ AlarmEvaluationResult AlarmEngine::evaluate(
     }
     ++status_.evaluations;
     return result;
+}
+
+AlarmSnapshotValidationResult AlarmEngine::validate_snapshot(
+    const telemetry::CachedSignalSnapshot& snapshot) const {
+    if (!status_.running) {
+        return {AlarmError::invalid_state};
+    }
+    if (telemetry::validate_normalized_signal(snapshot.signal) !=
+            telemetry::SignalModelError::none ||
+        !known_quality(snapshot.effective_quality) ||
+        !consistent_effective_quality(snapshot)) {
+        return {AlarmError::invalid_signal};
+    }
+
+    std::size_t matching = 0;
+    for (const auto& slot : rules_) {
+        if (!slot.occupied || !telemetry::signal_id_equals(
+                                  snapshot.signal.id,
+                                  std::string_view(
+                                      slot.rule.signal_id.bytes.data(),
+                                      slot.rule.signal_id.length))) {
+            continue;
+        }
+        ++matching;
+        if (snapshot.signal.value.type != slot.rule.value_type ||
+            snapshot.signal.unit != slot.rule.unit) {
+            return {AlarmError::incompatible_signal, matching};
+        }
+    }
+    return {
+        matching == 0 ? AlarmError::no_matching_rule : AlarmError::none,
+        matching};
 }
 
 AlarmAcknowledgeResult AlarmEngine::acknowledge(

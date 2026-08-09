@@ -120,8 +120,8 @@ configuration while clearing runtime state and counters.
 
 ## Remaining integration gates
 
-- bind cache change/stale polling to alarm evaluation with a measured task
-  budget;
+- bind the completed full-state cache evaluator to a measured target task
+  period and budget;
 - map selected rule events to display behavior and separately to the bounded
   critical-alert exporter;
 - define reviewed vehicle-specific signals, thresholds, severities, default

@@ -65,8 +65,11 @@ hysteresis and debounce boundaries, severity, latching/acknowledgement,
 clear/hold/assert behavior for nonvalid or stale input, and bounded periodic
 reminders. Invalid quality never becomes a numeric alarm input. Display alerts
 and exported critical events derive from the same validated state but remain
-independently deliverable; cache-task and exporter composition remain later
-work.
+independently deliverable. A host-tested cache evaluator scans all 16 latest
+states each cycle so unchanged values still advance debounce, exact staleness,
+and reminder time; it preflights the whole poll and resets runtime on a cache
+epoch change without inventing a clear event. Target-task timing, display
+behavior, and critical-event export remain later work.
 
 ## ESP-NOW telemetry protocol
 

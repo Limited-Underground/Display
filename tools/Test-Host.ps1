@@ -87,6 +87,21 @@ Invoke-HostTest `
     )
 
 Invoke-HostTest `
+    -Name 'alarm_cache_evaluator_tests' `
+    -Description 'Cache-to-alarm bounded evaluator' `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\alarm\include'),
+        (Join-Path $projectRoot 'firmware\components\telemetry\include')
+    ) `
+    -Sources @(
+        (Join-Path $projectRoot 'firmware\components\alarm\src\alarm_engine.cpp'),
+        (Join-Path $projectRoot 'firmware\components\alarm\src\alarm_cache_evaluator.cpp'),
+        (Join-Path $projectRoot 'firmware\components\telemetry\src\normalized_signal.cpp'),
+        (Join-Path $projectRoot 'firmware\components\telemetry\src\telemetry_cache.cpp'),
+        (Join-Path $projectRoot 'tests\host\alarm_cache_evaluator_tests.cpp')
+    )
+
+Invoke-HostTest `
     -Name 'j1939_identifier_tests' `
     -Description 'J1939 identifier parser' `
     -IncludeDirectories @(
