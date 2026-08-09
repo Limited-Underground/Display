@@ -189,6 +189,13 @@ attempt/lifetime bounds. The ACK model is not a wire format: authenticated ACK
 codec/authorization/replay, transport composition, persistence, and physical
 end-to-end delivery remain unresolved.
 
+The mirrored `OGK0` ACK codec now makes disposition/reason, original lifecycle,
+consumer/producer/event/condition identity, consumer boot session/sequence, and
+observed age explicit in 64 canonical bytes. Three normative fixtures encode
+identically in both projects. CRC still provides corruption detection only;
+authenticated consumer context, replay persistence, outbox correlation, and
+physical delivery remain unresolved.
+
 ## Updates and recovery
 
 OTA design must include image authenticity/integrity, hardware target compatibility, version policy, sufficient partition/storage layout, atomic boot selection, health confirmation, rollback, interruption handling, and a documented USB/physical recovery path. Update coordination must never simultaneously remove all useful instrumentation by default.

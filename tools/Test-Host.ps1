@@ -86,6 +86,17 @@ Invoke-HostTest `
     )
 
 Invoke-HostTest `
+    -Name 'critical_alert_ack_tests' `
+    -Description 'Critical alert acknowledgement codec' `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\integration\include')
+    ) `
+    -Sources @(
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_ack.cpp'),
+        (Join-Path $projectRoot 'tests\host\critical_alert_ack_tests.cpp')
+    )
+
+Invoke-HostTest `
     -Name 'diagnostics_tests' `
     -Description 'Bounded diagnostics foundation' `
     -IncludeDirectories @(
