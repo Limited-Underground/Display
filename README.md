@@ -13,11 +13,10 @@ OpenGauge is a proposed free/open-source ESP32 vehicle instrumentation and telem
 - **Latest physical result:** accepted, terminal-rejection, retryable-rejection,
   retry-to-accept, and live-state alert/ACK cycles completed with zero observed
   message loss, duplicates, or new radio errors.
-- **Latest software result:** verified save ordering now requires the newest
-  local `ORS0` generation to exactly match trusted state before writing the next
-  generation. Missing, ahead, behind, uncertain-commit, and failed trust-update
-  states remain explicit. The complete 38-executable host matrix and 100
-  focused save repeats pass.
+- **Latest software result:** boot recovery now treats an unreadable peer slot as
+  service-only because it could conceal a newer committed generation. Known
+  empty/corrupt peer media can still restore visibly degraded. The complete
+  38-executable host matrix and 100 focused boot repeats pass.
 - **Public validation:** GitHub Actions now runs the complete Windows host matrix
   on every `main` push and pull request. The first warning-free public run passed
   all 38 executables with zero annotations.
@@ -49,7 +48,8 @@ Architecture/bootstrap phase. The transport-neutral OpenGauge-to-OpenTrail criti
 - Exact `ORS0` generations now have a host-tested [recoverable two-slot system store](docs/integration/CRITICAL_ALERT_SYSTEM_RECOVERY_STORE_V0.md). The store owns normal generations, preserves the newest good slot across eleven interrupted-write boundaries, verifies exact readback/decode, exposes degraded reads, fails closed on conflict/exhaustion, and reconciles a full write followed by I/O error as committed at boot. The full 36-executable matrix and 100 focused repeats pass; target durability is still unproved.
 - The system store now accepts an external trusted generation boundary: `restore_at_or_above` rejects a selected valid record below the minimum without importing any owner, while `save_next_after` advances beyond both the trusted value and every valid local slot. Ten focused groups, the unchanged 36-executable matrix, and 100 repeats pass. The hardware-backed trusted source itself is intentionally not invented by this host layer.
 - Target-style restore now accepts a protected-key validator. Only active peers are presented as logical metadata plus opaque handle; revoked entries are skipped. Unavailable, wrong-purpose, and backend-failed handles produce typed peer-specific evidence before outbox/ACK preflight or any live import. Eight system and eleven store groups, the unchanged 36-executable matrix, and 100 focused repeats each pass; no raw key or concrete protected backend is claimed.
-- A host-tested [system-recovery boot coordinator](docs/integration/CRITICAL_ALERT_SYSTEM_RECOVERY_BOOT_V0.md) now combines provisioning state, trusted-generation state, two-slot inspection, protected-key validation, and `ORS0` restore. Exactly empty slots plus independently unprovisioned trust are required for first boot; rollback/conflict enter safe mode, missing keys/storage/trust require service, degraded restore remains visible, and interrupted trusted-floor advancement is read back exactly before transport is enabled. Nine focused groups, the full 37-executable matrix, and 100 repeats pass; no target task or protected backend is claimed.
+- A host-tested [system-recovery boot coordinator](docs/integration/CRITICAL_ALERT_SYSTEM_RECOVERY_BOOT_V0.md) now combines provisioning state, trusted-generation state, two-slot inspection, protected-key validation, and `ORS0` restore. Exactly empty slots plus independently unprovisioned trust are required for first boot; rollback/conflict enter safe mode, missing keys/storage/trust require service, degraded restore remains visible, and interrupted trusted-floor advancement is read back exactly before transport is enabled. Ten focused groups, the full 38-executable matrix, and 100 repeats pass; no target task or protected backend is claimed.
+- Boot degradation now distinguishes known media state from uncertainty. A surviving checkpoint beside an empty or checksum-invalid slot may be operational with repair required; a surviving checkpoint beside an unreadable slot remains service-only, does not advance trust, and cannot enable transport because the unreadable slot may hide a newer committed generation. Ten boot groups, the full 38-executable matrix, and 100 repeats pass.
 - A host-tested [system-recovery save coordinator](docs/integration/CRITICAL_ALERT_SYSTEM_RECOVERY_SAVE_V0.md) now enforces the complementary ordering. It requires exact local/trusted generation agreement, writes and verifies the next `ORS0`, advances trust only afterward, and verifies exact trust readback. Local-ahead and uncertain commits require reboot reconciliation; local-behind is rollback; missing recovery and failed trust/storage stay service-visible. Eight groups, the full 38-executable matrix, and 100 repeats pass; no physical durability is claimed.
 - Across each two-cycle set, radio loss/duplicates/errors were zero, SenseCAP recorded exact aggregate +4 flood RX/TX, repeat stayed enabled, and cleanup passed 4/4.
 

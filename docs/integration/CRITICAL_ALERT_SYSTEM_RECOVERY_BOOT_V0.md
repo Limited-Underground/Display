@@ -16,9 +16,9 @@ defaults, erase state, or enable a physical transport.
 | --- | --- | --- |
 | `first_boot` | Trust is uninitialized, caller says unprovisioned, and both inspected slots are exactly empty | disabled |
 | `restored` | A complete key-validating restore matches the trusted floor | allowed |
-| `restored_degraded` | Restore succeeds from a surviving slot but repair remains required | allowed, with degradation visible |
+| `restored_degraded` | Restore succeeds from a surviving slot while the peer slot is known empty or invalid; repair remains required | allowed, with degradation visible |
 | `safe_mode` | Rollback, equal-generation conflict, or non-key checkpoint rejection | disabled |
-| `service_required` | Provisioning ambiguity, missing/unreadable trust or recovery, protected-key failure, storage failure, or failed trust reconciliation | disabled |
+| `service_required` | Provisioning ambiguity, missing/unreadable trust or recovery, any unreadable slot, protected-key failure, storage failure, or failed trust reconciliation | disabled |
 
 The result retains the nested store, checkpoint, authorization, and key error so
 operator or target code does not have to infer the cause from the coarse state.
@@ -38,9 +38,11 @@ Under exclusive boot-time ownership:
    import;
 6. map rollback/conflict/checkpoint/key/storage outcomes to typed safe or service
    states;
-7. if the selected generation is newer than trusted state, advance the trusted
+7. if either slot is unreadable, retain any imported state only under exclusive
+   ownership, require service, and do not advance trust or enable transport;
+8. if the selected generation is newer than trusted state, advance the trusted
    source and require an exact readback; and
-8. allow transport only after every required step succeeds.
+9. allow transport only after every required step succeeds.
 
 If trusted advancement fails after live import, the recovered owners remain
 present under exclusive ownership but transport stays disabled. Target code must
@@ -48,20 +50,21 @@ not expose them until service or a subsequent successful reconciliation.
 
 ## Host evidence
 
-`tests/host/critical_alert_system_recovery_boot_tests.cpp` covers nine groups:
+`tests/host/critical_alert_system_recovery_boot_tests.cpp` covers ten groups:
 
 1. genuine first boot versus corrupt local state;
 2. unknown provisioning, unreadable trust, zero trust, and provisioning/trust
    conflict;
 3. exact two-slot restore and transport enablement;
 4. visible degraded restore from one surviving generation;
-5. rollback and equal-generation conflict safe mode;
-6. protected-key loss with no live import;
-7. successful interrupted trusted-floor reconciliation and readback;
-8. failed trusted advance or stale readback with transport disabled; and
-9. initialized trust with missing local recovery.
+5. an unreadable slot hiding a newer generation remains service-only;
+6. rollback and equal-generation conflict safe mode;
+7. protected-key loss with no live import;
+8. successful interrupted trusted-floor reconciliation and readback;
+9. failed trusted advance or stale readback with transport disabled; and
+10. initialized trust with missing local recovery.
 
-The complete 37-executable host matrix passes, and the focused boot suite passes
+The complete 38-executable host matrix passes, and the focused boot suite passes
 100 consecutive repeats.
 
 ## Remaining target gates

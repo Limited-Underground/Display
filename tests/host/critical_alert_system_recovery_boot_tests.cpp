@@ -288,6 +288,37 @@ void test_degraded_restore_is_visible_but_operational() {
            CriticalAlertSystemRecoverySlotState::invalid);
 }
 
+void test_unreadable_peer_slot_cannot_enable_transport() {
+    FakeCriticalAlertSystemRecoveryStorage storage{};
+    seed(storage, 2);
+    // Slot B contains generation 2, but an interrupted trust advance can leave
+    // the trusted floor at generation 1. If B is unreadable, selecting visible
+    // generation 1 must not silently enable transport.
+    storage.fail_next_read(1);
+    CriticalAlertSystemRecoveryStore store{storage};
+    FakeTrustedGeneration trusted{};
+    trusted.generation = 1;
+    FakeKeyValidator keys{};
+    CriticalAlertSystemRecoveryBootCoordinator coordinator{
+        store, trusted, keys};
+    PeerAuthorizationRegistry registry{};
+    CriticalAlertOutbox outbox{};
+    CriticalAlertAckIngress ingress{};
+    start_target(registry, outbox, ingress);
+    const auto result = coordinator.boot(
+        CriticalAlertSystemProvisioningState::provisioned,
+        registry, ingress, outbox, 10);
+    EXPECT(result.load.restored && result.load.recovery_required);
+    EXPECT(result.load.slot_b ==
+           CriticalAlertSystemRecoverySlotState::io_failure);
+    EXPECT(result.state == CriticalAlertSystemBootState::service_required);
+    EXPECT(result.reason ==
+           CriticalAlertSystemBootReason::storage_unavailable);
+    EXPECT(!result.transport_allowed && !result.operational());
+    EXPECT(result.active_generation == 1);
+    EXPECT(trusted.advances == 0);
+}
+
 void test_rollback_and_generation_conflict_enter_safe_mode() {
     FakeCriticalAlertSystemRecoveryStorage rollback_storage{};
     seed(rollback_storage, 1);
@@ -451,6 +482,7 @@ int main() {
     test_provisioning_and_trusted_input_fail_closed();
     test_exact_restore_enables_transport();
     test_degraded_restore_is_visible_but_operational();
+    test_unreadable_peer_slot_cannot_enable_transport();
     test_rollback_and_generation_conflict_enter_safe_mode();
     test_missing_protected_key_requires_service_without_import();
     test_interrupted_trusted_advance_is_reconciled_and_verified();
@@ -460,6 +492,6 @@ int main() {
         std::cerr << failures << " recovery boot assertion(s) failed\n";
         return EXIT_FAILURE;
     }
-    std::cout << "PASS: 9 critical alert system recovery boot groups\n";
+    std::cout << "PASS: 10 critical alert system recovery boot groups\n";
     return EXIT_SUCCESS;
 }

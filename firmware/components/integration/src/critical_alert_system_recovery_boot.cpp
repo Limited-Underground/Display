@@ -107,6 +107,17 @@ CriticalAlertSystemBootResult CriticalAlertSystemRecoveryBootCoordinator::boot(
         return result;
     }
 
+    // An unreadable peer slot is not equivalent to known empty/corrupt media:
+    // it may conceal a newer committed generation. Keep the restored owners
+    // private under exclusive boot ownership and never reconcile trust or
+    // enable transport until storage can be inspected completely.
+    if (result.load.error ==
+        CriticalAlertSystemRecoveryStoreError::storage_failure) {
+        result.state = CriticalAlertSystemBootState::service_required;
+        result.reason = CriticalAlertSystemBootReason::storage_unavailable;
+        return result;
+    }
+
     if (result.load.generation > trusted.generation) {
         result.trusted_error =
             trusted_generation_.advance_to(result.load.generation);

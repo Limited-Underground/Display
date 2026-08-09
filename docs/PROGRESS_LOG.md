@@ -53,6 +53,10 @@ public chronology.
   next `ORS0` before advancing and exactly reading back trust. Ahead/uncertain
   state requires boot reconciliation; behind is rollback; missing state fails
   visibly. Eight groups, the 38-executable matrix, and 100 repeats pass.
+- Hardened degraded boot recovery against a hidden-newer-slot case. Empty or
+  checksum-invalid peer media remains known degraded state, but an unreadable
+  peer slot now requires service with transport disabled and no trusted-floor
+  advancement. Ten boot groups, the 38-executable matrix, and 100 repeats pass.
 - Added public GitHub Actions validation for every `main` push and pull request.
   The Windows 2025/UCRT64 workflow uses commit-pinned actions, passed the full
   38-executable matrix on its first warning-free run, and returned zero
