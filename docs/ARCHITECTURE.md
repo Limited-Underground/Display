@@ -185,16 +185,18 @@ local acceptance, and exact OpenTrail application acknowledgement. It reserves
 capacity for emergency alerts, prepares oldest emergency before oldest ready
 critical state, counts only locally accepted attempts, accepts a correlated
 late ACK before terminal removal, and emits explicit failure at exact
-attempt/lifetime bounds. The ACK model is not a wire format: authenticated ACK
-codec/authorization/replay, transport composition, persistence, and physical
-end-to-end delivery remain unresolved.
+attempt/lifetime bounds.
 
 The mirrored `OGK0` ACK codec now makes disposition/reason, original lifecycle,
 consumer/producer/event/condition identity, consumer boot session/sequence, and
 observed age explicit in 64 canonical bytes. Three normative fixtures encode
-identically in both projects. CRC still provides corruption detection only;
-authenticated consumer context, replay persistence, outbox correlation, and
-physical delivery remain unresolved.
+identically in both projects. A bounded ingress composes adapter-authenticated
+metadata, logical peer/key-handle/channel/permission authorization, explicit
+consumer-session binding, a 32-sequence replay window, observed-age policy, and
+exact outbox correlation. Only accepted/none removes an entry; a correlated
+rejection remains explicit non-success. CRC still provides corruption
+detection only; real cryptographic transport, replay/authorization persistence,
+negative-reason terminal policy, and physical delivery remain unresolved.
 
 ## Updates and recovery
 

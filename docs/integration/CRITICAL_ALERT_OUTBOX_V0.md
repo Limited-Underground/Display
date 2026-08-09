@@ -58,10 +58,12 @@ a terminal timeout after the configured attempt limit. At exact maximum
 lifetime, any queued/prepared/in-flight entry emits terminal lifetime failure.
 Terminal failure is explicit diagnostic state, not silent success.
 
-The ACK structure in the host model is semantic only. A production ACK frame
-must be explicitly serialized, authenticated, authorized to the configured
-OpenTrail peer, protected against replay, bounded/rate-limited, and independently
-validated before it can call `acknowledge`.
+The mirrored `OGK0` frame and ACK ingress now provide explicit serialization,
+adapter-authentication admission, logical peer/key-handle/channel/permission
+authorization, explicit consumer-session binding, a 32-sequence replay window,
+observed-age policy, and exact outbox correlation. These remain host contracts:
+the eventual adapter must provide the cryptographic authentication proof, and
+replay/authorization state is not yet persistent.
 
 ## Host evidence
 
@@ -81,8 +83,6 @@ The refined suite repeated 100 times with zero failures.
 ## Remaining physical-delivery gates
 
 - choose framed serial, authenticated local wireless, or another exact adapter;
-- define/mirror an explicit ACK codec in OpenGauge and OpenTrail, including
-  producer/consumer identity, session, replay window, and integrity/authentication;
 - compose alarm exporter -> outbox -> transport -> OpenTrail ingress -> ACK with
   queue loss, radio loss, duplicates, reordering, restart, and channel change;
 - persist critical entries/attempts if required, with corruption, wear, privacy,

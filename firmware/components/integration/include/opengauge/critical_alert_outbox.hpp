@@ -103,6 +103,8 @@ public:
     [[nodiscard]] CriticalOutboxError acknowledge(
         const CriticalAlertAcknowledgement& acknowledgement,
         std::uint64_t now_ms);
+    [[nodiscard]] CriticalOutboxError validate_acknowledgement(
+        const CriticalAlertAcknowledgement& acknowledgement) const;
     [[nodiscard]] CriticalOutboxAdvanceResult advance(
         std::uint64_t now_ms);
     [[nodiscard]] CriticalAlertOutboxStatus status() const;

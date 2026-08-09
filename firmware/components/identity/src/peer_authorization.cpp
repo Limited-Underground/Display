@@ -25,7 +25,8 @@ std::uint16_t allowed_permissions(PeerRole role) {
         case PeerRole::gps:
             return permission_bit(PeerPermission::publish_gps);
         case PeerRole::trail_bridge:
-            return permission_bit(PeerPermission::receive_critical_alert);
+            return permission_bit(PeerPermission::receive_critical_alert) |
+                   permission_bit(PeerPermission::publish_alarm_ack);
     }
     return 0;
 }

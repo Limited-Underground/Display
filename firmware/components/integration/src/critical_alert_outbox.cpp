@@ -179,18 +179,31 @@ CriticalOutboxError CriticalAlertOutbox::acknowledge(
     if (clock != CriticalOutboxError::none) {
         return clock;
     }
-    const auto index = find_event(acknowledgement.event_id);
-    if (index == kNotFound || entries_[index].attempts == 0 ||
-        entries_[index].alert.condition_id != acknowledgement.condition_id ||
-        entries_[index].alert.state != acknowledgement.state) {
-        return CriticalOutboxError::acknowledgement_mismatch;
+    const auto validation = validate_acknowledgement(acknowledgement);
+    if (validation != CriticalOutboxError::none) {
+        return validation;
     }
+    const auto index = find_event(acknowledgement.event_id);
     if (entries_[index].state == EntryState::prepared) {
         status_.send_prepared = false;
     }
     remove_entry(index);
     saturating_increment(status_.acknowledgements);
     refresh_counts();
+    return CriticalOutboxError::none;
+}
+
+CriticalOutboxError CriticalAlertOutbox::validate_acknowledgement(
+    const CriticalAlertAcknowledgement& acknowledgement) const {
+    if (!status_.running) {
+        return CriticalOutboxError::invalid_state;
+    }
+    const auto index = find_event(acknowledgement.event_id);
+    if (index == kNotFound || entries_[index].attempts == 0 ||
+        entries_[index].alert.condition_id != acknowledgement.condition_id ||
+        entries_[index].alert.state != acknowledgement.state) {
+        return CriticalOutboxError::acknowledgement_mismatch;
+    }
     return CriticalOutboxError::none;
 }
 

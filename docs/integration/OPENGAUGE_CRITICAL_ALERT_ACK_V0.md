@@ -99,10 +99,10 @@ times with zero failures.
 - bind ACK generation only after OpenTrail ingress produces a final decision;
 - define authenticated framed serial or local-wireless transport and peer/key
   lifecycle;
-- implement bounded session/sequence replay tracking, restart, wrap, persistence,
-  and rollback protection;
-- compose OpenGauge outbox correlation with accepted/rejected policy and
-  terminal failure diagnostics;
+- persist the completed bounded session/sequence replay window and authorization
+  state with restart, rollback, key-rotation, revoke, and recovery protection;
+- define retry/terminal failure and typed diagnostic policy for each correlated
+  rejected reason;
 - test loss, duplicate, corruption, reordering, delayed ACK, restart, revoke,
   wrong producer/consumer, wrong channel, and relay behavior;
 - validate physical two-Heltec delivery and document that a SenseCAP repeater
