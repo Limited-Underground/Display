@@ -112,11 +112,18 @@ metadata, channel, and encoded gateway identity; drains at most four datagrams
 per cycle; tracks duplicate/out-of-order/gap/session transitions; and stores 16
 latest wire signals with source age plus receiver-local elapsed time. A new
 gateway session clears old store state, and exact staleness removes numeric
-display values. ESP-IDF callbacks/keys/RF and the display view model remain.
+display values. ESP-IDF callbacks/keys/RF remain.
 
 ## Gauge rendering
 
 The rendering layer consumes a view model derived from the local signal cache. Layout definitions refer to stable signal IDs and units, never J1939 offsets. Proposed widgets include needle, number, bar, multi-value, warning, trend, and status.
+
+The host-tested v0 projection configures eight registered-signal widgets and
+emits atomic display-neutral snapshots with distinct valid, suspect, missing,
+stale, unavailable, error, out-of-range, and unknown states. Only valid/suspect
+states retain a value; missing still carries expected type/unit for stable UI
+chrome without inventing a measurement. Rendering, localization, touch, and
+hardware performance remain unresolved.
 
 Rendering must be non-blocking relative to receive/cache updates. It should use bounded allocation, measurable frame/update budgets, dirty-region or suitable refresh strategies, and a conspicuous stale/error presentation. Configuration is schema-versioned, validated, recoverable, and stored locally.
 
