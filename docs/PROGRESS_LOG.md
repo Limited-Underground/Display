@@ -65,6 +65,9 @@ public chronology.
 - Added public GitHub Actions validation for every `main` push and pull request.
   The Windows 2025/UCRT64 workflow uses commit-pinned actions; its current
   warning-free run passes the full 39-executable matrix with zero annotations.
+- Linked OpenTrail's separate public workflow after it passed both verifier CLI
+  builds, 23 C++ test executables, and the four-group Python MeshCore lease suite
+  with zero annotations. The two CI scopes remain distinct.
 - Kept all target claims bounded: there is no ESP-IDF storage/radio/CAN binding,
   protected on-device key persistence, physical power-cut evidence, or vehicle
   validation yet.
