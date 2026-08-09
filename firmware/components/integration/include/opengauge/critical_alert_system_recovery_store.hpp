@@ -63,6 +63,20 @@ struct CriticalAlertSystemRecoveryLoadResult {
     bool restored{false};
 };
 
+struct CriticalAlertSystemRecoveryInspectionResult {
+    CriticalAlertSystemRecoveryStoreError error{
+        CriticalAlertSystemRecoveryStoreError::no_checkpoint};
+    CriticalAlertSystemRecoverySource source{
+        CriticalAlertSystemRecoverySource::none};
+    CriticalAlertSystemRecoverySlotState slot_a{
+        CriticalAlertSystemRecoverySlotState::empty};
+    CriticalAlertSystemRecoverySlotState slot_b{
+        CriticalAlertSystemRecoverySlotState::empty};
+    std::uint64_t generation{0};
+    bool checkpoint_available{false};
+    bool recovery_required{false};
+};
+
 struct CriticalAlertSystemRecoverySaveResult {
     CriticalAlertSystemRecoveryStoreError error{
         CriticalAlertSystemRecoveryStoreError::storage_failure};
@@ -81,6 +95,11 @@ class CriticalAlertSystemRecoveryStore {
 public:
     explicit CriticalAlertSystemRecoveryStore(
         CriticalAlertSystemRecoveryStorage& storage);
+
+    // Read-only boot inspection. This never imports authorization, ACK, or
+    // outbox state and is the authority for distinguishing two empty slots
+    // from corrupt, conflicting, or unreadable prior state.
+    [[nodiscard]] CriticalAlertSystemRecoveryInspectionResult inspect();
 
     [[nodiscard]] CriticalAlertSystemRecoverySaveResult save(
         identity::PeerAuthorizationRegistry& authorization,

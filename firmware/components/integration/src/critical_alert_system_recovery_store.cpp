@@ -62,6 +62,59 @@ CriticalAlertSystemRecoveryStore::CriticalAlertSystemRecoveryStore(
     CriticalAlertSystemRecoveryStorage& storage)
     : storage_(storage) {}
 
+CriticalAlertSystemRecoveryInspectionResult
+CriticalAlertSystemRecoveryStore::inspect() {
+    const auto a = inspect_slot(storage_, 0);
+    const auto b = inspect_slot(storage_, 1);
+    CriticalAlertSystemRecoveryInspectionResult result{};
+    result.slot_a = a.state;
+    result.slot_b = b.state;
+    if (generation_conflict(a, b)) {
+        result.error = CriticalAlertSystemRecoveryStoreError::generation_conflict;
+        result.recovery_required = true;
+        return result;
+    }
+
+    const InspectedSlot* selected = nullptr;
+    std::uint8_t selected_slot = 0;
+    if (a.state == CriticalAlertSystemRecoverySlotState::valid &&
+        b.state == CriticalAlertSystemRecoverySlotState::valid) {
+        if (b.checkpoint.generation > a.checkpoint.generation) {
+            selected = &b;
+            selected_slot = 1;
+        } else {
+            selected = &a;
+        }
+    } else if (a.state == CriticalAlertSystemRecoverySlotState::valid) {
+        selected = &a;
+        result.recovery_required = true;
+    } else if (b.state == CriticalAlertSystemRecoverySlotState::valid) {
+        selected = &b;
+        selected_slot = 1;
+        result.recovery_required = true;
+    }
+
+    if (selected == nullptr) {
+        result.error =
+            a.state == CriticalAlertSystemRecoverySlotState::io_failure ||
+                    b.state == CriticalAlertSystemRecoverySlotState::io_failure
+                ? CriticalAlertSystemRecoveryStoreError::storage_failure
+                : CriticalAlertSystemRecoveryStoreError::no_checkpoint;
+        result.recovery_required = true;
+        return result;
+    }
+
+    result.error =
+        a.state == CriticalAlertSystemRecoverySlotState::io_failure ||
+                b.state == CriticalAlertSystemRecoverySlotState::io_failure
+            ? CriticalAlertSystemRecoveryStoreError::storage_failure
+            : CriticalAlertSystemRecoveryStoreError::none;
+    result.source = source_for(selected_slot);
+    result.generation = selected->checkpoint.generation;
+    result.checkpoint_available = true;
+    return result;
+}
+
 CriticalAlertSystemRecoverySaveResult
 CriticalAlertSystemRecoveryStore::save(
     identity::PeerAuthorizationRegistry& authorization,

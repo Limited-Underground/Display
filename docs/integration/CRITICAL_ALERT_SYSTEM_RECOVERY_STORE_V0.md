@@ -50,6 +50,10 @@ handle.
   restored opaque key handle to pass an injected protected-key validator before
   any live import. The nested typed key failure is returned as checkpoint
   rejection; revoked entries are not resolved.
+- `inspect` reports both slot states, selected generation/source, degradation,
+  conflict, and storage failure without importing any live owner. The boot
+  coordinator uses it only when deciding whether uninitialized trust plus local
+  state is a genuine first boot.
 - Reset attempts to erase both slots and reports either failure.
 
 The interface requires exclusive ownership for inspection, save, and restore.

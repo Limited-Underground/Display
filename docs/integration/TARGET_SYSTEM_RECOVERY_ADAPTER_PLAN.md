@@ -75,23 +75,30 @@ encryption configuration, or other mechanism before an exact target is chosen.
 
 ## Boot sequence
 
-Under exclusive ownership, the target boot coordinator should:
+The host layer now provides
+`CriticalAlertSystemRecoveryBootCoordinator` for the policy portion of this
+sequence. Under exclusive ownership, a target should:
 
 1. initialize storage and protected-key services;
 2. read the trusted minimum generation, failing visibly if its state is
    unreadable or ambiguous;
 3. start an empty authorization registry, outbox, and ACK ingress with the exact
    local policies;
-4. call `restore_at_or_above` with the trusted minimum;
-5. if restored, resolve every active opaque handle and verify required key
-   purpose/availability before enabling authenticated transport;
+4. run the coordinator's key-validating `restore_at_or_above` path with the
+   trusted minimum;
+5. if the selected local generation is newer than the trusted source, advance
+   the source and require exact readback;
 6. expose degraded single-slot recovery and schedule a bounded repair save;
-7. treat rollback, conflict, checkpoint rejection, or trusted-source mismatch as
-   safe-mode/service conditions rather than silent factory defaults; and
-8. enable alert transport only after recovery and key resolution succeed.
+7. treat rollback, conflict, checkpoint rejection, key loss, or trusted-source
+   mismatch as typed safe-mode/service conditions rather than silent defaults;
+   and
+8. enable alert transport only when the coordinator reports an operational
+   restored state.
 
 An empty store is a first-boot condition only when the trusted source and local
 provisioning state independently agree that no prior generation existed.
+The coordinator enforces this by requiring uninitialized trust, an explicitly
+unprovisioned caller state, and two exactly empty inspected slots.
 
 ## Save and trusted-floor ordering
 

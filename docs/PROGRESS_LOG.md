@@ -42,6 +42,12 @@ public chronology.
   `ORS0` restore. Active handles must validate before any live owner changes;
   revoked peers are skipped, and unavailable/purpose/backend failures remain
   typed. Eight system and eleven store groups plus 100 repeats each pass.
+- Added a typed system-recovery boot coordinator. Clean first boot requires an
+  uninitialized trust source, unprovisioned state, and two exactly empty slots;
+  successful restore, degraded repair, safe mode, and service-required outcomes
+  remain distinct. Trusted-floor catch-up must pass exact readback before
+  transport is enabled. Nine groups, the 37-executable matrix, and 100 repeats
+  pass.
 - Kept all target claims bounded: there is no ESP-IDF storage/radio/CAN binding,
   protected on-device key persistence, physical power-cut evidence, or vehicle
   validation yet.
