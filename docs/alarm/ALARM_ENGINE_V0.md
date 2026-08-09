@@ -122,8 +122,8 @@ configuration while clearing runtime state and counters.
 
 - bind the completed full-state cache evaluator to a measured target task
   period and budget;
-- map selected rule events to display behavior and separately to the bounded
-  critical-alert exporter;
+- map selected rule events to display behavior and feed the completed allowlist
+  critical-alert exporter from a bounded target-owned event queue;
 - define reviewed vehicle-specific signals, thresholds, severities, default
   nonvalid policies, and acknowledgement UX;
 - persist/version rule configuration and prove safe migration/reset;

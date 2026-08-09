@@ -14,7 +14,8 @@ the OpenTrail repository. A passive Classical CAN receiver interface and
 bounded 16-frame fake, the Classical J1939 identifier parser, a
 fixed-capacity decoder registry with one EEC1 engine-speed fixture, normalized
 signal model, fixed-capacity thread-safe telemetry cache, a fixed 16-rule alarm
-engine plus bounded full-state cache evaluator, an opaque
+engine, bounded full-state cache evaluator, allowlisted alarm-to-critical-alert
+exporter, an opaque
 encrypted-unicast ESP-NOW transport contract/fake, an explicit 96-byte
 telemetry packet codec, a bounded per-gauge publication scheduler, a
 cache-cursor-to-radio publisher, and a bounded CAN-to-radio gateway loop now
@@ -45,6 +46,7 @@ unvalidated.
 - Optional GPS and APU behavior remains modular; control functions are outside the initial core.
 - OpenTrail receives normalized critical events and never needs J1939 knowledge.
 - The OpenTrail alert v0 frame is a fixed 64-byte explicit codec with canonical units and separate event/condition IDs. CRC is corruption detection only; transport authentication and authorization remain mandatory.
+- The alarm-to-critical-alert exporter maps 16 allowlisted rule IDs to only final assert/clear transitions, keeps stable condition and unique event IDs, derives monotonic age, converts six canonical units, and refuses local reminder/ack/latch events, nonvalid assertions, lifecycle conflicts, unsupported values, and codec failures without state/ID commit. Seven host groups cover mapping/capacity, codec round-trip, local-only events, quality/lifecycle, units, rollback, freshness, restart, and exhaustion. Reviewed mappings, persistent ID allocation, and physical authenticated transport remain.
 - OTA is not accepted until rollback and physical recovery are designed and tested.
 - Project software and documentation are published under Apache-2.0; external contributions follow `CONTRIBUTING.md`, and sensitive reports follow `SECURITY.md`.
 
@@ -98,7 +100,7 @@ Bind the completed host gateway and alarm-cache loops to selected ESP-IDF tasks
 and CAN/radio adapters
 while recording the exact target vehicle/use case and reconciling the EEC1 fixture against
 licensed/current J1939 data and legally obtained captured traffic. The
-completed OG-004, OG-005, OG-006, OG-007, OG-008, OG-009, OG-010, OG-010B, OG-010C, OG-010D, OG-014, OG-014A, and OG-018 contracts are inputs to
+completed OG-004, OG-005, OG-006, OG-007, OG-008, OG-009, OG-010, OG-010B, OG-010C, OG-010D, OG-014, OG-014A, OG-018, and OG-018A contracts are inputs to
 later layers rather than substitutes for physical CAN, on-device performance,
 display, or transport validation. Incoming candidate boards follow
 `hardware/INVENTORY.md` before any support claim.

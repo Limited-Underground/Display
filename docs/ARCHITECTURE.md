@@ -68,8 +68,12 @@ and exported critical events derive from the same validated state but remain
 independently deliverable. A host-tested cache evaluator scans all 16 latest
 states each cycle so unchanged values still advance debounce, exact staleness,
 and reminder time; it preflights the whole poll and resets runtime on a cache
-epoch change without inventing a clear event. Target-task timing, display
-behavior, and critical-event export remain later work.
+epoch change without inventing a clear event. A host-tested allowlist exporter
+maps only final alarm assertions/clears into the existing 64-byte critical-alert
+codec with stable condition IDs, unique event IDs, canonical unit conversion,
+quality/age checks, and no lifecycle commit on codec failure. Target-task
+timing, display behavior, and physical critical-event transport remain later
+work.
 
 ## ESP-NOW telemetry protocol
 
