@@ -216,6 +216,14 @@ wire-fit/physical-byte question only: the host supplied trust and did not run
 the OpenGauge exporter, outbox, ACK ingress/policy, or checkpoint store on a
 target.
 
+OG-018I then strengthened two later physical cycles by reconstructing the exact
+sent alert as an in-flight production `CriticalAlertOutbox` entry and passing
+the returned bytes through production peer authorization, explicit consumer
+session binding, ACK replay/correlation ingress, and outbox completion. Both
+cycles ended with one acknowledgement and no queued/in-flight entry. The host
+still reconstructed state after receipt; it did not keep a durable on-device
+pipeline alive across the physical wait.
+
 ## Updates and recovery
 
 OTA design must include image authenticity/integrity, hardware target compatibility, version policy, sufficient partition/storage layout, atomic boot selection, health confirmation, rollback, interruption handling, and a documented USB/physical recovery path. Update coordination must never simultaneously remove all useful instrumentation by default.

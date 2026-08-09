@@ -1,8 +1,9 @@
 # OpenGauge Critical Alert Acknowledgement v0
 
-Status: experimental mirrored interoperability contract with bounded external
-host-mediated Heltec/MeshCore wire evidence, 2026-08-09. This is not transport
-authentication, on-device OpenGauge delivery, or a field result.
+Status: experimental mirrored interoperability contract with bounded
+cross-repository host-composed Heltec/MeshCore evidence, 2026-08-09. This is
+not transport authentication, persistent on-device OpenGauge delivery, or a
+field result.
 
 ## Boundary
 
@@ -96,8 +97,9 @@ times with zero failures.
 
 ## Remaining gates
 
-- replace the external host-mediated proof with an authenticated target adapter
-  running the real OpenGauge exporter/outbox/ACK-ingress/policy composition;
+- replace the passed host reconstruction of outbox/authorization/ACK ingress
+  with a persistent authenticated target adapter running the full exporter,
+  outbox, ACK-ingress/policy, and recovery composition;
 - define authenticated framed serial or local-wireless transport and peer/key
   lifecycle;
 - bind the completed authorization-epoch-aware replay checkpoint store to

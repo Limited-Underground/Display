@@ -35,7 +35,9 @@ function Invoke-HostTest {
         [string[]] $IncludeDirectories,
 
         [Parameter(Mandatory)]
-        [string[]] $Sources
+        [string[]] $Sources,
+
+        [bool] $Run = $true
     )
 
     $output = Join-Path $buildDirectory "$Name.exe"
@@ -56,11 +58,30 @@ function Invoke-HostTest {
         throw "$Description compilation failed with exit code $LASTEXITCODE."
     }
 
-    & $output
-    if ($LASTEXITCODE -ne 0) {
-        throw "$Description tests failed with exit code $LASTEXITCODE."
+    if ($Run) {
+        & $output
+        if ($LASTEXITCODE -ne 0) {
+            throw "$Description tests failed with exit code $LASTEXITCODE."
+        }
     }
 }
+
+Invoke-HostTest `
+    -Name 'critical_alert_round_trip_cli' `
+    -Description 'Critical alert physical round-trip verifier CLI' `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\identity\include'),
+        (Join-Path $projectRoot 'firmware\components\integration\include')
+    ) `
+    -Sources @(
+        (Join-Path $projectRoot 'firmware\components\identity\src\peer_authorization.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_ack.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_outbox.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_ack_ingress.cpp'),
+        (Join-Path $projectRoot 'tools\CriticalAlertRoundTripCli.cpp')
+    ) `
+    -Run $false
 
 Invoke-HostTest `
     -Name 'critical_alert_export_tests' `
