@@ -20,8 +20,9 @@ encrypted-unicast ESP-NOW transport contract/fake, an explicit 96-byte
 telemetry packet codec, a bounded per-gauge publication scheduler, a
 cache-cursor-to-radio publisher, bounded CAN-to-radio gateway loop, bounded
 gauge receiver/latest-state store, fail-visible eight-widget gauge view model,
-fixed-memory typed diagnostics core, and versioned recoverable two-slot gauge
-layout store now have deterministic host tests. Physical vehicle acquisition,
+fixed-memory typed diagnostics core, versioned recoverable two-slot gauge
+layout store, and transport-neutral GPS fix/quality/age tracker now have
+deterministic host tests. Physical vehicle acquisition,
 normalization from captured/real signals,
 on-device performance, physical transport, keys, displays, and hardware remain
 unvalidated.
@@ -46,6 +47,7 @@ unvalidated.
 - The display-neutral gauge view model validates at most eight registered-signal widgets and atomically projects expected type/unit, session/sequence/age, and distinct valid, suspect, missing, stale, unavailable, error, out-of-range, or unknown state. Values survive only valid/suspect state, and all nonvalid state is fail-visible. Seven host groups cover configuration/lifecycle, missing metadata, value/attention behavior, exact staleness, invalid-quality metadata, shared signals, and atomic output preservation on capacity/receiver failure. Rendering, touch, persistence, localization, and physical display performance remain.
 - The typed diagnostics core stores 32 oldest-first fixed events with five-level filtering, monotonic time, reset-cause capture, overwrite accounting, atomic snapshots, and 16 saturating subsystem counters. It accepts no text, byte buffers, addresses, credentials, or identifiers. Eight host groups plus 100 repeat runs cover lifecycle, filtering/time, wrap/order/sequences, counter ownership/saturation, canonical records, snapshot/clear, restart, and fixed pointer-free payload. Adapter binding, concurrency/timing, formatting/persistence, and production redaction audit remain.
 - The explicit 576-byte `OGL0` schema-v1 gauge layout record serializes one through eight validated widgets with generation/layout identity, brightness/theme, canonical zero padding, and CRC-32. A two-slot store writes only an empty/invalid or older slot and requires readback, byte equality, and decode before commit; boot selects the unique highest generation and visibly falls back on empty/corrupt/I/O/equal-generation conflict. Nine host groups plus 100 repeat runs cover codec/malformed/atomic decode, safe default, strict generations, slot rotation/write counts, interruption/corrupt-success recovery, I/O, and reset. Migration, import UX, unchanged-write suppression, generation persistence/exhaustion, backend binding, power-cut/endurance, and configuration authenticity remain.
+- The transport-neutral GPS latest-fix tracker validates no-fix/2D/3D/differential/RTK/estimated quality and explicit integer position/altitude/speed/heading/accuracy/UTC presence, tracks source session/sequence/gaps/wrap, combines bounded source age only with receiver-local elapsed time, and strips every position/time value at exact staleness. Eight host groups plus 100 repeat runs cover boundaries, partial/no-fix state, lifecycle, loss/order/restart, clock regression, and age overflow. Candidate topology/rate/privacy are documented; parser/transport/authentication and physical GNSS/antenna/accuracy/power remain.
 - The v0 alarm engine holds 16 normalized-signal rules with inclusive above/below/outside-range comparison, exact hysteresis and assert/clear debounce, four severities, nonvalid clear/hold/assert policy, latching/acknowledgement, atomic bounded events, and periodic reminders. Ten host groups cover thresholds, signed-safe hysteresis, chatter, stale/unavailable no-value behavior, latch/ack paths, clock/type/unit rejection, capacity, diagnostics, and restart. Cache-task, display, critical-event, persistence, and reviewed vehicle-rule composition remain.
 - The cache-to-alarm evaluator scans all 16 latest snapshots at each monotonic poll rather than only changed generations, so unchanged values advance debounce, exact cache staleness, and reminders. It preflights the whole poll, aggregates up to 16 events, skips unruled signals, and treats a cache epoch as a runtime-reset boundary without inventing clears. Seven host groups cover capacity/lifecycle, unchanged state, stale/reminder boundaries, reset/reassert, aggregation, incompatible input, cache failure, and clock regression. Target-task timing and event consumers remain.
 - ESP-NOW and persistent formats use explicit versioned serialization, not raw C/C++ memory layouts.
@@ -62,9 +64,9 @@ unvalidated.
 | --- | --- | --- |
 | 2 x Waveshare ESP32-S3-Touch-AMOLED-1.75-B, SKU 31262 | Owner reports ordered; not received or tested. Vendor identifies this as the standard non-GPS board in its protective case | Follow the prepared arrival procedure for exact unit/revision, shipping-demo preservation, display/touch/IMU, flash/PSRAM, USB recovery, power, paired independence, build and performance tests |
 | Espressif ESP32-S3-DevKitC-1-N8R8 | Owner reports ordered as a bench mule; not received or tested | Exact revision, USB/serial recovery, synthetic telemetry and interface smoke test |
+| Seeed Studio Wio Tracker L1 Pro MeshCore companion | Owner reports ordered; not received or tested. Shipping MeshCore/GNSS behavior and OpenGauge adapter are unverified | Preserve/record the shipping image, prove USB recovery, baseline MeshCore and GNSS no-fix/fix/reacquisition/rate/power, then test an authenticated normalized adapter without publishing identifiers or coordinates |
 | Veepeak OBDCheck BLE, ASIN B073XKQQQW | Owner reports on hand; OpenGauge compatibility untested. Vendor documents Classic Bluetooth for Windows and no MS-CAN/SW-CAN | Follow the prepared allowlisted read-only discovery; exact variant/firmware, Windows serial path, vehicle/PID support, rates, and failure behavior; never assume J1939 or raw CAN |
 | CAN/J1939 gateway interface | Not selected | MCU/board, TWAI/external controller, transceiver, protection, isolation, connector, power conditioning, environmental suitability |
-| GPS ESP32/module | Not selected | Receiver/module, update rate, antenna, interfaces, cold start, accuracy, power |
 
 No hardware is considered supported until repeatable test evidence is recorded.
 
@@ -106,7 +108,7 @@ Bind the completed host gateway and alarm-cache loops to selected ESP-IDF tasks
 and CAN/radio adapters
 while recording the exact target vehicle/use case and reconciling the EEC1 fixture against
 licensed/current J1939 data and legally obtained captured traffic. The
-completed OG-004, OG-005, OG-006, OG-007, OG-008, OG-009, OG-010, OG-010B, OG-010C, OG-010D, OG-010E, OG-012B, OG-013A, OG-014, OG-014A, OG-017, OG-018, and OG-018A contracts are inputs to
+completed OG-004, OG-005, OG-006, OG-007, OG-008, OG-009, OG-010, OG-010B, OG-010C, OG-010D, OG-010E, OG-012B, OG-013A, OG-014, OG-014A, OG-015, OG-017, OG-018, and OG-018A contracts are inputs to
 later layers rather than substitutes for physical CAN, on-device performance,
 display, or transport validation. Incoming candidate boards follow
 `hardware/INVENTORY.md` before any support claim.

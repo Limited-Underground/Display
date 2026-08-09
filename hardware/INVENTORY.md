@@ -15,7 +15,7 @@ wiring, procedure, and result.
 | ESP32-S3 bench mule | Espressif ESP32-S3-DevKitC-1-N8R8 | Owner reports ordered; not yet received | Candidate only | Record revision; run USB/serial recovery and deterministic GPIO/synthetic-telemetry smoke test |
 | Generic OBD-II discovery adapter | Veepeak OBDCheck BLE, Amazon ASIN B073XKQQQW | Owner reports on hand | Candidate only; no OpenGauge test | Follow `hardware/VEEPEAK_OBDCHECK_BLE_BRINGUP.md`: identify the exact variant, enumerate the Windows Classic-Bluetooth path, and perform allowlisted read-only capability/rate discovery with the vehicle stationary |
 | CAN/J1939 gateway | No protected CAN/J1939 interface selected | Not acquired | Missing | Select controller/transceiver, protection, connector, power, and isolation appropriate to the target vehicle and bus |
-| GPS source | No dedicated OpenGauge GPS source selected | Not acquired | Missing | Decide whether OpenTrail supplies location events or OpenGauge needs an independent normalized GPS source |
+| GPS source candidate | Seeed Studio Wio Tracker L1 Pro MeshCore companion | Owner reports ordered; not yet received | Candidate only; shipping MeshCore/GNSS and OpenGauge adapter untested | Follow `hardware/WIO_TRACKER_L1_PRO_BRINGUP.md`: preserve the shipping image, prove USB recovery, baseline MeshCore/GNSS, then test a bounded authenticated `GpsFixSample` adapter without publishing location/identity secrets |
 
 ## Important boundaries
 
