@@ -120,6 +120,12 @@ public:
         const telemetry::CachedSignalSnapshot& snapshot,
         std::uint64_t observed_at_ms);
 
+    // Drops latest source states and invalidates per-subscription publication
+    // baselines without changing peer configuration or packet sequences. New
+    // state after a source-cache epoch change is therefore published promptly;
+    // absent state is not invented and gauges age their old values stale.
+    [[nodiscard]] PublishSchedulerError reset_source_epoch();
+
     [[nodiscard]] TelemetryPublishPlan prepare(
         const PeerAddress& destination,
         std::uint64_t now_ms);

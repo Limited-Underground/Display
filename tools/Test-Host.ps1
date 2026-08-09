@@ -167,3 +167,22 @@ Invoke-HostTest `
         (Join-Path $projectRoot 'firmware\components\wireless\test_support\fake_esp_now_transport.cpp'),
         (Join-Path $projectRoot 'tests\host\telemetry_publish_scheduler_tests.cpp')
     )
+
+Invoke-HostTest `
+    -Name 'telemetry_gateway_publisher_tests' `
+    -Description 'Telemetry gateway publisher composition' `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\telemetry\include'),
+        (Join-Path $projectRoot 'firmware\components\wireless\include'),
+        (Join-Path $projectRoot 'firmware\components\wireless\test_support')
+    ) `
+    -Sources @(
+        (Join-Path $projectRoot 'firmware\components\telemetry\src\normalized_signal.cpp'),
+        (Join-Path $projectRoot 'firmware\components\telemetry\src\telemetry_cache.cpp'),
+        (Join-Path $projectRoot 'firmware\components\wireless\src\esp_now_transport.cpp'),
+        (Join-Path $projectRoot 'firmware\components\wireless\src\telemetry_packet.cpp'),
+        (Join-Path $projectRoot 'firmware\components\wireless\src\telemetry_publish_scheduler.cpp'),
+        (Join-Path $projectRoot 'firmware\components\wireless\src\telemetry_gateway_publisher.cpp'),
+        (Join-Path $projectRoot 'firmware\components\wireless\test_support\fake_esp_now_transport.cpp'),
+        (Join-Path $projectRoot 'tests\host\telemetry_gateway_publisher_tests.cpp')
+    )

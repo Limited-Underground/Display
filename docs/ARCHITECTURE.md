@@ -69,11 +69,13 @@ and update coordination still require separate formats.
 Telemetry publication now has a host-tested cooperative v0 scheduler. Per-gauge
 subscriptions apply signal minimum/maximum intervals, raw canonical deadbands,
 quality-first ordering, latest-value coalescing, three-entry batching, and a
-hard 50 ms per-peer packet floor. A two-phase prepare/local-queue-commit rule
+hard 50 ms per-peer packet floor. A host-tested gateway composition performs
+bounded cache cursor sync, registered-ID mapping, packet encoding, and one
+nonblocking transport enqueue. A two-phase prepare/local-queue-commit rule
 advances per-peer sequence only when the local transport accepts the frame;
 later radio loss does not create a blocking retry that starves newer data.
 Gauges use sequence/session and source age plus receiver-local elapsed time for
-loss and staleness. Cache/task composition, pairing, real peer limits,
+loss and staleness. Target-task composition, pairing, real peer limits,
 encryption/key handling, channel coexistence, and recovery remain unresolved.
 
 ## Gauge rendering
