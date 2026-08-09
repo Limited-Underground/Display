@@ -140,6 +140,16 @@ power-cut/endurance evidence remain unresolved.
 
 The GPS role publishes normalized speed, position, altitude, heading, UTC, fix quality, and age. Consumers must distinguish unavailable/stale values.
 
+The host-tested v0 tracker accepts an adapter-neutral sample with explicit field
+presence, fix quality, source boot session/sequence, and source age. It counts
+loss, rejects duplicate/backward samples and receiver-clock regression, accepts
+normal sequence wrap/restart, and combines source age only with local monotonic
+elapsed time. At the exact stale boundary it removes position, motion,
+accuracy, and UTC values. Local-gateway, dedicated-node, authorized
+OpenTrail/MeshCore bridge, and gauge-local GNSS topologies remain possible; the
+ordered Wio Tracker L1 Pro is only a candidate. Transport/authentication,
+parser/driver, rate, privacy, and physical GNSS evidence remain unresolved.
+
 APU/auxiliary support is a separate module and protocol. Any future start/stop or actuation requires authenticated authorization, replay protection, interlocks, fail-safe defaults, auditability, and a dedicated safety review. It is not part of the initial telemetry proof of concept.
 
 ## OpenTrail boundary

@@ -164,6 +164,17 @@ Invoke-HostTest `
     )
 
 Invoke-HostTest `
+    -Name 'gps_fix_tracker_tests' `
+    -Description 'Normalized GPS fix/quality/age tracker' `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\gps\include')
+    ) `
+    -Sources @(
+        (Join-Path $projectRoot 'firmware\components\gps\src\gps_fix_tracker.cpp'),
+        (Join-Path $projectRoot 'tests\host\gps_fix_tracker_tests.cpp')
+    )
+
+Invoke-HostTest `
     -Name 'can_receiver_tests' `
     -Description 'Passive CAN receiver abstraction' `
     -IncludeDirectories @(
