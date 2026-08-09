@@ -16,14 +16,7 @@ constexpr std::size_t kReservedTailOffset = 90;
 constexpr std::size_t kChecksumOffset = 92;
 constexpr std::uint8_t kValuePresentFlag = 0x01U;
 
-struct SignalDefinition {
-    TelemetrySignalCode code;
-    std::string_view id;
-    telemetry::SignalValueType type;
-    telemetry::SignalUnit unit;
-};
-
-constexpr std::array<SignalDefinition, 4> kSignalDefinitions{{
+constexpr std::array<TelemetrySignalDescriptor, 4> kSignalDefinitions{{
     {TelemetrySignalCode::engine_speed,
      "powertrain.engine_speed",
      telemetry::SignalValueType::unsigned_integer,
@@ -42,11 +35,11 @@ constexpr std::array<SignalDefinition, 4> kSignalDefinitions{{
      telemetry::SignalUnit::millivolt},
 }};
 
-const SignalDefinition* find_definition(TelemetrySignalCode code) {
+const TelemetrySignalDescriptor* find_definition(TelemetrySignalCode code) {
     const auto match = std::find_if(
         kSignalDefinitions.begin(),
         kSignalDefinitions.end(),
-        [code](const SignalDefinition& definition) {
+        [code](const TelemetrySignalDescriptor& definition) {
             return definition.code == code;
         });
     return match == kSignalDefinitions.end() ? nullptr : &*match;
@@ -177,7 +170,7 @@ TelemetryPacketError validate_wire_signal(const WireTelemetrySignal& signal) {
         !known_quality(signal.quality)) {
         return TelemetryPacketError::unknown_enum;
     }
-    if (signal.value.type != definition->type ||
+    if (signal.value.type != definition->value_type ||
         signal.unit != definition->unit) {
         return TelemetryPacketError::incompatible_signal;
     }
@@ -187,7 +180,7 @@ TelemetryPacketError validate_wire_signal(const WireTelemetrySignal& signal) {
     }
 
     telemetry::NormalizedSignal normalized{};
-    if (telemetry::make_signal_id(definition->id, normalized.id) !=
+    if (telemetry::make_signal_id(definition->normalized_id, normalized.id) !=
         telemetry::SignalModelError::none) {
         return TelemetryPacketError::invalid_value;
     }
@@ -247,6 +240,11 @@ TelemetryPacketError read_signal_entry(
 
 }  // namespace
 
+const TelemetrySignalDescriptor* telemetry_signal_descriptor(
+    TelemetrySignalCode code) {
+    return find_definition(code);
+}
+
 std::uint32_t telemetry_packet_crc32(
     const std::uint8_t* data,
     std::size_t size) {
@@ -299,8 +297,9 @@ TelemetryPacketError make_wire_telemetry_signal(
         telemetry::SignalModelError::none) {
         return TelemetryPacketError::invalid_value;
     }
-    if (!telemetry::signal_id_equals(snapshot.signal.id, definition->id) ||
-        snapshot.signal.value.type != definition->type ||
+    if (!telemetry::signal_id_equals(
+            snapshot.signal.id, definition->normalized_id) ||
+        snapshot.signal.value.type != definition->value_type ||
         snapshot.signal.unit != definition->unit) {
         return TelemetryPacketError::incompatible_signal;
     }
@@ -314,7 +313,7 @@ TelemetryPacketError make_wire_telemetry_signal(
 
     WireTelemetrySignal candidate{};
     candidate.code = code;
-    candidate.value.type = definition->type;
+    candidate.value.type = definition->value_type;
     candidate.unit = definition->unit;
     candidate.quality = snapshot.effective_quality;
     candidate.source_age_ms = static_cast<std::uint32_t>(snapshot.age_ms);

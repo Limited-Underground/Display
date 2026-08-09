@@ -3,6 +3,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <string_view>
 
 #include "opengauge/normalized_signal.hpp"
 #include "opengauge/telemetry_cache.hpp"
@@ -19,6 +20,17 @@ enum class TelemetrySignalCode : std::uint16_t {
     vehicle_speed = 3,
     electrical_voltage = 4,
 };
+
+struct TelemetrySignalDescriptor {
+    TelemetrySignalCode code{TelemetrySignalCode::engine_speed};
+    std::string_view normalized_id{};
+    telemetry::SignalValueType value_type{
+        telemetry::SignalValueType::signed_integer};
+    telemetry::SignalUnit unit{telemetry::SignalUnit::none};
+};
+
+[[nodiscard]] const TelemetrySignalDescriptor*
+telemetry_signal_descriptor(TelemetrySignalCode code);
 
 struct WireTelemetrySignal {
     TelemetrySignalCode code{TelemetrySignalCode::engine_speed};
