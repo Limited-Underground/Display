@@ -102,6 +102,10 @@ physical bench and this production host policy. Both remained explicit
 non-success with zero acknowledgements, `outbox_completed=false`, and terminal
 failure. Retryable physical rejection and persistent target-state cases remain.
 
+OG-018K now adds two exact role-reversed rate-limit rejections. Both released
+one queued retry, retained zero acknowledgements/in-flight, and avoided terminal
+failure. Persistent backoff plus a later physical retry-to-accept remain.
+
 - replace the passed host reconstruction of outbox/authorization/ACK ingress
   with a persistent authenticated target adapter running the full exporter,
   outbox, ACK-ingress/policy, and recovery composition;

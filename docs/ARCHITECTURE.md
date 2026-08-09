@@ -231,6 +231,12 @@ correlation, produced zero delivery acknowledgements and
 This proves the host composition does not convert this physical rejection into
 success. Retryable rejection and persistent target-state interruption remain.
 
+OG-018K then exercised the retryable negative branch. Two role-reversed
+rate-limit rejections passed the same authorization/session/replay/correlation
+path, released one queued retry, left zero in flight and zero acknowledgements,
+and avoided terminal failure. Durable backoff state and a later physical
+retry-to-accept sequence remain unproved.
+
 ## Updates and recovery
 
 OTA design must include image authenticity/integrity, hardware target compatibility, version policy, sufficient partition/storage layout, atomic boot selection, health confirmation, rollback, interruption handling, and a documented USB/physical recovery path. Update coordination must never simultaneously remove all useful instrumentation by default.

@@ -56,7 +56,7 @@ std::vector<std::uint8_t> from_hex(const std::string& text) {
     return bytes;
 }
 
-int verify(int argc, char** argv, bool accepted) {
+int verify(int argc, char** argv, AlertAckReason expected_reason) {
     if (argc != 9) {
         throw std::invalid_argument(
             "verification requires alert-hex ack-hex consumer-id "
@@ -154,10 +154,24 @@ int verify(int argc, char** argv, bool accepted) {
         outbox_status.remote_terminal_failures == 1 &&
         ingress_status.remote_rejections == 1 &&
         ingress_status.remote_terminal_failures == 1;
+    const bool rate_limited_success =
+        !result.outbox_completed &&
+        result.disposition == AlertAckDisposition::rejected &&
+        result.reason == AlertAckReason::rate_limited &&
+        result.remote_rejection_action == CriticalRemoteRejectionAction::retry &&
+        result.retry_released && !result.terminal_failure &&
+        outbox_status.acknowledgements == 0 &&
+        outbox_status.remote_retries == 1 &&
+        ingress_status.remote_rejections == 1 &&
+        ingress_status.remote_retries == 1;
     const bool success =
-        result.processed() && outbox_status.queued_count == 0 &&
-        outbox_status.in_flight_count == 0 &&
-        (accepted ? accepted_success : stale_success);
+        result.processed() && outbox_status.in_flight_count == 0 &&
+        ((expected_reason == AlertAckReason::none &&
+          outbox_status.queued_count == 0 && accepted_success) ||
+         (expected_reason == AlertAckReason::stale &&
+          outbox_status.queued_count == 0 && stale_success) ||
+         (expected_reason == AlertAckReason::rate_limited &&
+          outbox_status.queued_count == 1 && rate_limited_success));
     std::cout
         << "{\"processed\":" << (result.processed() ? "true" : "false")
         << ",\"outbox_completed\":"
@@ -170,6 +184,11 @@ int verify(int argc, char** argv, bool accepted) {
         << ",\"rejected_stale\":"
         << (result.disposition == AlertAckDisposition::rejected &&
                     result.reason == AlertAckReason::stale
+                ? "true"
+                : "false")
+        << ",\"rejected_rate_limited\":"
+        << (result.disposition == AlertAckDisposition::rejected &&
+                    result.reason == AlertAckReason::rate_limited
                 ? "true"
                 : "false")
         << ",\"retry_released\":"
@@ -189,13 +208,17 @@ int main(int argc, char** argv) {
     try {
         if (argc < 2) {
             throw std::invalid_argument(
-                "expected verify-accepted or verify-stale");
+                "expected verify-accepted, verify-stale, or "
+                "verify-rate-limited");
         }
         if (std::string(argv[1]) == "verify-accepted") {
-            return verify(argc, argv, true);
+            return verify(argc, argv, AlertAckReason::none);
         }
         if (std::string(argv[1]) == "verify-stale") {
-            return verify(argc, argv, false);
+            return verify(argc, argv, AlertAckReason::stale);
+        }
+        if (std::string(argv[1]) == "verify-rate-limited") {
+            return verify(argc, argv, AlertAckReason::rate_limited);
         }
         throw std::invalid_argument("unknown command");
     } catch (const std::exception& error) {
