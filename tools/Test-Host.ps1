@@ -212,6 +212,23 @@ Invoke-HostTest `
     )
 
 Invoke-HostTest `
+    -Name 'gauge_telemetry_receiver_tests' `
+    -Description 'Bounded gauge telemetry receiver' `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\telemetry\include'),
+        (Join-Path $projectRoot 'firmware\components\wireless\include'),
+        (Join-Path $projectRoot 'firmware\components\wireless\test_support')
+    ) `
+    -Sources @(
+        (Join-Path $projectRoot 'firmware\components\telemetry\src\normalized_signal.cpp'),
+        (Join-Path $projectRoot 'firmware\components\wireless\src\esp_now_transport.cpp'),
+        (Join-Path $projectRoot 'firmware\components\wireless\src\telemetry_packet.cpp'),
+        (Join-Path $projectRoot 'firmware\components\wireless\src\gauge_telemetry_receiver.cpp'),
+        (Join-Path $projectRoot 'firmware\components\wireless\test_support\fake_esp_now_transport.cpp'),
+        (Join-Path $projectRoot 'tests\host\gauge_telemetry_receiver_tests.cpp')
+    )
+
+Invoke-HostTest `
     -Name 'telemetry_publish_scheduler_tests' `
     -Description 'Telemetry publish scheduler' `
     -IncludeDirectories @(
