@@ -49,9 +49,10 @@ physical restart/power-loss behavior, and rate limits remain required.
 An accepted/none ACK that passes every gate calls the outbox acknowledgement
 operation and removes exactly one retained lifecycle. A rejected/nonzero-reason
 ACK must still correlate and consumes its sequence, but never increments the
-outbox acknowledgement count or removes the event. The returned disposition
-and canonical reason are explicit negative evidence for a later retry/terminal
-policy; they are never delivery success.
+outbox acknowledgement count and is never delivery success. It now applies the
+bounded retry/terminal behavior in
+`CRITICAL_ALERT_ACK_REJECTION_POLICY_V0.md` atomically before committing replay
+state.
 
 ## Host evidence
 
@@ -76,7 +77,6 @@ times with zero failures.
 - generate `OGK0` only from a final OpenTrail ingress decision;
 - persist authorization/session/replay state with corruption, power-loss,
   rollback, key-rotation, revoke, and recovery tests;
-- define bounded retry/terminal behavior for each negative ACK reason;
 - add typed redacted diagnostics and rate limits; and
 - validate physical two-Heltec delivery, loss/reordering/restart, and repeater
   behavior without claiming the repeater creates application ACKs.

@@ -197,9 +197,13 @@ exact outbox correlation. Only accepted/none removes an entry; a correlated
 rejection remains explicit non-success. CRC still provides corruption
 detection only. A fixed canonical checkpoint now exports/imports all eight
 bindings and replay bitmaps atomically, tied to the exact live authorization
-epoch; rotation or revoke invalidates stale state. Durable coordinated storage,
-rollback protection, real cryptographic transport, negative-reason terminal
-policy, and physical delivery remain unresolved.
+epoch; rotation or revoke invalidates stale state. Correlated rejection reasons
+now have one bounded policy: rate-limited/internal-error responses release the
+entry after normal backoff while six deterministic refusals terminate with
+typed event/condition/reason/attempt evidence; a retry at the attempt limit also
+terminates. Durable coordinated storage, rollback protection, real
+cryptographic transport, operator presentation, and physical delivery remain
+unresolved.
 
 ## Updates and recovery
 

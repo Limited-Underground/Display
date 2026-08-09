@@ -4,7 +4,7 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "opengauge/critical_alert.hpp"
+#include "opengauge/critical_alert_ack.hpp"
 
 namespace opengauge::integration {
 
@@ -26,6 +26,12 @@ enum class CriticalOutboxError : std::uint8_t {
 enum class CriticalDeliveryFailure : std::uint8_t {
     acknowledgement_timeout = 1,
     maximum_lifetime = 2,
+    remote_rejection = 3,
+};
+
+enum class CriticalRemoteRejectionAction : std::uint8_t {
+    retry = 1,
+    terminal = 2,
 };
 
 struct CriticalAlertOutboxConfiguration {
@@ -60,6 +66,16 @@ struct CriticalDeliveryFailureEvent {
     CriticalDeliveryFailure reason{
         CriticalDeliveryFailure::acknowledgement_timeout};
     std::uint8_t attempts{0};
+    AlertAckReason remote_reason{AlertAckReason::none};
+};
+
+struct CriticalRemoteRejectionResult {
+    CriticalOutboxError error{CriticalOutboxError::invalid_state};
+    CriticalRemoteRejectionAction action{
+        CriticalRemoteRejectionAction::terminal};
+    CriticalDeliveryFailureEvent failure{};
+    bool retry_released{false};
+    bool terminal_failure{false};
 };
 
 struct CriticalOutboxAdvanceResult {
@@ -82,6 +98,8 @@ struct CriticalAlertOutboxStatus {
     std::uint32_t local_acceptances{0};
     std::uint32_t acknowledgements{0};
     std::uint32_t retry_timeouts{0};
+    std::uint32_t remote_retries{0};
+    std::uint32_t remote_terminal_failures{0};
     std::uint32_t terminal_failures{0};
 };
 
@@ -105,6 +123,10 @@ public:
         std::uint64_t now_ms);
     [[nodiscard]] CriticalOutboxError validate_acknowledgement(
         const CriticalAlertAcknowledgement& acknowledgement) const;
+    [[nodiscard]] CriticalRemoteRejectionResult apply_remote_rejection(
+        const CriticalAlertAcknowledgement& acknowledgement,
+        AlertAckReason reason,
+        std::uint64_t now_ms);
     [[nodiscard]] CriticalOutboxAdvanceResult advance(
         std::uint64_t now_ms);
     [[nodiscard]] CriticalAlertOutboxStatus status() const;

@@ -288,7 +288,8 @@ void test_replay_window_accepts_bounded_reordering_and_rejects_duplicates() {
                .processed());
     EXPECT(ingress.receive(frame.data(), frame.size(), transport(), 6).error ==
            CriticalAlertAckIngressError::replay_duplicate);
-    EXPECT(outbox.status().in_flight_count == 3);
+    EXPECT(outbox.status().in_flight_count == 0);
+    EXPECT(outbox.status().remote_terminal_failures == 3);
     EXPECT(ingress.status().remote_rejections == 3);
 }
 
@@ -352,9 +353,16 @@ void test_remote_rejection_is_correlated_but_never_success() {
     EXPECT(result.disposition == AlertAckDisposition::rejected);
     EXPECT(result.reason == AlertAckReason::rate_limited);
     EXPECT(!result.outbox_completed);
-    EXPECT(outbox.status().in_flight_count == 1);
+    EXPECT(result.remote_rejection_action ==
+           CriticalRemoteRejectionAction::retry);
+    EXPECT(result.retry_released);
+    EXPECT(!result.terminal_failure);
+    EXPECT(outbox.status().queued_count == 1);
+    EXPECT(outbox.status().in_flight_count == 0);
     EXPECT(outbox.status().acknowledgements == 0);
+    EXPECT(outbox.status().remote_retries == 1);
     EXPECT(ingress.status().remote_rejections == 1);
+    EXPECT(ingress.status().remote_retries == 1);
 }
 
 void test_outbox_mismatch_and_clock_regression_do_not_consume_sequence() {

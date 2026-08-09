@@ -94,7 +94,8 @@ std::array<std::uint8_t, kCriticalAlertAckFrameBytes> rejected_ack_frame(
     std::uint32_t sequence) {
     CriticalAlertAck value{};
     value.disposition = AlertAckDisposition::rejected;
-    value.reason = AlertAckReason::stale;
+    // Keep the correlated event retained while exercising replay persistence.
+    value.reason = AlertAckReason::rate_limited;
     value.state = AlertState::asserted;
     value.consumer_id = kConsumerId;
     value.producer_id = kProducerId;

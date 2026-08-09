@@ -102,8 +102,8 @@ times with zero failures.
 - bind the completed authorization-epoch-aware replay checkpoint to durable
   commit-last storage with restart, rollback, rotation, revoke, and recovery
   protection coordinated with the peer registry;
-- define retry/terminal failure and typed diagnostic policy for each correlated
-  rejected reason;
+- bind the host-tested retry/terminal result and typed failure evidence to
+  operator-visible diagnostics;
 - test loss, duplicate, corruption, reordering, delayed ACK, restart, revoke,
   wrong producer/consumer, wrong channel, and relay behavior;
 - validate physical two-Heltec delivery and document that a SenseCAP repeater

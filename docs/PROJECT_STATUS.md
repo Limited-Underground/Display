@@ -23,8 +23,9 @@ gauge receiver/latest-state store, fail-visible eight-widget view model and
 four-series trend buffer, fixed-memory typed diagnostics core, versioned recoverable two-slot gauge
 layout store, transport-neutral GPS fix/quality/age tracker, OTA
 trial-confirmation/rollback guard, opaque-handle peer authorization registry,
-authenticated-metadata/replay/outbox critical-alert ACK ingress, and its
-authorization-epoch-bound replay checkpoint now have deterministic host tests. Physical vehicle acquisition,
+authenticated-metadata/replay/outbox critical-alert ACK ingress, its
+authorization-epoch-bound replay checkpoint, and bounded negative-ACK policy
+now have deterministic host tests. Physical vehicle acquisition,
 normalization from captured/real signals,
 on-device performance, physical transport, keys, displays, and hardware remain
 unvalidated.
@@ -61,7 +62,7 @@ unvalidated.
 - The OpenTrail alert v0 frame is a fixed 64-byte explicit codec with canonical units and separate event/condition IDs. CRC is corruption detection only; transport authentication and authorization remain mandatory.
 - The alarm-to-critical-alert exporter maps 16 allowlisted rule IDs to only final assert/clear transitions, keeps stable condition and unique event IDs, derives monotonic age, converts six canonical units, and refuses local reminder/ack/latch events, nonvalid assertions, lifecycle conflicts, unsupported values, and codec failures without state/ID commit. Seven host groups cover mapping/capacity, codec round-trip, local-only events, quality/lifecycle, units, rollback, freshness, restart, and exhaustion. Reviewed mappings, persistent ID allocation, and physical authenticated transport remain.
 - The eight-entry critical-alert outbox reserves emergency capacity and priority, validates retained `OGA0` event uniqueness, separates local queue rejection/acceptance from exact event+condition+lifecycle application ACK, and bounds abandoned prepare tokens, backoff, attempts, late ACK, lifetime, and terminal failure. Eight host groups plus 100 refined repeat runs cover malformed/capacity/order/priority, two-phase send, exact timers, retry/failure, late/mismatched ACK, and clocks. Persistence and physical OpenTrail delivery remain.
-- The mirrored 64-byte `OGK0` ACK codec carries accepted/rejected disposition and canonical reason, original lifecycle, consumer/producer/event/condition identity, consumer boot session/sequence, observed age, reserved zeros, and CRC. A fixed eight-consumer ingress requires adapter-authenticated metadata, exact logical peer/key-handle/channel/permission authorization, explicit consumer/boot-session binding, configured producer/age checks, a 32-sequence replay window, and exact outbox lifecycle correlation. Its canonical 280-byte checkpoint atomically restores bindings/replay only against the exact live authorization epoch, so rotation/revoke invalidates stale state. Only accepted/none removes an entry; rejected ACKs remain explicit non-success. Codec, ingress, and checkpoint total twenty host groups; each focused suite repeats 100 times. CRC is not authentication; physical cryptographic transport, durable coordinated storage/rollback protection, negative-reason policy, and physical ACK delivery remain.
+- The mirrored 64-byte `OGK0` ACK codec carries accepted/rejected disposition and canonical reason, original lifecycle, consumer/producer/event/condition identity, consumer boot session/sequence, observed age, reserved zeros, and CRC. A fixed eight-consumer ingress requires adapter-authenticated metadata, exact logical peer/key-handle/channel/permission authorization, explicit consumer/boot-session binding, configured producer/age checks, a 32-sequence replay window, and exact outbox lifecycle correlation. Its canonical 280-byte checkpoint atomically restores bindings/replay only against the exact live authorization epoch, so rotation/revoke invalidates stale state. Only accepted/none is delivery success. Rate-limited/internal-error rejections release the retained event after normal backoff; unauthorized, stale, duplicate, conflict, malformed, and unsupported rejections terminate with typed correlation/reason/attempt evidence, and retryable responses terminate at the attempt limit. Codec, ingress, checkpoint, and rejection policy total twenty-eight host groups; the affected policy, ingress, and outbox suites each repeat 100 times. CRC is not authentication; physical cryptographic transport, durable coordinated storage/rollback protection, operator presentation, and physical ACK delivery remain.
 - OTA is not accepted until rollback and physical recovery are designed and tested.
 - Project software and documentation are published under Apache-2.0; external contributions follow `CONTRIBUTING.md`, and sensitive reports follow `SECURITY.md`.
 
@@ -115,7 +116,7 @@ Bind the completed host gateway and alarm-cache loops to selected ESP-IDF tasks
 and CAN/radio adapters
 while recording the exact target vehicle/use case and reconciling the EEC1 fixture against
 licensed/current J1939 data and legally obtained captured traffic. The
-completed OG-004, OG-005, OG-006, OG-007, OG-008, OG-009, OG-010, OG-010B, OG-010C, OG-010D, OG-010E, OG-011A, OG-012B, OG-012C, OG-013A, OG-014, OG-014A, OG-015, OG-016A, OG-017, OG-018, OG-018A, OG-018B, OG-018C, OG-018D, and OG-018E contracts are inputs to
+completed OG-004, OG-005, OG-006, OG-007, OG-008, OG-009, OG-010, OG-010B, OG-010C, OG-010D, OG-010E, OG-011A, OG-012B, OG-012C, OG-013A, OG-014, OG-014A, OG-015, OG-016A, OG-017, OG-018, OG-018A, OG-018B, OG-018C, OG-018D, OG-018E, and OG-018F contracts are inputs to
 later layers rather than substitutes for physical CAN, on-device performance,
 display, or transport validation. Incoming candidate boards follow
 `hardware/INVENTORY.md` before any support claim.
