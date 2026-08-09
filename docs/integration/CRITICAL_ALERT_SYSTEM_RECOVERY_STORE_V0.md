@@ -1,0 +1,74 @@
+# Critical Alert System Recovery Store v0
+
+Status: recoverable two-slot host store, 2026-08-09. This is not an ESP-IDF
+storage adapter, protected-key persistence, authenticated integrity, trusted
+rollback protection, or physical power-loss/wear evidence.
+
+## Purpose
+
+`CriticalAlertSystemRecoveryStore` writes exact 1280-byte `ORS0` records into
+two caller-supplied slots. Because each `ORS0` already contains its nonzero
+generation, nested identities, and outer CRC, the store does not add another
+envelope.
+
+One stored generation contains the peer authorization, ACK binding/replay, and
+alert-outbox state needed for dependency-correct boot recovery. Raw keys remain
+outside the record and must be resolved through protected storage by opaque
+handle.
+
+## Save policy
+
+- `save_next` owns normal generation allocation: 1 on empty storage, then the
+  greatest valid generation plus one.
+- Explicit saves must be nonzero and strictly newer than every valid slot.
+- Generation conflict, unreadable baseline, and 64-bit exhaustion fail before
+  export or write.
+- An empty/invalid slot is selected first; otherwise the older valid generation
+  is replaced, preserving the newest known-good slot during the write.
+- The store exports one exact `ORS0`, writes it, reads back all 1280 bytes,
+  compares them exactly, decodes them again, and verifies the generation.
+- Write and verification failures report the intended slot/generation as
+  `commit_uncertain` so boot inspection, not a blind retry, determines outcome.
+
+## Restore policy
+
+- Both slots are inspected and decoded before selection.
+- The newest unique valid generation is selected.
+- One invalid or unreadable slot remains visible as recovery/degraded evidence
+  while the other valid slot can still restore.
+- Equal generations with different bytes fail closed.
+- The selected record is passed through the full dependency-correct `ORS0`
+  preflight and live import. A peer/outbox/ingress policy rejection leaves all
+  three live owners unchanged.
+- Reset attempts to erase both slots and reports either failure.
+
+The interface requires exclusive ownership for inspection, save, and restore.
+It does not define concurrent writers, rollback authority, or factory-reset
+policy.
+
+## Host evidence
+
+`tests/host/critical_alert_system_recovery_store_tests.cpp` covers eight groups:
+
+1. canonical first save and empty-store behavior;
+2. monotonic rotation and newest joint three-owner restore;
+3. eleven interrupted-write boundaries across header, `OPA0`, `OCR0`, tail,
+   and outer CRC, each preserving generation 1;
+4. a complete generation-2 write followed by I/O error, selected as committed
+   at boot;
+5. corrupt and unreadable newest slots with visible fallback/degradation;
+6. incompatible peer policy rejected without live-owner mutation;
+7. invalid/stale/exhausted generations and equal-generation conflict; and
+8. corrupt readback as uncertain verification failure plus reset failure.
+
+The complete 36-executable host matrix passes, and the focused store suite
+passes 100 consecutive repeats.
+
+## Remaining gates
+
+- bind both slots to a selected ESP-IDF protected-storage backend;
+- define authenticated integrity and a trusted monotonic/rollback authority;
+- coordinate logical record reset with protected key erasure and replacement;
+- inject power interruption at the eleven modeled boundaries and additional
+  backend-specific commit boundaries on exact target hardware;
+- measure endurance and prove authenticated transport boot composition.

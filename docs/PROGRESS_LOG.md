@@ -26,6 +26,10 @@ public chronology.
   authorization to exact `OCR0` ACK/outbox state under one generation. Private,
   dependency-correct candidates preflight all three owners before live import;
   the complete 35-executable matrix and 100 focused repeats pass.
+- Added a recoverable two-slot store for exact `ORS0` generations. Store-owned
+  allocation, exact readback, eleven interrupted-write boundaries, full-write
+  error reconciliation, conflict/exhaustion refusal, the complete 36-executable
+  matrix, and 100 focused repeats pass.
 - Kept all target claims bounded: there is no ESP-IDF storage/radio/CAN binding,
   protected on-device key persistence, physical power-cut evidence, or vehicle
   validation yet.

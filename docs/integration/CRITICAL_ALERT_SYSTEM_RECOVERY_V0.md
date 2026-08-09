@@ -79,10 +79,13 @@ between preflight and commit.
 The complete 35-executable host matrix passes, and the focused `ORS0` suite
 passes 100 consecutive repeats.
 
+The separate [two-slot system-recovery store](CRITICAL_ALERT_SYSTEM_RECOVERY_STORE_V0.md)
+now owns normal `ORS0` generations and adds recoverable interruption handling
+around this exact record.
+
 ## Remaining gates
 
-- add a recoverable two-slot store that owns `ORS0` generations;
-- bind that store to selected ESP-IDF protected storage;
+- bind the two-slot store to selected ESP-IDF protected storage;
 - define authenticated integrity, trusted rollback, reset, and replacement
   authority across both protected keys and logical checkpoints;
 - inject power loss at all outer/nested record boundaries on exact hardware;

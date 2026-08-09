@@ -169,6 +169,30 @@ Invoke-HostTest `
     )
 
 Invoke-HostTest `
+    -Name 'critical_alert_system_recovery_store_tests' `
+    -Description 'Recoverable atomic alert-system state store' `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\identity\include'),
+        (Join-Path $projectRoot 'firmware\components\integration\include'),
+        (Join-Path $projectRoot 'firmware\components\integration\test_support')
+    ) `
+    -Sources @(
+        (Join-Path $projectRoot 'firmware\components\identity\src\peer_authorization.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_ack.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_outbox_checkpoint.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_outbox.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_ack_ingress.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_recovery_checkpoint.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_recovery.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_system_recovery_checkpoint.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_system_recovery.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_system_recovery_store.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\test_support\fake_critical_alert_system_recovery_storage.cpp'),
+        (Join-Path $projectRoot 'tests\host\critical_alert_system_recovery_store_tests.cpp')
+    )
+
+Invoke-HostTest `
     -Name 'critical_alert_ack_ingress_tests' `
     -Description 'Authenticated critical alert ACK ingress and correlation' `
     -IncludeDirectories @(
