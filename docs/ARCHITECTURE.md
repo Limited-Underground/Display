@@ -37,6 +37,13 @@ Interfaces cover CAN controller/transceiver, clock, ESP-NOW/radio, display, touc
 
 Initial physical operation is passive/listen-only. The CAN adapter returns frame ID, extended/standard form, DLC/data, receive time, error state, and overflow information. A later non-J1939 adapter may feed the same normalization layer.
 
+The host-tested v0 receiver interface deliberately has no transmit method. Its
+bounded fake exercises policy/filtering, FIFO capture, error-warning/passive,
+bus-off, overflow, injected hardware failure, restart, and monotonic timestamps.
+This proves the software boundary, not electrical passivity; every production
+adapter must separately prove that its controller and transceiver cannot
+acknowledge or drive the vehicle bus during initial bring-up.
+
 J1939 processing is decomposed into:
 
 1. 29-bit identifier parsing (priority, data page, PDU format/specific, source address, destination where applicable, and PGN).
@@ -52,25 +59,112 @@ A signal has a stable namespaced ID, type, value when valid, canonical unit, qua
 
 ### Alarm engine
 
-Alarm rules consume normalized signals, not raw frames. Rules include threshold/range, debounce, hysteresis, severity, latching/acknowledgement policy, stale/missing behavior, and rate limits. Display alerts and exported critical events derive from the same validated state but remain independently deliverable.
+Alarm rules consume normalized signals, not raw frames. The host-tested fixed
+16-rule engine provides inclusive above/below/outside-range comparisons, exact
+hysteresis and debounce boundaries, severity, latching/acknowledgement,
+clear/hold/assert behavior for nonvalid or stale input, and bounded periodic
+reminders. Invalid quality never becomes a numeric alarm input. Display alerts
+and exported critical events derive from the same validated state but remain
+independently deliverable. A host-tested cache evaluator scans all 16 latest
+states each cycle so unchanged values still advance debounce, exact staleness,
+and reminder time; it preflights the whole poll and resets runtime on a cache
+epoch change without inventing a clear event. A host-tested allowlist exporter
+maps only final alarm assertions/clears into the existing 64-byte critical-alert
+codec with stable condition IDs, unique event IDs, canonical unit conversion,
+quality/age checks, and no lifecycle commit on codec failure. Target-task
+timing, display behavior, and physical critical-event transport remain later
+work.
 
 ## ESP-NOW telemetry protocol
 
 The transport and semantic codec are separate. Never serialize compiler-dependent structs directly.
 
-An envelope should eventually provide protocol/schema version, message type, gateway/source identity, target/broadcast scope, sequence number, payload length, flags, and integrity/authentication metadata. Payload types may include capabilities, telemetry batches, events/alarms, heartbeat/time, pairing/configuration, diagnostics, and update coordination.
+The host-tested telemetry v0 packet now provides an explicit fixed-length
+version/type, gateway and boot-session identity, sequence, gateway uptime,
+three registered signal entries with source age, canonical reserved bytes, and
+CRC corruption detection. It remains a pre-production contract: CRC is not
+authentication, target authorization comes from provisioned unicast peers, and
+capabilities, events/alarms, heartbeat/time, pairing/configuration, diagnostics,
+and update coordination still require separate formats.
 
-Telemetry is subscription/rate-policy driven. The gateway sends normalized selected signals at a bounded rate, with change/deadband and periodic refresh where appropriate. Gauges use sequence and age data for loss and staleness; packet loss must not cause blocking retries that starve newer data. Pairing, peer limits, encryption/key handling, channel coexistence, and recovery remain unresolved.
+Telemetry publication now has a host-tested cooperative v0 scheduler. Per-gauge
+subscriptions apply signal minimum/maximum intervals, raw canonical deadbands,
+quality-first ordering, latest-value coalescing, three-entry batching, and a
+hard 50 ms per-peer packet floor. A host-tested gateway composition performs
+bounded cache cursor sync, registered-ID mapping, packet encoding, and one
+nonblocking transport enqueue. A two-phase prepare/local-queue-commit rule
+advances per-peer sequence only when the local transport accepts the frame;
+later radio loss does not create a blocking retry that starves newer data.
+Gauges use sequence/session and source age plus receiver-local elapsed time for
+loss and staleness. ESP-IDF target-task binding, pairing, real peer limits,
+encryption/key handling, channel coexistence, and recovery remain unresolved.
+
+A host-tested logical authorization registry now bounds eight peers and one
+local approval window. It stores opaque logical IDs and secure-key handles,
+never raw keys/PINs/addresses, and checks role-scoped permission plus key handle
+and channel on each authorization decision. Exact timeout, capacity, duplicate
+peer/key rejection, revoke/forget/replacement, and strictly increasing key
+rotation epochs are covered. Discovery/UI/local presence, protected key
+storage, persistence/recovery, rate limits, ESP-NOW binding, and physical
+provisioning remain unresolved.
+
+A host-tested cooperative gateway loop now composes passive receive, J1939
+dispatch, normalized cache writes, one cache poll, at most one enqueue for each
+of eight peers, and one transport service call. Its configurable drain limit is
+at most 16 CAN frames per cycle, preventing sustained bus input from starving
+radio work. Input faults do not suppress cache aging, so bus-off still produces
+an explicit stale/no-value publication. ESP-IDF task/ISR ownership, watchdog,
+stack, timing, physical adapters, and concurrency remain unresolved.
+
+The host-tested gauge receiver admits only the configured peer, encrypted
+metadata, channel, and encoded gateway identity; drains at most four datagrams
+per cycle; tracks duplicate/out-of-order/gap/session transitions; and stores 16
+latest wire signals with source age plus receiver-local elapsed time. A new
+gateway session clears old store state, and exact staleness removes numeric
+display values. ESP-IDF callbacks/keys/RF remain.
 
 ## Gauge rendering
 
 The rendering layer consumes a view model derived from the local signal cache. Layout definitions refer to stable signal IDs and units, never J1939 offsets. Proposed widgets include needle, number, bar, multi-value, warning, trend, and status.
 
+The host-tested v0 projection configures eight registered-signal widgets and
+emits atomic display-neutral snapshots with distinct valid, suspect, missing,
+stale, unavailable, error, out-of-range, and unknown states. Only valid/suspect
+states retain a value; missing still carries expected type/unit for stable UI
+chrome without inventing a measurement. Rendering, localization, touch, and
+hardware performance remain unresolved.
+
+A host-tested volatile trend core retains up to four fixed series of 2 through
+120 points with independent exact minimum intervals. Valid/suspect points keep
+their value; missing/stale/unavailable/error/out-of-range/unknown points are
+explicit no-value gaps. Rings overwrite only the oldest point and read
+oldest-first atomically. Renderer axes/decimation, memory/timing/locking,
+persistence/privacy, and physical display acceptance remain unresolved.
+
 Rendering must be non-blocking relative to receive/cache updates. It should use bounded allocation, measurable frame/update budgets, dirty-region or suitable refresh strategies, and a conspicuous stale/error presentation. Configuration is schema-versioned, validated, recoverable, and stored locally.
+
+The host-tested `OGL0` layout record explicitly serializes one through eight
+validated widgets into 576 canonical bytes. A two-slot store selects the unique
+highest generation, falls back visibly on corruption/I/O/equal-generation
+conflict, writes only an empty/invalid or older slot, and requires full
+readback, byte comparison, and decode before accepting a save. CRC detects
+accidental corruption only. Schema migration, generation persistence,
+unchanged-write suppression, backend binding, security, and physical
+power-cut/endurance evidence remain unresolved.
 
 ## GPS and auxiliary modules
 
 The GPS role publishes normalized speed, position, altitude, heading, UTC, fix quality, and age. Consumers must distinguish unavailable/stale values.
+
+The host-tested v0 tracker accepts an adapter-neutral sample with explicit field
+presence, fix quality, source boot session/sequence, and source age. It counts
+loss, rejects duplicate/backward samples and receiver-clock regression, accepts
+normal sequence wrap/restart, and combines source age only with local monotonic
+elapsed time. At the exact stale boundary it removes position, motion,
+accuracy, and UTC values. Local-gateway, dedicated-node, authorized
+OpenTrail/MeshCore bridge, and gauge-local GNSS topologies remain possible; the
+ordered Wio Tracker L1 Pro is only a candidate. Transport/authentication,
+parser/driver, rate, privacy, and physical GNSS evidence remain unresolved.
 
 APU/auxiliary support is a separate module and protocol. Any future start/stop or actuation requires authenticated authorization, replay protection, interlocks, fail-safe defaults, auditability, and a dedicated safety review. It is not part of the initial telemetry proof of concept.
 
@@ -86,13 +180,59 @@ round-trip in OpenTrail's independent decoder. CRC-32 detects corruption only;
 the selected serial or local-wireless adapter must provide authenticated and
 authorized producer identity plus replay protection before production use.
 
+A host-tested eight-entry outbox now separates local transport rejection,
+local acceptance, and exact OpenTrail application acknowledgement. It reserves
+capacity for emergency alerts, prepares oldest emergency before oldest ready
+critical state, counts only locally accepted attempts, accepts a correlated
+late ACK before terminal removal, and emits explicit failure at exact
+attempt/lifetime bounds.
+
+The mirrored `OGK0` ACK codec now makes disposition/reason, original lifecycle,
+consumer/producer/event/condition identity, consumer boot session/sequence, and
+observed age explicit in 64 canonical bytes. Three normative fixtures encode
+identically in both projects. A bounded ingress composes adapter-authenticated
+metadata, logical peer/key-handle/channel/permission authorization, explicit
+consumer-session binding, a 32-sequence replay window, observed-age policy, and
+exact outbox correlation. Only accepted/none removes an entry; a correlated
+rejection remains explicit non-success. CRC still provides corruption
+detection only. A fixed canonical checkpoint now exports/imports all eight
+bindings and replay bitmaps atomically, tied to the exact live authorization
+epoch; rotation or revoke invalidates stale state. Correlated rejection reasons
+now have one bounded policy: rate-limited/internal-error responses release the
+entry after normal backoff while six deterministic refusals terminate with
+typed event/condition/reason/attempt evidence; a retry at the attempt limit also
+terminates. A fixed 320-byte `OAS0` envelope now binds the `OAI0` payload to a
+strict caller-owned generation and a two-slot host store that verifies full
+write/readback/decode, selects the newest unique generation, restores through
+the ingress validator, and keeps one corrupt or interrupted slot recoverable.
+ESP-IDF/NVS binding, coordinated authorization/outbox persistence, secure
+rollback resistance, real cryptographic transport, operator presentation, and
+physical delivery remain unresolved.
+
 ## Updates and recovery
 
 OTA design must include image authenticity/integrity, hardware target compatibility, version policy, sufficient partition/storage layout, atomic boot selection, health confirmation, rollback, interruption handling, and a documented USB/physical recovery path. Update coordination must never simultaneously remove all useful instrumentation by default.
 
+The host-tested v0 boot guard admits only a separately verified newer image for
+the exact hardware and inactive slot, then requires full-image readback and
+persisted boot-selection evidence. A trial must accumulate the configured
+role-health mask for a minimum stable interval strictly before an exact
+deadline. Boot mismatch, timeout, attempt limit, or explicit health failure
+requires rollback, and rollback completes only after observing the exact
+original version/slot. Image verification, flash/partition/bootloader adapters,
+persistent lifecycle, physical interruption/recovery, and fleet rollout remain
+unresolved.
+
 ## Diagnostics and failure behavior
 
 Logging levels are `ERROR`, `WARN`, `INFO`, `DEBUG`, and `TRACE`, with release filtering and secret redaction. Counters should cover CAN errors/overflow, unknown/invalid PGNs/SPNs, cache stale transitions, ESP-NOW send/receive/loss, decoder time, render timing, reset reason, and update state.
+
+The host-tested v0 diagnostics core provides a typed 32-record overwrite ring,
+five-level filtering, monotonic time, reset-cause capture, atomic oldest-first
+snapshots, and 16 saturating health counters. Its event API has no free-form
+text, buffers, addresses, credentials, or identifiers. ESP-IDF adapter binding,
+task ownership, timing, formatting/persistence, and an end-to-end production
+redaction audit remain unresolved.
 
 - Gateway loss makes gauge values stale/unknown; it does not freeze the last value as current.
 - Display failure does not affect acquisition or other displays.
