@@ -32,7 +32,7 @@ function Invoke-HostTest {
         [string] $Description,
 
         [Parameter(Mandatory)]
-        [string] $IncludeDirectory,
+        [string[]] $IncludeDirectories,
 
         [Parameter(Mandatory)]
         [string[]] $Sources
@@ -45,9 +45,11 @@ function Invoke-HostTest {
         '-Wextra',
         '-Wpedantic',
         '-Werror',
-        '-O2',
-        '-I', $IncludeDirectory
+        '-O2'
     )
+    foreach ($includeDirectory in $IncludeDirectories) {
+        $arguments += @('-I', $includeDirectory)
+    }
 
     & $compiler @arguments @Sources '-o' $output
     if ($LASTEXITCODE -ne 0) {
@@ -63,7 +65,9 @@ function Invoke-HostTest {
 Invoke-HostTest `
     -Name 'critical_alert_export_tests' `
     -Description 'Critical alert exporter' `
-    -IncludeDirectory (Join-Path $projectRoot 'firmware\components\integration\include') `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\integration\include')
+    ) `
     -Sources @(
         (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert.cpp'),
         (Join-Path $projectRoot 'tests\host\critical_alert_export_tests.cpp')
@@ -72,7 +76,9 @@ Invoke-HostTest `
 Invoke-HostTest `
     -Name 'j1939_identifier_tests' `
     -Description 'J1939 identifier parser' `
-    -IncludeDirectory (Join-Path $projectRoot 'firmware\components\can\include') `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\can\include')
+    ) `
     -Sources @(
         (Join-Path $projectRoot 'firmware\components\can\src\j1939_identifier.cpp'),
         (Join-Path $projectRoot 'tests\host\j1939_identifier_tests.cpp')
@@ -81,8 +87,24 @@ Invoke-HostTest `
 Invoke-HostTest `
     -Name 'normalized_signal_tests' `
     -Description 'Normalized signal model' `
-    -IncludeDirectory (Join-Path $projectRoot 'firmware\components\telemetry\include') `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\telemetry\include')
+    ) `
     -Sources @(
         (Join-Path $projectRoot 'firmware\components\telemetry\src\normalized_signal.cpp'),
         (Join-Path $projectRoot 'tests\host\normalized_signal_tests.cpp')
+    )
+
+Invoke-HostTest `
+    -Name 'j1939_decoder_tests' `
+    -Description 'J1939 decoder registry' `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\can\include'),
+        (Join-Path $projectRoot 'firmware\components\telemetry\include')
+    ) `
+    -Sources @(
+        (Join-Path $projectRoot 'firmware\components\can\src\j1939_identifier.cpp'),
+        (Join-Path $projectRoot 'firmware\components\can\src\j1939_decoder.cpp'),
+        (Join-Path $projectRoot 'firmware\components\telemetry\src\normalized_signal.cpp'),
+        (Join-Path $projectRoot 'tests\host\j1939_decoder_tests.cpp')
     )

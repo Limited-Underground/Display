@@ -10,10 +10,11 @@ Status date: 2026-08-09
 - Optional GPS, APU/auxiliary, OpenTrail event, and recoverable OTA modules
 
 The critical-alert semantic interface has bounded host validation in this and
-the OpenTrail repository. The Classical J1939 identifier parser and normalized
-signal model now have deterministic host tests. Vehicle acquisition,
-normalization from real signals, physical transport, displays, and hardware
-remain unvalidated.
+the OpenTrail repository. The Classical J1939 identifier parser, a
+fixed-capacity decoder registry with one EEC1 engine-speed fixture, and the
+normalized signal model now have deterministic host tests. Vehicle
+acquisition, normalization from captured/real signals, physical transport,
+displays, and hardware remain unvalidated.
 
 ## Decisions captured
 
@@ -23,6 +24,7 @@ remain unvalidated.
 - Hardware adapters are isolated from parsing, decoding, caching, alarms, UI, and protocols.
 - J1939 unavailable/error/stale states remain explicit and cannot become plausible numeric readings.
 - The v0 J1939 parser is explicitly bounded to 29-bit Classical J1939: standard frames, out-of-range identifiers, and the J1939-22 extended data page fail closed.
+- The v0 decoder registry rejects duplicate, over-capacity, noncanonical PDU1, unknown, and malformed dispatch. Its single EEC1/SPN 190 fixture preserves reserved/error/unavailable encodings as nonnumeric quality states and still requires licensed-standard and captured-frame reconciliation.
 - The v0 normalized signal model uses fixed-capacity namespaced IDs, integer canonical units, explicit quality, protocol-specific provenance, and an exact `age >= threshold` stale boundary.
 - ESP-NOW and persistent formats use explicit versioned serialization, not raw C/C++ memory layouts.
 - Optional GPS and APU behavior remains modular; control functions are outside the initial core.
@@ -77,9 +79,10 @@ No hardware is considered supported until repeatable test evidence is recorded.
 
 ## Next decision checkpoint
 
-Define a small reference signal set and implement one explicit PGN decoder
-fixture (OG-006), then exercise its normalized output through the bounded cache
-(OG-008). The completed OG-005, OG-007, and OG-018 contracts are inputs to
-those layers rather than substitutes for physical CAN, display, or transport
-validation. Incoming candidate boards follow `hardware/INVENTORY.md` before
-any support claim.
+Exercise the EEC1 fixture's normalized output through the bounded cache
+(OG-008), while recording the exact target vehicle/use case and reconciling the
+fixture against licensed/current J1939 data and legally obtained captured
+traffic. The completed OG-005, OG-006, OG-007, and OG-018 contracts are inputs
+to later layers rather than substitutes for physical CAN, display, or
+transport validation. Incoming candidate boards follow
+`hardware/INVENTORY.md` before any support claim.
