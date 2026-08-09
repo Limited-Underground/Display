@@ -18,8 +18,8 @@ OpenGauge is a proposed free/open-source ESP32 vehicle instrumentation and telem
   and verifies a new generation, advances/readbacks trust, and proves both slots
   valid. The complete 39-executable host matrix and 100 focused repeats pass.
 - **Public validation:** GitHub Actions now runs the complete Windows host matrix
-  on every `main` push and pull request. The first warning-free public run passed
-  all 38 executables with zero annotations.
+  on every `main` push and pull request. The current warning-free public run
+  passes all 39 executables with zero annotations.
 - **Still unproved:** ESP-IDF target adapters, protected on-device keys/storage,
   physical power-cut behavior, real CAN/J1939 vehicle input, displays, and field
   radio performance.
