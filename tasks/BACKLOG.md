@@ -20,7 +20,7 @@ Statuses: `done` means the documented acceptance criteria are evidenced; `planne
 | OG-005 | done | J1939 identifier parser | Five host-test groups validate priority/DP/PF/PS/SA, PDU1 destination and PGN zeroing, PDU2 group extension, the PF boundary, DP=1, and fail-closed standard/out-of-range/J1939-22 identifiers |
 | OG-006 | done | PGN decoder registry | A fixed eight-entry registry rejects invalid/noncanonical/duplicate/full/unknown dispatch, revalidates normalized output, and hosts one narrowly bounded EEC1 engine-speed fixture. Five host-test groups cover valid/highest-valid, reserved/out-of-range, error, unavailable, frame/length/capacity, and bad-decoder paths. Licensed/current J1939 data plus captured traffic remain required before a vehicle-support claim |
 | OG-007 | done | Normalized signal model | Six host-test groups validate fixed namespaced IDs, typed integer/Boolean values, canonical units and bounds, explicit no-value quality states, protocol-specific J1939/OBD/GPS/synthetic provenance, sample/receive time, and exact stale/clock boundaries |
-| OG-008 | planned | Telemetry cache/subscriptions | Fresh/stale transitions, per-signal thresholds, update/change notifications, capacity, concurrency, and restart behavior tested |
+| OG-008 | done | Telemetry cache/subscriptions | Six cache host-test groups cover fixed 16-signal capacity, revalidation, duplicate/update/conflict/out-of-order rules, per-signal exact stale boundaries, polling state cursors, insufficient output, clear/restart epochs, and four concurrent writers. A decoder integration group proves valid-to-stale-to-unavailable engine speed without a plausible invalid value. On-device locking/performance and network subscriptions remain later gates |
 | OG-014 | planned | Alarm framework | Threshold, hysteresis, debounce, severity, latch/ack, stale behavior, and rate-limited events tested |
 
 ## Wireless gauge network
@@ -51,8 +51,8 @@ Statuses: `done` means the documented acceptance criteria are evidenced; `planne
 
 ## Recommended sequence
 
-Complete the missing vehicle/power/CAN portions of OG-003A while implementing
-OG-006 and OG-008 against synthetic or legally obtained captured traffic. Only
-then bind OG-004 to selected physical CAN hardware. Incoming display work may
-begin with OG-012A vendor-example and recovery evidence, but does not bypass
-the normalized-data path.
+Complete the missing vehicle/power/CAN portions of OG-003A while beginning
+OG-009 and OG-010 with fake transport, explicit serialization, and a measured
+packet/rate budget. Only then bind OG-004 to selected physical CAN hardware.
+Incoming display work may begin with OG-012A vendor-example and recovery
+evidence, but does not bypass the normalized-data path.

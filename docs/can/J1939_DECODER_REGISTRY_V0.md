@@ -52,18 +52,19 @@ captured traffic before any vehicle-support claim. See the
 
 ## Host evidence
 
-`tests/host/j1939_decoder_tests.cpp` exercises five scenario groups:
+`tests/host/j1939_decoder_tests.cpp` exercises six scenario groups:
 
 1. null/out-of-range/noncanonical/duplicate/full registration
 2. valid engine speed and the highest valid boundary
 3. out-of-range, error, and unavailable encodings
 4. standard/EDP/malformed-length/output-capacity rejection
 5. unknown PGN and malformed decoder-output rejection
+6. valid, stale, and unavailable engine-speed flow through the telemetry cache
 
 Run all host suites with `tools/Test-Host.ps1`.
 
 ## Next boundary
 
 Additional decoders require an explicit data-source/version note and their own
-golden fixtures. OG-008 can now consume valid and nonnumeric normalized outputs
-without depending on J1939 payload layout.
+golden fixtures. The host-tested OG-008 cache now consumes valid and nonnumeric
+normalized outputs without depending on J1939 payload layout.
