@@ -118,6 +118,20 @@ void test_approval_and_role_scoped_authorization() {
                99, 100, 6, PeerPermission::receive_telemetry).error ==
            PeerAuthorizationError::unknown_peer);
     EXPECT(registry.status().authorization_denials == 4);
+
+    const PairingCandidate bridge{
+        2,
+        20,
+        PeerRole::trail_bridge,
+        permission_bit(PeerPermission::receive_critical_alert) |
+            permission_bit(PeerPermission::publish_alarm_ack),
+        6};
+    EXPECT(registry.begin_approval(bridge, 0) ==
+           PeerAuthorizationError::none);
+    EXPECT(registry.approve(2, 200, 1, 0) ==
+           PeerAuthorizationError::none);
+    EXPECT(registry.authorize(
+               20, 200, 6, PeerPermission::publish_alarm_ack).authorized);
 }
 
 void test_capacity_duplicate_peer_and_key_handle() {

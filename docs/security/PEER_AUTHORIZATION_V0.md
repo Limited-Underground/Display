@@ -45,7 +45,7 @@ metadata, not a security mechanism. Allowed permissions are:
 - gateway: publish telemetry, receive configuration;
 - gauge: receive telemetry, publish alarm acknowledgement;
 - GPS: publish GPS;
-- OpenTrail bridge: receive critical alerts.
+- OpenTrail bridge: receive critical alerts, publish alarm acknowledgements.
 
 Revocation immediately marks a peer inactive and clears its key handle.
 Replacement requires revoke, explicit forget, and a fresh approval. Key rotation
