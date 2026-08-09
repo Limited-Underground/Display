@@ -48,6 +48,11 @@ public chronology.
   remain distinct. Trusted-floor catch-up must pass exact readback before
   transport is enabled. Nine groups, the 37-executable matrix, and 100 repeats
   pass.
+- Added verified system-recovery save ordering. Normal saves require exact
+  agreement between the newest local and trusted generation, then verify the
+  next `ORS0` before advancing and exactly reading back trust. Ahead/uncertain
+  state requires boot reconciliation; behind is rollback; missing state fails
+  visibly. Eight groups, the 38-executable matrix, and 100 repeats pass.
 - Kept all target claims bounded: there is no ESP-IDF storage/radio/CAN binding,
   protected on-device key persistence, physical power-cut evidence, or vehicle
   validation yet.

@@ -112,6 +112,13 @@ Normal persistence should:
    trusted generation source; and
 5. keep transport state fail-visible if trusted-floor advancement is uncertain.
 
+The host layer now provides `CriticalAlertSystemRecoverySaveCoordinator` for
+this ordering. Before writing, it requires the newest valid local generation to
+exactly equal trusted state. Missing local recovery is a service condition, a
+local generation below trust is rollback, and a local generation above trust is
+routed to boot reconciliation rather than overwritten. After a verified save,
+trust advance and exact readback are mandatory before it reports committed.
+
 Advancing the trusted source before confirming the corresponding `ORS0` can
 intentionally fail closed but may strand otherwise recoverable state. Retrying a
 commit-uncertain write without inspection can overwrite the prior good slot.

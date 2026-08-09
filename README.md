@@ -11,11 +11,11 @@ OpenGauge is a proposed free/open-source ESP32 vehicle instrumentation and telem
 - **Latest physical result:** accepted, terminal-rejection, retryable-rejection,
   retry-to-accept, and live-state alert/ACK cycles completed with zero observed
   message loss, duplicates, or new radio errors.
-- **Latest software result:** a typed target-boot coordinator now distinguishes
-  clean first boot, restored, degraded, safe-mode, and service-required states.
-  It enables transport only after protected-key restore and exact trusted-floor
-  reconciliation. The complete 37-executable host matrix and 100 focused boot
-  repeats pass.
+- **Latest software result:** verified save ordering now requires the newest
+  local `ORS0` generation to exactly match trusted state before writing the next
+  generation. Missing, ahead, behind, uncertain-commit, and failed trust-update
+  states remain explicit. The complete 38-executable host matrix and 100
+  focused save repeats pass.
 - **Still unproved:** ESP-IDF target adapters, protected on-device keys/storage,
   physical power-cut behavior, real CAN/J1939 vehicle input, displays, and field
   radio performance.
@@ -45,6 +45,7 @@ Architecture/bootstrap phase. The transport-neutral OpenGauge-to-OpenTrail criti
 - The system store now accepts an external trusted generation boundary: `restore_at_or_above` rejects a selected valid record below the minimum without importing any owner, while `save_next_after` advances beyond both the trusted value and every valid local slot. Ten focused groups, the unchanged 36-executable matrix, and 100 repeats pass. The hardware-backed trusted source itself is intentionally not invented by this host layer.
 - Target-style restore now accepts a protected-key validator. Only active peers are presented as logical metadata plus opaque handle; revoked entries are skipped. Unavailable, wrong-purpose, and backend-failed handles produce typed peer-specific evidence before outbox/ACK preflight or any live import. Eight system and eleven store groups, the unchanged 36-executable matrix, and 100 focused repeats each pass; no raw key or concrete protected backend is claimed.
 - A host-tested [system-recovery boot coordinator](docs/integration/CRITICAL_ALERT_SYSTEM_RECOVERY_BOOT_V0.md) now combines provisioning state, trusted-generation state, two-slot inspection, protected-key validation, and `ORS0` restore. Exactly empty slots plus independently unprovisioned trust are required for first boot; rollback/conflict enter safe mode, missing keys/storage/trust require service, degraded restore remains visible, and interrupted trusted-floor advancement is read back exactly before transport is enabled. Nine focused groups, the full 37-executable matrix, and 100 repeats pass; no target task or protected backend is claimed.
+- A host-tested [system-recovery save coordinator](docs/integration/CRITICAL_ALERT_SYSTEM_RECOVERY_SAVE_V0.md) now enforces the complementary ordering. It requires exact local/trusted generation agreement, writes and verifies the next `ORS0`, advances trust only afterward, and verifies exact trust readback. Local-ahead and uncertain commits require reboot reconciliation; local-behind is rollback; missing recovery and failed trust/storage stay service-visible. Eight groups, the full 38-executable matrix, and 100 repeats pass; no physical durability is claimed.
 - Across each two-cycle set, radio loss/duplicates/errors were zero, SenseCAP recorded exact aggregate +4 flood RX/TX, repeat stayed enabled, and cleanup passed 4/4.
 
 The latest checkpoint proves deterministic outbox reconstruction in a new host object, while the physical test still used host-supplied trust. It is not yet a coordinated durable or authenticated on-device restart. See [the live-state physical evidence](tests/hardware/OG-018M-2026-08-09.md) and [the outbox checkpoint integration](docs/integration/CRITICAL_ALERT_OUTBOX_CHECKPOINT_V0.md).
