@@ -135,6 +135,7 @@ delivery plus injected loss through two fake encrypted-unicast peers.
 - Peer discovery, provisioning, key generation/storage/rotation, authorization,
   and recovery
 - Application acknowledgement policy, if any
-- Subscription/change/deadband scheduler and packet-priority policy
+- Cache/task composition and any packet-priority extension beyond the
+  host-tested subscription/change/deadband scheduler
 - Physical RF, latency, coexistence, reboot, range, peer-count, and rate evidence
 - Version negotiation and capability exchange

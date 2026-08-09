@@ -66,7 +66,15 @@ authentication, target authorization comes from provisioned unicast peers, and
 capabilities, events/alarms, heartbeat/time, pairing/configuration, diagnostics,
 and update coordination still require separate formats.
 
-Telemetry is intended to be subscription/rate-policy driven. The gateway sends normalized selected signals at a bounded rate, with change/deadband and periodic refresh where appropriate. Gauges use the v0 sequence/session and source-age fields plus receiver-local elapsed time for loss and staleness; packet loss must not cause blocking retries that starve newer data. The scheduler, pairing, real peer limits, encryption/key handling, channel coexistence, and recovery remain unresolved.
+Telemetry publication now has a host-tested cooperative v0 scheduler. Per-gauge
+subscriptions apply signal minimum/maximum intervals, raw canonical deadbands,
+quality-first ordering, latest-value coalescing, three-entry batching, and a
+hard 50 ms per-peer packet floor. A two-phase prepare/local-queue-commit rule
+advances per-peer sequence only when the local transport accepts the frame;
+later radio loss does not create a blocking retry that starves newer data.
+Gauges use sequence/session and source age plus receiver-local elapsed time for
+loss and staleness. Cache/task composition, pairing, real peer limits,
+encryption/key handling, channel coexistence, and recovery remain unresolved.
 
 ## Gauge rendering
 
