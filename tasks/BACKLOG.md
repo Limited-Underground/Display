@@ -42,6 +42,7 @@ Statuses: `done` means the documented acceptance criteria are evidenced; `planne
 | ID | Status | Task | Acceptance evidence |
 | --- | --- | --- | --- |
 | OG-012 | planned | Gauge rendering framework | View-model boundary and representative numeric/needle/bar/warning/stale screens benchmarked on candidate hardware |
+| OG-012B | done | Display-neutral gauge view model | A fixed eight-widget projection validates registered signal/kind/label/stale/range configuration and atomically emits expected type/unit, session/sequence/age, distinct valid/suspect/missing/stale/unavailable/error/out-of-range/unknown state, values only when permitted, and attention flags. Seven host groups cover configuration/lifecycle, missing, valid/suspect, exact stale, unavailable/error metadata, shared signals, and atomic capacity/receiver failure. Rendering/touch/persistence/hardware benchmarks remain OG-012/012A |
 | OG-013 | planned | Persistent gauge configuration | Versioning, validation, migration, safe defaults, write wear, import/reset/recovery tested |
 | OG-012A | planned | Display hardware feasibility | The SKU 31262 two-unit arrival plan defines shipping-demo preservation, exact revision, silicon/flash/security, BOOT/RESET recovery, vendor display/touch/power/IMU baseline, representative valid/warning/unavailable/error/stale rendering, resource/timing/power/heat, independent failure, and restore evidence. No unit has arrived or been tested |
 

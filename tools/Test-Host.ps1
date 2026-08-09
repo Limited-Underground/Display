@@ -229,6 +229,25 @@ Invoke-HostTest `
     )
 
 Invoke-HostTest `
+    -Name 'gauge_view_model_tests' `
+    -Description 'Display-neutral gauge view model' `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\display\include'),
+        (Join-Path $projectRoot 'firmware\components\telemetry\include'),
+        (Join-Path $projectRoot 'firmware\components\wireless\include'),
+        (Join-Path $projectRoot 'firmware\components\wireless\test_support')
+    ) `
+    -Sources @(
+        (Join-Path $projectRoot 'firmware\components\display\src\gauge_view_model.cpp'),
+        (Join-Path $projectRoot 'firmware\components\telemetry\src\normalized_signal.cpp'),
+        (Join-Path $projectRoot 'firmware\components\wireless\src\esp_now_transport.cpp'),
+        (Join-Path $projectRoot 'firmware\components\wireless\src\telemetry_packet.cpp'),
+        (Join-Path $projectRoot 'firmware\components\wireless\src\gauge_telemetry_receiver.cpp'),
+        (Join-Path $projectRoot 'firmware\components\wireless\test_support\fake_esp_now_transport.cpp'),
+        (Join-Path $projectRoot 'tests\host\gauge_view_model_tests.cpp')
+    )
+
+Invoke-HostTest `
     -Name 'telemetry_publish_scheduler_tests' `
     -Description 'Telemetry publish scheduler' `
     -IncludeDirectories @(
