@@ -308,6 +308,17 @@ Invoke-HostTest `
     )
 
 Invoke-HostTest `
+    -Name 'update_boot_guard_tests' `
+    -Description 'OTA trial confirmation and rollback guard' `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\update\include')
+    ) `
+    -Sources @(
+        (Join-Path $projectRoot 'firmware\components\update\src\update_boot_guard.cpp'),
+        (Join-Path $projectRoot 'tests\host\update_boot_guard_tests.cpp')
+    )
+
+Invoke-HostTest `
     -Name 'telemetry_gateway_publisher_tests' `
     -Description 'Telemetry gateway publisher composition' `
     -IncludeDirectories @(
