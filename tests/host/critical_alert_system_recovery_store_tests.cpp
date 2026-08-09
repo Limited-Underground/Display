@@ -367,6 +367,60 @@ void test_verification_failure_and_reset() {
            CriticalAlertSystemRecoveryStoreError::storage_failure);
 }
 
+void test_trusted_restore_floor_rejects_rollback() {
+    PeerAuthorizationRegistry source{};
+    CriticalAlertOutbox source_outbox{};
+    CriticalAlertAckIngress source_ingress{};
+    start_source(source, source_outbox, source_ingress);
+    FakeCriticalAlertSystemRecoveryStorage storage{};
+    CriticalAlertSystemRecoveryStore store{storage};
+    EXPECT(store.save_next(source, source_ingress, source_outbox, 1).saved());
+    EXPECT(store.save_next(source, source_ingress, source_outbox, 1).saved());
+
+    PeerAuthorizationRegistry accepted{};
+    CriticalAlertOutbox accepted_outbox{};
+    CriticalAlertAckIngress accepted_ingress{};
+    start_target(accepted, accepted_outbox, accepted_ingress);
+    const auto allowed = store.restore_at_or_above(
+        accepted, accepted_ingress, accepted_outbox, 100, 2);
+    EXPECT(allowed.restored && allowed.generation == 2);
+    expect_restored(accepted, accepted_outbox, accepted_ingress);
+
+    PeerAuthorizationRegistry rejected{};
+    CriticalAlertOutbox rejected_outbox{};
+    CriticalAlertAckIngress rejected_ingress{};
+    start_target(rejected, rejected_outbox, rejected_ingress);
+    const auto rollback = store.restore_at_or_above(
+        rejected, rejected_ingress, rejected_outbox, 100, 3);
+    EXPECT(!rollback.restored && rollback.generation == 2);
+    EXPECT(rollback.error ==
+           CriticalAlertSystemRecoveryStoreError::rollback_detected);
+    EXPECT(rollback.recovery_required);
+    expect_empty(rejected, rejected_outbox, rejected_ingress);
+}
+
+void test_trusted_generation_advances_new_saves() {
+    PeerAuthorizationRegistry source{};
+    CriticalAlertOutbox source_outbox{};
+    CriticalAlertAckIngress source_ingress{};
+    start_source(source, source_outbox, source_ingress);
+    FakeCriticalAlertSystemRecoveryStorage storage{};
+    CriticalAlertSystemRecoveryStore store{storage};
+    const auto first = store.save_next_after(
+        source, source_ingress, source_outbox, 1, 41);
+    EXPECT(first.saved() && first.generation == 42);
+    const auto second = store.save_next_after(
+        source, source_ingress, source_outbox, 1, 40);
+    EXPECT(second.saved() && second.generation == 43);
+    const auto writes_before = storage.writes(0) + storage.writes(1);
+    const auto exhausted = store.save_next_after(
+        source, source_ingress, source_outbox, 1,
+        std::numeric_limits<std::uint64_t>::max());
+    EXPECT(exhausted.error ==
+           CriticalAlertSystemRecoveryStoreError::generation_exhausted);
+    EXPECT(storage.writes(0) + storage.writes(1) == writes_before);
+}
+
 }  // namespace
 
 int main() {
@@ -378,10 +432,12 @@ int main() {
     test_restore_rejection_is_atomic();
     test_generation_conflict_stale_and_exhaustion();
     test_verification_failure_and_reset();
+    test_trusted_restore_floor_rejects_rollback();
+    test_trusted_generation_advances_new_saves();
     if (failures != 0) {
         std::cerr << failures << " system recovery store assertion(s) failed\n";
         return EXIT_FAILURE;
     }
-    std::cout << "PASS: 8 critical alert system recovery store scenario groups\n";
+    std::cout << "PASS: 10 critical alert system recovery store scenario groups\n";
     return EXIT_SUCCESS;
 }

@@ -11,11 +11,10 @@ OpenGauge is a proposed free/open-source ESP32 vehicle instrumentation and telem
 - **Latest physical result:** accepted, terminal-rejection, retryable-rejection,
   retry-to-accept, and live-state alert/ACK cycles completed with zero observed
   message loss, duplicates, or new radio errors.
-- **Latest software result:** exact 1280-byte `ORS0` generations now have a
-  recoverable two-slot host store with automatic generation allocation, exact
-  readback, eleven interruption boundaries, and uncertain-commit boot
-  reconciliation. The complete 36-executable host matrix and 100 focused store
-  repeats pass.
+- **Latest software result:** the recoverable `ORS0` store now enforces a
+  caller-supplied trusted generation floor. Restore refuses an old-but-valid
+  record, and new saves advance beyond both trusted and local generations. The
+  complete 36-executable host matrix and 100 focused repeats pass.
 - **Still unproved:** ESP-IDF target adapters, protected on-device keys/storage,
   physical power-cut behavior, real CAN/J1939 vehicle input, displays, and field
   radio performance.
@@ -42,6 +41,7 @@ Architecture/bootstrap phase. The transport-neutral OpenGauge-to-OpenTrail criti
 - Peer authorization now also has a host-tested [recoverable two-slot `OPS0` store](docs/security/PEER_AUTHORIZATION_CHECKPOINT_STORE_V0.md). Normal saves allocate generations, rotate away from the newest good slot, require byte/decode readback, preserve the prior generation across ten interrupted-write boundaries, and reconcile a full write followed by an I/O error at boot. The full 34-executable matrix and 100 focused repeats pass; this is not yet protected ESP32 storage.
 - Coordinated recovery now has a host-tested [`ORS0` system envelope](docs/integration/CRITICAL_ALERT_SYSTEM_RECOVERY_V0.md). One generation binds exact `OPA0` peer authorization to exact `OCR0` ACK/outbox state. A temporary ACK ingress is constructed against private restored registry/outbox candidates so epoch and pointer dependencies are validated before any of the three live owners changes. The full 35-executable matrix and 100 focused repeats pass; recoverable `ORS0` storage remains next.
 - Exact `ORS0` generations now have a host-tested [recoverable two-slot system store](docs/integration/CRITICAL_ALERT_SYSTEM_RECOVERY_STORE_V0.md). The store owns normal generations, preserves the newest good slot across eleven interrupted-write boundaries, verifies exact readback/decode, exposes degraded reads, fails closed on conflict/exhaustion, and reconciles a full write followed by I/O error as committed at boot. The full 36-executable matrix and 100 focused repeats pass; target durability is still unproved.
+- The system store now accepts an external trusted generation boundary: `restore_at_or_above` rejects a selected valid record below the minimum without importing any owner, while `save_next_after` advances beyond both the trusted value and every valid local slot. Ten focused groups, the unchanged 36-executable matrix, and 100 repeats pass. The hardware-backed trusted source itself is intentionally not invented by this host layer.
 - Across each two-cycle set, radio loss/duplicates/errors were zero, SenseCAP recorded exact aggregate +4 flood RX/TX, repeat stayed enabled, and cleanup passed 4/4.
 
 The latest checkpoint proves deterministic outbox reconstruction in a new host object, while the physical test still used host-supplied trust. It is not yet a coordinated durable or authenticated on-device restart. See [the live-state physical evidence](tests/hardware/OG-018M-2026-08-09.md) and [the outbox checkpoint integration](docs/integration/CRITICAL_ALERT_OUTBOX_CHECKPOINT_V0.md).

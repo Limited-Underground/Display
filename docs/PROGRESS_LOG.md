@@ -30,6 +30,10 @@ public chronology.
   allocation, exact readback, eleven interrupted-write boundaries, full-write
   error reconciliation, conflict/exhaustion refusal, the complete 36-executable
   matrix, and 100 focused repeats pass.
+- Added an explicit external trusted-generation contract. Restore refuses a
+  valid record below the supplied floor without live import; save allocation
+  advances beyond both trusted and local generations. Ten focused groups, the
+  unchanged 36-executable matrix, and 100 repeats pass.
 - Kept all target claims bounded: there is no ESP-IDF storage/radio/CAN binding,
   protected on-device key persistence, physical power-cut evidence, or vehicle
   validation yet.

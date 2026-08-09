@@ -35,6 +35,7 @@ enum class CriticalAlertSystemRecoveryStoreError : std::uint8_t {
     invalid_generation,
     generation_exhausted,
     stale_generation,
+    rollback_detected,
     generation_conflict,
     storage_failure,
     verification_failure,
@@ -92,11 +93,28 @@ public:
         CriticalAlertAckIngress& ingress,
         CriticalAlertOutbox& outbox,
         std::uint64_t now_ms);
+    // last_trusted_generation comes from a separate trusted monotonic source.
+    // The newly allocated generation is strictly greater than both it and every
+    // valid local slot generation.
+    [[nodiscard]] CriticalAlertSystemRecoverySaveResult save_next_after(
+        identity::PeerAuthorizationRegistry& authorization,
+        CriticalAlertAckIngress& ingress,
+        CriticalAlertOutbox& outbox,
+        std::uint64_t now_ms,
+        std::uint64_t last_trusted_generation);
     [[nodiscard]] CriticalAlertSystemRecoveryLoadResult restore(
         identity::PeerAuthorizationRegistry& authorization,
         CriticalAlertAckIngress& ingress,
         CriticalAlertOutbox& outbox,
         std::uint64_t now_ms);
+    // minimum_trusted_generation is caller-owned trusted state. A valid local
+    // record below it is reported as rollback and is never imported.
+    [[nodiscard]] CriticalAlertSystemRecoveryLoadResult restore_at_or_above(
+        identity::PeerAuthorizationRegistry& authorization,
+        CriticalAlertAckIngress& ingress,
+        CriticalAlertOutbox& outbox,
+        std::uint64_t now_ms,
+        std::uint64_t minimum_trusted_generation);
     [[nodiscard]] CriticalAlertSystemRecoveryStoreError reset();
 
 private:

@@ -20,6 +20,9 @@ handle.
 
 - `save_next` owns normal generation allocation: 1 on empty storage, then the
   greatest valid generation plus one.
+- `save_next_after` accepts a caller-owned last-trusted generation and allocates
+  strictly above both it and the greatest valid local slot. A maximum trusted
+  value reports exhaustion before export or write.
 - Explicit saves must be nonzero and strictly newer than every valid slot.
 - Generation conflict, unreadable baseline, and 64-bit exhaustion fail before
   export or write.
@@ -34,6 +37,9 @@ handle.
 
 - Both slots are inspected and decoded before selection.
 - The newest unique valid generation is selected.
+- `restore_at_or_above` refuses the selected valid generation when it is below a
+  caller-supplied trusted minimum. It reports `rollback_detected` with the local
+  generation and imports none of the three live owners.
 - One invalid or unreadable slot remains visible as recovery/degraded evidence
   while the other valid slot can still restore.
 - Equal generations with different bytes fail closed.
@@ -48,7 +54,7 @@ policy.
 
 ## Host evidence
 
-`tests/host/critical_alert_system_recovery_store_tests.cpp` covers eight groups:
+`tests/host/critical_alert_system_recovery_store_tests.cpp` covers ten groups:
 
 1. canonical first save and empty-store behavior;
 2. monotonic rotation and newest joint three-owner restore;
@@ -59,7 +65,10 @@ policy.
 5. corrupt and unreadable newest slots with visible fallback/degradation;
 6. incompatible peer policy rejected without live-owner mutation;
 7. invalid/stale/exhausted generations and equal-generation conflict; and
-8. corrupt readback as uncertain verification failure plus reset failure.
+8. corrupt readback as uncertain verification failure plus reset failure;
+9. accepted exact-floor restore and rejected below-floor rollback with no live
+   mutation; and
+10. new-save allocation above trusted/local generations and trusted exhaustion.
 
 The complete 36-executable host matrix passes, and the focused store suite
 passes 100 consecutive repeats.
@@ -67,7 +76,8 @@ passes 100 consecutive repeats.
 ## Remaining gates
 
 - bind both slots to a selected ESP-IDF protected-storage backend;
-- define authenticated integrity and a trusted monotonic/rollback authority;
+- define and persist the authenticated trusted monotonic/rollback authority that
+  supplies these floor values;
 - coordinate logical record reset with protected key erasure and replacement;
 - inject power interruption at the eleven modeled boundaries and additional
   backend-specific commit boundaries on exact target hardware;

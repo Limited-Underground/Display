@@ -150,6 +150,16 @@ CriticalAlertSystemRecoveryStore::save_next(
     CriticalAlertAckIngress& ingress,
     CriticalAlertOutbox& outbox,
     std::uint64_t now_ms) {
+    return save_next_after(authorization, ingress, outbox, now_ms, 0);
+}
+
+CriticalAlertSystemRecoverySaveResult
+CriticalAlertSystemRecoveryStore::save_next_after(
+    identity::PeerAuthorizationRegistry& authorization,
+    CriticalAlertAckIngress& ingress,
+    CriticalAlertOutbox& outbox,
+    std::uint64_t now_ms,
+    std::uint64_t last_trusted_generation) {
     const auto a = inspect_slot(storage_, 0);
     const auto b = inspect_slot(storage_, 1);
     if (a.state == CriticalAlertSystemRecoverySlotState::io_failure ||
@@ -157,10 +167,11 @@ CriticalAlertSystemRecoveryStore::save_next(
         return {CriticalAlertSystemRecoveryStoreError::storage_failure};
     if (generation_conflict(a, b))
         return {CriticalAlertSystemRecoveryStoreError::generation_conflict};
-    const auto highest = highest_generation(a, b);
-    if (highest == std::numeric_limits<std::uint64_t>::max())
+    const auto baseline = std::max(
+        highest_generation(a, b), last_trusted_generation);
+    if (baseline == std::numeric_limits<std::uint64_t>::max())
         return {CriticalAlertSystemRecoveryStoreError::generation_exhausted};
-    return save(authorization, ingress, outbox, now_ms, highest + 1);
+    return save(authorization, ingress, outbox, now_ms, baseline + 1);
 }
 
 CriticalAlertSystemRecoveryLoadResult
@@ -169,6 +180,17 @@ CriticalAlertSystemRecoveryStore::restore(
     CriticalAlertAckIngress& ingress,
     CriticalAlertOutbox& outbox,
     std::uint64_t now_ms) {
+    return restore_at_or_above(
+        authorization, ingress, outbox, now_ms, 0);
+}
+
+CriticalAlertSystemRecoveryLoadResult
+CriticalAlertSystemRecoveryStore::restore_at_or_above(
+    identity::PeerAuthorizationRegistry& authorization,
+    CriticalAlertAckIngress& ingress,
+    CriticalAlertOutbox& outbox,
+    std::uint64_t now_ms,
+    std::uint64_t minimum_trusted_generation) {
     const auto a = inspect_slot(storage_, 0);
     const auto b = inspect_slot(storage_, 1);
     CriticalAlertSystemRecoveryLoadResult result{};
@@ -210,6 +232,11 @@ CriticalAlertSystemRecoveryStore::restore(
 
     result.source = source_for(selected_slot);
     result.generation = selected->checkpoint.generation;
+    if (result.generation < minimum_trusted_generation) {
+        result.error = CriticalAlertSystemRecoveryStoreError::rollback_detected;
+        result.recovery_required = true;
+        return result;
+    }
     result.error =
         a.state == CriticalAlertSystemRecoverySlotState::io_failure ||
                 b.state == CriticalAlertSystemRecoverySlotState::io_failure
