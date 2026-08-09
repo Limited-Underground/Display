@@ -10,12 +10,13 @@ Status date: 2026-08-09
 - Optional GPS, APU/auxiliary, OpenTrail event, and recoverable OTA modules
 
 The critical-alert semantic interface has bounded host validation in this and
-the OpenTrail repository. The Classical J1939 identifier parser, a
+the OpenTrail repository. A passive Classical CAN receiver interface and
+bounded 16-frame fake, the Classical J1939 identifier parser, a
 fixed-capacity decoder registry with one EEC1 engine-speed fixture, normalized
 signal model, fixed-capacity thread-safe telemetry cache, an opaque
 encrypted-unicast ESP-NOW transport contract/fake, an explicit 96-byte
 telemetry packet codec, a bounded per-gauge publication scheduler, and a
-cache-cursor-to-radio publisher composition now have deterministic host tests. Vehicle acquisition,
+cache-cursor-to-radio publisher composition now have deterministic host tests. Physical vehicle acquisition,
 normalization from captured/real signals,
 on-device performance, physical transport, keys, displays, and hardware remain
 unvalidated.
@@ -23,7 +24,7 @@ unvalidated.
 ## Decisions captured
 
 - Gateway and displays are separate roles with independent failure boundaries.
-- The initial CAN path is passive/listen-only.
+- The initial CAN path is passive/listen-only. Its v0 host interface contains no transmit operation and carries canonical Classical frames, capture time, bus state, and overflow metadata. Eight fake-receiver groups cover lifecycle, policy/filtering, malformed frames, FIFO/clock behavior, overflow, bus-off, hardware failure, restart, and EEC1 receive-to-cache integration. This is not evidence of an electrically passive production adapter.
 - Raw J1939 frames are not the default gauge-network payload; the gateway publishes normalized selected signals.
 - Hardware adapters are isolated from parsing, decoding, caching, alarms, UI, and protocols.
 - J1939 unavailable/error/stale states remain explicit and cannot become plausible numeric readings.
@@ -88,10 +89,11 @@ No hardware is considered supported until repeatable test evidence is recorded.
 
 ## Next decision checkpoint
 
-Bind the completed gateway publisher to a bounded ESP-IDF task/radio adapter
-while recording the exact target vehicle/use case and reconciling the EEC1 fixture against
+Compose the completed passive receiver, decoder/cache, and gateway publisher in
+a bounded host-tested gateway loop, then bind those interfaces to ESP-IDF
+CAN/radio adapters while recording the exact target vehicle/use case and reconciling the EEC1 fixture against
 licensed/current J1939 data and legally obtained captured traffic. The
-completed OG-005, OG-006, OG-007, OG-008, OG-009, OG-010, OG-010B, OG-010C, and OG-018 contracts are inputs to
+completed OG-004, OG-005, OG-006, OG-007, OG-008, OG-009, OG-010, OG-010B, OG-010C, and OG-018 contracts are inputs to
 later layers rather than substitutes for physical CAN, on-device performance,
 display, or transport validation. Incoming candidate boards follow
 `hardware/INVENTORY.md` before any support claim.
