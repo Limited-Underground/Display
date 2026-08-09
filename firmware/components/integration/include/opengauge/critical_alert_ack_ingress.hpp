@@ -12,6 +12,8 @@ namespace opengauge::integration {
 
 inline constexpr std::size_t kCriticalAlertAckConsumerCapacity = 8;
 inline constexpr std::uint32_t kCriticalAlertAckReplayWindow = 32;
+inline constexpr std::uint8_t kCriticalAlertAckCheckpointVersion = 0;
+inline constexpr std::size_t kCriticalAlertAckCheckpointBytes = 280;
 
 enum class CriticalAlertAckIngressError : std::uint8_t {
     none = 0,
@@ -33,6 +35,11 @@ enum class CriticalAlertAckIngressError : std::uint8_t {
     replay_ambiguous,
     outbox_mismatch,
     clock_regression,
+    authorization_epoch_mismatch,
+    checkpoint_malformed,
+    checkpoint_incompatible,
+    checkpoint_integrity_failure,
+    checkpoint_authorization_mismatch,
 };
 
 struct CriticalAlertAckIngressConfiguration {
@@ -77,6 +84,9 @@ struct CriticalAlertAckIngressStatus {
     std::uint32_t replay_rejections{0};
     std::uint32_t outbox_rejections{0};
     std::uint32_t clock_regressions{0};
+    std::uint32_t checkpoint_exports{0};
+    std::uint32_t checkpoint_imports{0};
+    std::uint32_t checkpoint_rejections{0};
 };
 
 // Admission/correlation boundary for already framed ACK bytes. Binding a
@@ -96,6 +106,11 @@ public:
         std::uint32_t consumer_boot_session_id);
     [[nodiscard]] CriticalAlertAckIngressError unbind_consumer(
         std::uint32_t logical_peer_id);
+    [[nodiscard]] CriticalAlertAckIngressError export_checkpoint(
+        std::array<std::uint8_t, kCriticalAlertAckCheckpointBytes>& output);
+    [[nodiscard]] CriticalAlertAckIngressError import_checkpoint(
+        const std::uint8_t* checkpoint,
+        std::size_t checkpoint_size);
 
     [[nodiscard]] CriticalAlertAckIngressResult receive(
         const std::uint8_t* frame,
@@ -110,6 +125,7 @@ private:
         std::uint32_t logical_peer_id{0};
         std::uint64_t consumer_id{0};
         std::uint32_t consumer_boot_session_id{0};
+        std::uint32_t authorization_epoch{0};
         bool has_sequence{false};
         std::uint32_t highest_sequence{0};
         std::uint32_t replay_bitmap{0};
@@ -128,6 +144,9 @@ private:
     [[nodiscard]] ReplayCandidate preview_sequence(
         const ConsumerBinding& binding,
         std::uint32_t sequence) const;
+    [[nodiscard]] bool current_authorization_epoch(
+        std::uint32_t logical_peer_id,
+        std::uint32_t& authorization_epoch) const;
 
     CriticalAlertAckIngressConfiguration configuration_{};
     identity::PeerAuthorizationRegistry* authorization_{nullptr};

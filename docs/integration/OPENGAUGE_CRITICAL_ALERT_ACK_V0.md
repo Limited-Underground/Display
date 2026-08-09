@@ -99,8 +99,9 @@ times with zero failures.
 - bind ACK generation only after OpenTrail ingress produces a final decision;
 - define authenticated framed serial or local-wireless transport and peer/key
   lifecycle;
-- persist the completed bounded session/sequence replay window and authorization
-  state with restart, rollback, key-rotation, revoke, and recovery protection;
+- bind the completed authorization-epoch-aware replay checkpoint to durable
+  commit-last storage with restart, rollback, rotation, revoke, and recovery
+  protection coordinated with the peer registry;
 - define retry/terminal failure and typed diagnostic policy for each correlated
   rejected reason;
 - test loss, duplicate, corruption, reordering, delayed ACK, restart, revoke,

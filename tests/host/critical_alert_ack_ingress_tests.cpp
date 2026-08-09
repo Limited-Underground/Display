@@ -85,21 +85,31 @@ CriticalAlertAckTransportContext transport() {
     return {true, kPeerId, kKeyHandle, kChannel};
 }
 
-void start_dependencies(
+void approve_bridge(
     PeerAuthorizationRegistry& registry,
-    CriticalAlertOutbox& outbox) {
-    EXPECT(registry.start({1000}) == PeerAuthorizationError::none);
+    std::uint32_t request_id,
+    std::uint32_t peer_id,
+    std::uint32_t key_handle,
+    std::uint32_t authorization_epoch = 1) {
     const PairingCandidate bridge{
-        1,
-        kPeerId,
+        request_id,
+        peer_id,
         PeerRole::trail_bridge,
         permission_bit(PeerPermission::receive_critical_alert) |
             permission_bit(PeerPermission::publish_alarm_ack),
         kChannel};
     EXPECT(registry.begin_approval(bridge, 0) ==
            PeerAuthorizationError::none);
-    EXPECT(registry.approve(1, kKeyHandle, 1, 0) ==
+    EXPECT(registry.approve(
+               request_id, key_handle, authorization_epoch, 0) ==
            PeerAuthorizationError::none);
+}
+
+void start_dependencies(
+    PeerAuthorizationRegistry& registry,
+    CriticalAlertOutbox& outbox) {
+    EXPECT(registry.start({1000}) == PeerAuthorizationError::none);
+    approve_bridge(registry, 1, kPeerId, kKeyHandle);
     EXPECT(outbox.start({50, 100, 25, 10000, 3, 1}) ==
            CriticalOutboxError::none);
 }
@@ -148,20 +158,24 @@ void test_lifecycle_configuration_and_bounded_bindings() {
            CriticalAlertAckIngressError::invalid_state);
     EXPECT(ingress.bind_consumer_session(0, 2, 3) ==
            CriticalAlertAckIngressError::invalid_binding);
-    EXPECT(ingress.bind_consumer_session(1, 100, 1) ==
+    EXPECT(ingress.bind_consumer_session(kPeerId, 100, 1) ==
            CriticalAlertAckIngressError::none);
-    EXPECT(ingress.bind_consumer_session(2, 100, 1) ==
+    approve_bridge(registry, 2, 11, 101);
+    EXPECT(ingress.bind_consumer_session(11, 100, 1) ==
            CriticalAlertAckIngressError::duplicate_consumer);
-    for (std::uint32_t peer = 2; peer <= 8; ++peer) {
+    for (std::uint32_t peer = 11; peer <= 17; ++peer) {
+        if (peer != 11) {
+            approve_bridge(registry, peer - 8, peer, 90 + peer);
+        }
         EXPECT(ingress.bind_consumer_session(
                    peer, 100 + peer, peer) ==
                CriticalAlertAckIngressError::none);
     }
-    EXPECT(ingress.bind_consumer_session(9, 109, 9) ==
-           CriticalAlertAckIngressError::capacity_full);
-    EXPECT(ingress.unbind_consumer(9) ==
+    EXPECT(ingress.bind_consumer_session(18, 118, 18) ==
+           CriticalAlertAckIngressError::authorization_denied);
+    EXPECT(ingress.unbind_consumer(18) ==
            CriticalAlertAckIngressError::unknown_consumer);
-    EXPECT(ingress.unbind_consumer(8) ==
+    EXPECT(ingress.unbind_consumer(17) ==
            CriticalAlertAckIngressError::none);
     EXPECT(ingress.status().binding_count == 7);
     ingress.stop();
