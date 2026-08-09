@@ -237,6 +237,12 @@ path, released one queued retry, left zero in flight and zero acknowledgements,
 and avoided terminal failure. Durable backoff state and a later physical
 retry-to-accept sequence remain unproved.
 
+OG-018L added the subsequent physical retry and accepted ACK in both endpoint
+roles. The composition enforced the exact backoff boundary, byte-identical retry
+preparation, and final completion only after the next ACK sequence. State was
+still reconstructed after both responses, not held durably across the radio
+wait.
+
 ## Updates and recovery
 
 OTA design must include image authenticity/integrity, hardware target compatibility, version policy, sufficient partition/storage layout, atomic boot selection, health confirmation, rollback, interruption handling, and a documented USB/physical recovery path. Update coordination must never simultaneously remove all useful instrumentation by default.
