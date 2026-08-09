@@ -168,6 +168,16 @@ authorized producer identity plus replay protection before production use.
 
 OTA design must include image authenticity/integrity, hardware target compatibility, version policy, sufficient partition/storage layout, atomic boot selection, health confirmation, rollback, interruption handling, and a documented USB/physical recovery path. Update coordination must never simultaneously remove all useful instrumentation by default.
 
+The host-tested v0 boot guard admits only a separately verified newer image for
+the exact hardware and inactive slot, then requires full-image readback and
+persisted boot-selection evidence. A trial must accumulate the configured
+role-health mask for a minimum stable interval strictly before an exact
+deadline. Boot mismatch, timeout, attempt limit, or explicit health failure
+requires rollback, and rollback completes only after observing the exact
+original version/slot. Image verification, flash/partition/bootloader adapters,
+persistent lifecycle, physical interruption/recovery, and fleet rollout remain
+unresolved.
+
 ## Diagnostics and failure behavior
 
 Logging levels are `ERROR`, `WARN`, `INFO`, `DEBUG`, and `TRACE`, with release filtering and secret redaction. Counters should cover CAN errors/overflow, unknown/invalid PGNs/SPNs, cache stale transitions, ESP-NOW send/receive/loss, decoder time, render timing, reset reason, and update state.
