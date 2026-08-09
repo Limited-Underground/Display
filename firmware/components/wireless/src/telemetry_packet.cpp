@@ -18,11 +18,11 @@ constexpr std::uint8_t kValuePresentFlag = 0x01U;
 
 constexpr std::array<TelemetrySignalDescriptor, 4> kSignalDefinitions{{
     {TelemetrySignalCode::engine_speed,
-     "powertrain.engine_speed",
+     "engine.speed",
      telemetry::SignalValueType::unsigned_integer,
      telemetry::SignalUnit::milli_revolutions_per_minute},
     {TelemetrySignalCode::engine_coolant_temperature,
-     "powertrain.engine_coolant_temperature",
+     "engine.coolant_temperature",
      telemetry::SignalValueType::signed_integer,
      telemetry::SignalUnit::milli_celsius},
     {TelemetrySignalCode::vehicle_speed,

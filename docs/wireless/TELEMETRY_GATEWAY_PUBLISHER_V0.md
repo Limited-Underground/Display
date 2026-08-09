@@ -78,7 +78,7 @@ epoch-change counts plus the underlying cache/scheduler error when applicable.
 Peer service reports packet sequence, encoded bytes, local transport token,
 queue acceptance, and the exact scheduler/codec/transport failure layer.
 
-Six deterministic scenario groups cover:
+Seven deterministic scenario groups cover:
 
 1. lifecycle, initial full sync, registered mapping, unregistered skip, and
    unchanged cursor poll;
@@ -87,7 +87,10 @@ Six deterministic scenario groups cover:
 4. four-signal initial sync paced as three then one across the 50 ms peer floor;
 5. exact stale/no-value publication without another cache poll; and
 6. cache update through encoded encrypted fake delivery, accepted-but-injected
-   radio loss, later sequence delivery, and exact receiver gap detection.
+   radio loss, later sequence delivery, and exact receiver gap detection; and
+7. the actual EEC1/SPN 190 decoder output `engine.speed` flowing through cache,
+   registered wire-code mapping, packet encode, fake radio delivery, and gauge
+   decode without an ID alias or manual translation.
 
 ## Deferred target work
 

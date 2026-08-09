@@ -67,8 +67,8 @@ A decoder rejects an unknown code or a mismatched type/unit combination.
 
 | Code | Normalized ID | Type | Unit |
 | ---: | --- | --- | --- |
-| 1 | `powertrain.engine_speed` | unsigned integer | milli-revolutions/minute |
-| 2 | `powertrain.engine_coolant_temperature` | signed integer | milli-Celsius |
+| 1 | `engine.speed` | unsigned integer | milli-revolutions/minute |
+| 2 | `engine.coolant_temperature` | signed integer | milli-Celsius |
 | 3 | `vehicle.speed` | unsigned integer | millimetres/second |
 | 4 | `electrical.system_voltage` | unsigned integer | millivolt |
 

@@ -172,11 +172,14 @@ Invoke-HostTest `
     -Name 'telemetry_gateway_publisher_tests' `
     -Description 'Telemetry gateway publisher composition' `
     -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\can\include'),
         (Join-Path $projectRoot 'firmware\components\telemetry\include'),
         (Join-Path $projectRoot 'firmware\components\wireless\include'),
         (Join-Path $projectRoot 'firmware\components\wireless\test_support')
     ) `
     -Sources @(
+        (Join-Path $projectRoot 'firmware\components\can\src\j1939_identifier.cpp'),
+        (Join-Path $projectRoot 'firmware\components\can\src\j1939_decoder.cpp'),
         (Join-Path $projectRoot 'firmware\components\telemetry\src\normalized_signal.cpp'),
         (Join-Path $projectRoot 'firmware\components\telemetry\src\telemetry_cache.cpp'),
         (Join-Path $projectRoot 'firmware\components\wireless\src\esp_now_transport.cpp'),
