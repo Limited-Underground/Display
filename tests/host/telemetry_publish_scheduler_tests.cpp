@@ -194,6 +194,8 @@ void test_initial_three_signal_batch_and_per_peer_sequence() {
     EXPECT(plan.batch.gateway_uptime_ms == 100);
     EXPECT(scheduler.prepare(peer(1), 200).error ==
            wireless::PublishSchedulerError::plan_pending);
+    EXPECT(scheduler.reset_source_epoch() ==
+           wireless::PublishSchedulerError::plan_pending);
     auto commit = scheduler.commit(peer(1), plan.token, true, 200);
     EXPECT(commit.committed());
     EXPECT(commit.transport_accepted);

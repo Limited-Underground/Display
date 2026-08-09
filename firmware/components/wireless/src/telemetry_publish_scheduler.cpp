@@ -270,6 +270,33 @@ SchedulerUpdateResult TelemetryPublishScheduler::update_signal(
             true};
 }
 
+PublishSchedulerError TelemetryPublishScheduler::reset_source_epoch() {
+    if (!running_) {
+        return PublishSchedulerError::invalid_state;
+    }
+    for (const auto& peer : peers_) {
+        if (peer.occupied && peer.pending.active) {
+            return PublishSchedulerError::plan_pending;
+        }
+    }
+    signals_ = {};
+    signal_count_ = 0;
+    for (auto& peer : peers_) {
+        if (!peer.occupied) {
+            continue;
+        }
+        for (std::size_t index = 0;
+             index < peer.subscription_count;
+             ++index) {
+            peer.subscriptions[index].last_published = {};
+            peer.subscriptions[index].last_published_at_ms = 0;
+            peer.subscriptions[index].last_published_revision = 0;
+            peer.subscriptions[index].has_published = false;
+        }
+    }
+    return PublishSchedulerError::none;
+}
+
 TelemetryPublishPlan TelemetryPublishScheduler::prepare(
     const PeerAddress& destination,
     std::uint64_t now_ms) {

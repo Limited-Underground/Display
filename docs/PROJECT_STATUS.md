@@ -14,7 +14,8 @@ the OpenTrail repository. The Classical J1939 identifier parser, a
 fixed-capacity decoder registry with one EEC1 engine-speed fixture, normalized
 signal model, fixed-capacity thread-safe telemetry cache, an opaque
 encrypted-unicast ESP-NOW transport contract/fake, an explicit 96-byte
-telemetry packet codec, and a bounded per-gauge publication scheduler now have deterministic host tests. Vehicle acquisition,
+telemetry packet codec, a bounded per-gauge publication scheduler, and a
+cache-cursor-to-radio publisher composition now have deterministic host tests. Vehicle acquisition,
 normalization from captured/real signals,
 on-device performance, physical transport, keys, displays, and hardware remain
 unvalidated.
@@ -33,6 +34,7 @@ unvalidated.
 - The v0 ESP-NOW boundary is opaque, unicast, fixed-capacity, nonblocking, and encrypted-by-default. Radio-delivery completion is explicitly not an application acknowledgement. The fake models channel/security agreement, loss, receiver rejection, and queue backpressure without claiming an ESP-IDF or RF result.
 - The v0 telemetry packet is an explicit fixed 96-byte little-endian batch with a four-signal registry, three entries per packet, gateway/session/sequence identity, source age, canonical unused bytes, and CRC corruption detection. Receiver logic detects gaps/duplicates/out-of-order/restarts and adds local elapsed time to source age without comparing unsynchronized clocks. Exact stale boundaries strip numeric display values. The 10 Hz/eight-peer payload estimate is 7,680 bytes/s before radio overhead and is not physical rate evidence.
 - The v0 cooperative publisher holds at most eight gauge peers, eight subscriptions each, and sixteen latest signals. It prioritizes first/quality transitions, then deadband changes, then periodic refresh; derives stale state at prepare time; batches three; and enforces a 50 ms minimum peer packet interval (20 packets/s, 1,920 payload bytes/s per peer). Local queue rejection retains the sequence/state for retry; local acceptance advances the peer even if later radio delivery is lost, which receiver gap tests cover. ESP-IDF task/queue integration and physical rate evidence remain.
+- The gateway publisher composition polls cache cursors into registered scheduler state, skips/counts unregistered IDs, resets source/publication baselines on cache epoch change without resetting peer sequence, encodes one packet, and commits one local transport enqueue result. Six host groups cover full/incremental sync, clear/reload, same-sequence local retry, paced initial sync, stale without repoll, and accepted radio loss producing a receiver gap. Firmware task ownership and on-device timing remain.
 - ESP-NOW and persistent formats use explicit versioned serialization, not raw C/C++ memory layouts.
 - Optional GPS and APU behavior remains modular; control functions are outside the initial core.
 - OpenTrail receives normalized critical events and never needs J1939 knowledge.
@@ -86,10 +88,10 @@ No hardware is considered supported until repeatable test evidence is recorded.
 
 ## Next decision checkpoint
 
-Compose cache cursor polling with the completed publication scheduler while
-recording the exact target vehicle/use case and reconciling the EEC1 fixture against
+Bind the completed gateway publisher to a bounded ESP-IDF task/radio adapter
+while recording the exact target vehicle/use case and reconciling the EEC1 fixture against
 licensed/current J1939 data and legally obtained captured traffic. The
-completed OG-005, OG-006, OG-007, OG-008, OG-009, OG-010, OG-010B, and OG-018 contracts are inputs to
+completed OG-005, OG-006, OG-007, OG-008, OG-009, OG-010, OG-010B, OG-010C, and OG-018 contracts are inputs to
 later layers rather than substitutes for physical CAN, on-device performance,
 display, or transport validation. Incoming candidate boards follow
 `hardware/INVENTORY.md` before any support claim.

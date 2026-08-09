@@ -129,7 +129,8 @@ definitions.
 ## Deferred work
 
 - ESP-IDF task/queue and ESP-NOW adapter binding
-- cache cursor polling and acquisition-task integration
+- acquisition-task integration; bounded cache cursor polling and one-shot
+  transport enqueue are now composed in `TELEMETRY_GATEWAY_PUBLISHER_V0.md`
 - reviewed signal-specific rates/deadbands for a real vehicle and gauge layout
 - subscription negotiation/capability format and authorization
 - congestion feedback, diagnostics counters in production firmware, and any
