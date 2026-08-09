@@ -38,9 +38,11 @@ half-range serial-number case. Unsigned serial arithmetic permits normal
 validation, and outbox correlation succeed, so a mismatched frame cannot burn
 a valid sequence number.
 
-Replay state is RAM-only. Persistent authorization epoch, session/window
-checkpointing, rollback resistance, revoke/restart behavior, and rate limits
-remain required for production.
+The fixed `OAI0` checkpoint now serializes session/window state and binds every
+entry to the live authorization epoch. It restores pre-reboot duplicate
+rejection atomically and fails after rotation/revoke until explicit rebind.
+Durable storage, coordinated authorization persistence, rollback resistance,
+physical restart/power-loss behavior, and rate limits remain required.
 
 ## Accepted versus rejected ACK
 

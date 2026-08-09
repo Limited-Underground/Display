@@ -195,8 +195,11 @@ metadata, logical peer/key-handle/channel/permission authorization, explicit
 consumer-session binding, a 32-sequence replay window, observed-age policy, and
 exact outbox correlation. Only accepted/none removes an entry; a correlated
 rejection remains explicit non-success. CRC still provides corruption
-detection only; real cryptographic transport, replay/authorization persistence,
-negative-reason terminal policy, and physical delivery remain unresolved.
+detection only. A fixed canonical checkpoint now exports/imports all eight
+bindings and replay bitmaps atomically, tied to the exact live authorization
+epoch; rotation or revoke invalidates stale state. Durable coordinated storage,
+rollback protection, real cryptographic transport, negative-reason terminal
+policy, and physical delivery remain unresolved.
 
 ## Updates and recovery
 
