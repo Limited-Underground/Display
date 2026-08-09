@@ -109,6 +109,15 @@ struct AlarmEvaluationResult {
     }
 };
 
+struct AlarmSnapshotValidationResult {
+    AlarmError error{AlarmError::invalid_state};
+    std::size_t rules_matched{0};
+
+    [[nodiscard]] constexpr bool accepted() const {
+        return error == AlarmError::none;
+    }
+};
+
 struct AlarmAcknowledgeResult {
     AlarmError error{AlarmError::rule_not_found};
     AlarmEvent event{};
@@ -163,6 +172,9 @@ public:
         std::uint64_t now_ms,
         AlarmEvent* events,
         std::size_t event_capacity);
+
+    [[nodiscard]] AlarmSnapshotValidationResult validate_snapshot(
+        const telemetry::CachedSignalSnapshot& snapshot) const;
 
     [[nodiscard]] AlarmAcknowledgeResult acknowledge(
         std::uint16_t rule_id,

@@ -14,7 +14,7 @@ the OpenTrail repository. A passive Classical CAN receiver interface and
 bounded 16-frame fake, the Classical J1939 identifier parser, a
 fixed-capacity decoder registry with one EEC1 engine-speed fixture, normalized
 signal model, fixed-capacity thread-safe telemetry cache, a fixed 16-rule alarm
-engine, an opaque
+engine plus bounded full-state cache evaluator, an opaque
 encrypted-unicast ESP-NOW transport contract/fake, an explicit 96-byte
 telemetry packet codec, a bounded per-gauge publication scheduler, a
 cache-cursor-to-radio publisher, and a bounded CAN-to-radio gateway loop now
@@ -40,6 +40,7 @@ unvalidated.
 - The gateway publisher composition polls cache cursors into registered scheduler state, skips/counts unregistered IDs, resets source/publication baselines on cache epoch change without resetting peer sequence, encodes one packet, and commits one local transport enqueue result. Seven host groups cover full/incremental sync, clear/reload, same-sequence local retry, paced initial sync, stale without repoll, accepted radio loss producing a receiver gap, and actual EEC1 `engine.speed` decode through cache to wire code 1. Firmware task ownership and on-device timing remain.
 - The gateway telemetry loop composes at most 16 CAN receives, eight decoded signals/frame, cache writes plus one poll, one enqueue attempt for each of eight peers, and one transport service call per cooperative cycle. Nine host groups cover rollback/restart, bounded fairness, bad/unsupported traffic, real EEC1-to-fake-radio delivery, unavailable/stale no-value behavior, bus-off, retry, and overflow diagnostics. ESP-IDF task/ISR ownership, timing, and physical adapters remain.
 - The v0 alarm engine holds 16 normalized-signal rules with inclusive above/below/outside-range comparison, exact hysteresis and assert/clear debounce, four severities, nonvalid clear/hold/assert policy, latching/acknowledgement, atomic bounded events, and periodic reminders. Ten host groups cover thresholds, signed-safe hysteresis, chatter, stale/unavailable no-value behavior, latch/ack paths, clock/type/unit rejection, capacity, diagnostics, and restart. Cache-task, display, critical-event, persistence, and reviewed vehicle-rule composition remain.
+- The cache-to-alarm evaluator scans all 16 latest snapshots at each monotonic poll rather than only changed generations, so unchanged values advance debounce, exact cache staleness, and reminders. It preflights the whole poll, aggregates up to 16 events, skips unruled signals, and treats a cache epoch as a runtime-reset boundary without inventing clears. Seven host groups cover capacity/lifecycle, unchanged state, stale/reminder boundaries, reset/reassert, aggregation, incompatible input, cache failure, and clock regression. Target-task timing and event consumers remain.
 - ESP-NOW and persistent formats use explicit versioned serialization, not raw C/C++ memory layouts.
 - Optional GPS and APU behavior remains modular; control functions are outside the initial core.
 - OpenTrail receives normalized critical events and never needs J1939 knowledge.
@@ -93,11 +94,11 @@ No hardware is considered supported until repeatable test evidence is recorded.
 
 ## Next decision checkpoint
 
-Bind the completed host gateway loop to selected ESP-IDF CAN/radio adapters and
-compose cache changes into the alarm engine
+Bind the completed host gateway and alarm-cache loops to selected ESP-IDF tasks
+and CAN/radio adapters
 while recording the exact target vehicle/use case and reconciling the EEC1 fixture against
 licensed/current J1939 data and legally obtained captured traffic. The
-completed OG-004, OG-005, OG-006, OG-007, OG-008, OG-009, OG-010, OG-010B, OG-010C, OG-010D, OG-014, and OG-018 contracts are inputs to
+completed OG-004, OG-005, OG-006, OG-007, OG-008, OG-009, OG-010, OG-010B, OG-010C, OG-010D, OG-014, OG-014A, and OG-018 contracts are inputs to
 later layers rather than substitutes for physical CAN, on-device performance,
 display, or transport validation. Incoming candidate boards follow
 `hardware/INVENTORY.md` before any support claim.
