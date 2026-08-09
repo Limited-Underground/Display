@@ -121,3 +121,15 @@ Invoke-HostTest `
         (Join-Path $projectRoot 'firmware\components\telemetry\src\telemetry_cache.cpp'),
         (Join-Path $projectRoot 'tests\host\telemetry_cache_tests.cpp')
     )
+
+Invoke-HostTest `
+    -Name 'esp_now_transport_tests' `
+    -Description 'ESP-NOW transport contract' `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\wireless\include'),
+        (Join-Path $projectRoot 'firmware\components\wireless\test_support')
+    ) `
+    -Sources @(
+        (Join-Path $projectRoot 'firmware\components\wireless\test_support\fake_esp_now_transport.cpp'),
+        (Join-Path $projectRoot 'tests\host\esp_now_transport_tests.cpp')
+    )

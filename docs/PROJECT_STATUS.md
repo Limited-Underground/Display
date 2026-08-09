@@ -12,10 +12,11 @@ Status date: 2026-08-09
 The critical-alert semantic interface has bounded host validation in this and
 the OpenTrail repository. The Classical J1939 identifier parser, a
 fixed-capacity decoder registry with one EEC1 engine-speed fixture, normalized
-signal model, and fixed-capacity thread-safe telemetry cache now have
-deterministic host tests. Vehicle acquisition, normalization from captured/real
-signals, on-device performance, physical transport, displays, and hardware
-remain unvalidated.
+signal model, fixed-capacity thread-safe telemetry cache, and an opaque
+encrypted-unicast ESP-NOW transport contract/fake now have deterministic host
+tests. Vehicle acquisition, normalization from captured/real signals,
+on-device performance, physical transport, keys, displays, and hardware remain
+unvalidated.
 
 ## Decisions captured
 
@@ -28,6 +29,7 @@ remain unvalidated.
 - The v0 decoder registry rejects duplicate, over-capacity, noncanonical PDU1, unknown, and malformed dispatch. Its single EEC1/SPN 190 fixture preserves reserved/error/unavailable encodings as nonnumeric quality states and still requires licensed-standard and captured-frame reconciliation.
 - The v0 normalized signal model uses fixed-capacity namespaced IDs, integer canonical units, explicit quality, protocol-specific provenance, and an exact `age >= threshold` stale boundary.
 - The v0 cache holds 16 latest states, rejects invalid/older/conflicting/full writes, serializes concurrent access, materializes stale transitions for polling subscribers, and invalidates cursors on clear. It is not history, persistence, or a firmware-performance claim.
+- The v0 ESP-NOW boundary is opaque, unicast, fixed-capacity, nonblocking, and encrypted-by-default. Radio-delivery completion is explicitly not an application acknowledgement. The fake models channel/security agreement, loss, receiver rejection, and queue backpressure without claiming an ESP-IDF or RF result.
 - ESP-NOW and persistent formats use explicit versioned serialization, not raw C/C++ memory layouts.
 - Optional GPS and APU behavior remains modular; control functions are outside the initial core.
 - OpenTrail receives normalized critical events and never needs J1939 knowledge.
@@ -81,8 +83,8 @@ No hardware is considered supported until repeatable test evidence is recorded.
 
 ## Next decision checkpoint
 
-Define the ESP-NOW transport abstraction and packet/rate budget while recording
-the exact target vehicle/use case and reconciling the EEC1 fixture against
+Define the explicit telemetry packet/rate budget while recording the exact
+target vehicle/use case and reconciling the EEC1 fixture against
 licensed/current J1939 data and legally obtained captured traffic. The
 completed OG-005, OG-006, OG-007, OG-008, and OG-018 contracts are inputs to
 later layers rather than substitutes for physical CAN, on-device performance,
