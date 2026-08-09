@@ -12,8 +12,10 @@ OpenGauge is a proposed free/open-source ESP32 vehicle instrumentation and telem
   retry-to-accept, and live-state alert/ACK cycles completed with zero observed
   message loss, duplicates, or new radio errors.
 - **Latest software result:** canonical boot-only `OPA0` peer-authorization
-  recovery now preserves active/revoked peers, opaque key handles, and epochs.
-  The complete 33-executable host matrix and 100 focused repeats pass.
+  recovery now has a recoverable two-slot `OPS0` host store with automatic
+  generations, readback verification, interruption recovery, and uncertain-
+  commit reconciliation. The complete 34-executable host matrix and 100 focused
+  store repeats pass.
 - **Still unproved:** ESP-IDF target adapters, protected on-device keys/storage,
   physical power-cut behavior, real CAN/J1939 vehicle input, displays, and field
   radio performance.
@@ -37,6 +39,7 @@ Architecture/bootstrap phase. The transport-neutral OpenGauge-to-OpenTrail criti
 - The store now owns next-generation allocation: empty storage starts at 1, successful saves rotate monotonically across slots, conflicted/unreadable baselines fail closed, and 64-bit exhaustion is reported before a write. Callers no longer choose recovery generations.
 - Write errors now report `commit_uncertain` with the intended slot/generation. Sixteen interrupted-overwrite boundaries preserve the prior good generation, while a full write followed by an I/O error is reconciled on boot as committed state instead of being blindly retried.
 - Peer authorization now has a host-tested [canonical `OPA0` restart checkpoint](docs/security/PEER_AUTHORIZATION_CHECKPOINT_V0.md). It persists only logical policy metadata and opaque key handles, preserves revoked peers and authorization epochs, refuses pending approvals, and imports atomically only into a clean boot registry. The full 33-executable matrix and 100 focused repeats pass; protected target storage and coordinated `OPA0`/`OCR0` restore remain.
+- Peer authorization now also has a host-tested [recoverable two-slot `OPS0` store](docs/security/PEER_AUTHORIZATION_CHECKPOINT_STORE_V0.md). Normal saves allocate generations, rotate away from the newest good slot, require byte/decode readback, preserve the prior generation across ten interrupted-write boundaries, and reconcile a full write followed by an I/O error at boot. The full 34-executable matrix and 100 focused repeats pass; this is not yet protected ESP32 storage.
 - Across each two-cycle set, radio loss/duplicates/errors were zero, SenseCAP recorded exact aggregate +4 flood RX/TX, repeat stayed enabled, and cleanup passed 4/4.
 
 The latest checkpoint proves deterministic outbox reconstruction in a new host object, while the physical test still used host-supplied trust. It is not yet a coordinated durable or authenticated on-device restart. See [the live-state physical evidence](tests/hardware/OG-018M-2026-08-09.md) and [the outbox checkpoint integration](docs/integration/CRITICAL_ALERT_OUTBOX_CHECKPOINT_V0.md).
@@ -84,7 +87,7 @@ OpenGauge owns vehicle acquisition, decode/normalization, gauge display, vehicle
 
 ## Start here
 
-Read [the dated progress log](docs/PROGRESS_LOG.md), [the latest live-state physical evidence](tests/hardware/OG-018M-2026-08-09.md), [the reconstructed retry evidence](tests/hardware/OG-018L-2026-08-09.md), [the terminal stale-rejection evidence](tests/hardware/OG-018J-2026-08-09.md), [the accepted completion evidence](tests/hardware/OG-018I-2026-08-09.md), [the architecture](docs/ARCHITECTURE.md), [project status and assumptions](docs/PROJECT_STATUS.md), [the hardware evidence inventory](hardware/INVENTORY.md), [the peer authorization model](docs/security/PEER_AUTHORIZATION_V0.md), [the peer authorization checkpoint](docs/security/PEER_AUTHORIZATION_CHECKPOINT_V0.md), and [the backlog](tasks/BACKLOG.md). Detailed component specifications remain organized under `docs/`. The next core work is coordinated durable restart recovery plus target adapters and authenticated on-device transport.
+Read [the dated progress log](docs/PROGRESS_LOG.md), [the latest live-state physical evidence](tests/hardware/OG-018M-2026-08-09.md), [the architecture](docs/ARCHITECTURE.md), [project status and assumptions](docs/PROJECT_STATUS.md), [the hardware evidence inventory](hardware/INVENTORY.md), [the peer authorization model](docs/security/PEER_AUTHORIZATION_V0.md), [the peer checkpoint](docs/security/PEER_AUTHORIZATION_CHECKPOINT_V0.md), [its two-slot store](docs/security/PEER_AUTHORIZATION_CHECKPOINT_STORE_V0.md), and [the backlog](tasks/BACKLOG.md). Detailed component specifications and physical evidence remain organized under `docs/` and `tests/`. The next core work is coordinated durable restart recovery plus target adapters and authenticated on-device transport.
 
 ## License and contributions
 

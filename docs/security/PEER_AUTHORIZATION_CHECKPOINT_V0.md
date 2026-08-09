@@ -87,10 +87,14 @@ mutating the live owner.
 The complete 33-executable host matrix passes, and the focused checkpoint suite
 passes 100 consecutive repeats.
 
+The separate [two-slot `OPS0` store](PEER_AUTHORIZATION_CHECKPOINT_STORE_V0.md)
+now supplies recoverable host storage and automatic generations around this
+exact record.
+
 ## Remaining gates
 
 - compose `OPA0` with ACK replay/outbox recovery without a partial live restore;
-- bind the record to a selected ESP-IDF protected-storage adapter;
+- bind the two-slot store to a selected ESP-IDF protected-storage adapter;
 - define authenticated integrity and trusted rollback protection;
 - validate factory reset, replacement, revoke, and key-store loss behavior;
 - inject physical power cuts and measure wear/recovery on exact target hardware;

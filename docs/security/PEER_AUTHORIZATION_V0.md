@@ -88,7 +88,9 @@ authorization. It composes with those layers.
 The suite also repeated 100 times with zero failures. The separate
 [peer-authorization checkpoint](PEER_AUTHORIZATION_CHECKPOINT_V0.md) now
 provides a canonical boot-only record for logical peers, active/revoked state,
-opaque key handles, and authorization epochs.
+opaque key handles, and authorization epochs. Its separate
+[two-slot host store](PEER_AUTHORIZATION_CHECKPOINT_STORE_V0.md) adds recoverable
+generations and interruption handling without claiming protected target storage.
 
 ## Remaining pairing gates
 

@@ -18,6 +18,10 @@ public chronology.
 - Added the canonical 256-byte `OPA0` peer-authorization checkpoint. It restores
   active/revoked peers, opaque key handles, and authorization epochs atomically;
   the full 33-executable matrix and 100 focused repeats pass.
+- Added the recoverable 288-byte `OPS0` two-slot host store around `OPA0`.
+  Automatic generations, exact readback, ten interrupted-write boundaries,
+  full-write error reconciliation, conflict/exhaustion handling, the complete
+  34-executable matrix, and 100 focused repeats pass.
 - Kept all target claims bounded: there is no ESP-IDF storage/radio/CAN binding,
   protected on-device key persistence, physical power-cut evidence, or vehicle
   validation yet.
