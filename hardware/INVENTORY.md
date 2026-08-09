@@ -11,9 +11,9 @@ wiring, procedure, and result.
 
 | Role | Exact item | Acquisition state | Evidence state | Intended first check |
 | --- | --- | --- | --- | --- |
-| Round gauge display | 2 x Waveshare ESP32-S3-Touch-AMOLED-1.75-B, SKU 31262, in protective case | Owner reports ordered; not yet received | Candidate only | Inspect labels; record flash/PSRAM and board revision; build official sample; verify display, touch, IMU, USB recovery, memory, and power |
+| Round gauge display | 2 x Waveshare ESP32-S3-Touch-AMOLED-1.75-B, SKU 31262, in protective case | Owner reports ordered; not yet received | Candidate only | Follow `hardware/WAVESHARE_31262_BRINGUP.md`: preserve the shipping demo, identify both units, prove USB recovery, then measure vendor display/touch/power/IMU and synthetic-gauge behavior |
 | ESP32-S3 bench mule | Espressif ESP32-S3-DevKitC-1-N8R8 | Owner reports ordered; not yet received | Candidate only | Record revision; run USB/serial recovery and deterministic GPIO/synthetic-telemetry smoke test |
-| Generic OBD-II discovery adapter | Veepeak OBDCheck BLE, Amazon ASIN B073XKQQQW | Owner reports on hand | Candidate only; no OpenGauge test | Identify firmware/advertised services and host connection path; perform read-only capability discovery with vehicle stationary |
+| Generic OBD-II discovery adapter | Veepeak OBDCheck BLE, Amazon ASIN B073XKQQQW | Owner reports on hand | Candidate only; no OpenGauge test | Follow `hardware/VEEPEAK_OBDCHECK_BLE_BRINGUP.md`: identify the exact variant, enumerate the Windows Classic-Bluetooth path, and perform allowlisted read-only capability/rate discovery with the vehicle stationary |
 | CAN/J1939 gateway | No protected CAN/J1939 interface selected | Not acquired | Missing | Select controller/transceiver, protection, connector, power, and isolation appropriate to the target vehicle and bus |
 | GPS source | No dedicated OpenGauge GPS source selected | Not acquired | Missing | Decide whether OpenTrail supplies location events or OpenGauge needs an independent normalized GPS source |
 
@@ -27,6 +27,9 @@ wiring, procedure, and result.
   clearing, actuation, or permanent installation is part of bring-up.
 - A vehicle test waits for the exact vehicle, connector, protocol, and power
   constraints to be recorded and reviewed.
+- The Waveshare SKU 31262 `-B` is the standard non-GPS board in a protective
+  case. Do not treat it as the `-G` GNSS version or connect it directly to
+  vehicle power.
 
 ## Arrival evidence checklist
 

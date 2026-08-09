@@ -39,9 +39,9 @@ remain unvalidated.
 
 | Item | Current status | Required evidence |
 | --- | --- | --- |
-| 2 x Waveshare ESP32-S3-Touch-AMOLED-1.75-B, SKU 31262 | Owner reports ordered; not received or tested | Exact unit/revision, display/touch/IMU, flash/PSRAM, pins, USB recovery, power, build and performance tests |
+| 2 x Waveshare ESP32-S3-Touch-AMOLED-1.75-B, SKU 31262 | Owner reports ordered; not received or tested. Vendor identifies this as the standard non-GPS board in its protective case | Follow the prepared arrival procedure for exact unit/revision, shipping-demo preservation, display/touch/IMU, flash/PSRAM, USB recovery, power, paired independence, build and performance tests |
 | Espressif ESP32-S3-DevKitC-1-N8R8 | Owner reports ordered as a bench mule; not received or tested | Exact revision, USB/serial recovery, synthetic telemetry and interface smoke test |
-| Veepeak OBDCheck BLE, ASIN B073XKQQQW | Owner reports on hand; OpenGauge compatibility untested | Exact firmware/services and read-only generic OBD-II capability; not assumed to provide J1939 or raw CAN |
+| Veepeak OBDCheck BLE, ASIN B073XKQQQW | Owner reports on hand; OpenGauge compatibility untested. Vendor documents Classic Bluetooth for Windows and no MS-CAN/SW-CAN | Follow the prepared allowlisted read-only discovery; exact variant/firmware, Windows serial path, vehicle/PID support, rates, and failure behavior; never assume J1939 or raw CAN |
 | CAN/J1939 gateway interface | Not selected | MCU/board, TWAI/external controller, transceiver, protection, isolation, connector, power conditioning, environmental suitability |
 | GPS ESP32/module | Not selected | Receiver/module, update rate, antenna, interfaces, cold start, accuracy, power |
 

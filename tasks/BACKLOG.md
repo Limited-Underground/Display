@@ -9,7 +9,7 @@ Statuses: `done` means the documented acceptance criteria are evidenced; `planne
 | OG-001 | done | Project bootstrap and repository structure | Self-contained directories, agent guide, README, architecture, status, and backlog exist |
 | OG-002 | done | Initial architecture documentation | Roles, layers, safety/failure boundaries, protocols, and architecture gates documented |
 | OG-003 | planned | Hardware abstraction contracts | CAN, clock, ESP-NOW, display/touch, storage, power, and logging contracts reviewed with fakes |
-| OG-003A | planned | Hardware/use-case inventory | Candidate acquisition inventory now records two Waveshare SKU 31262 displays, an Espressif DevKitC bench mule, and the on-hand Veepeak adapter with evidence boundaries. Remains planned until the exact vehicle, desired signals, CAN interface, wiring, power, and environment constraints are recorded |
+| OG-003A | planned | Hardware/use-case inventory | Candidate acquisition inventory plus arrival procedures now record two Waveshare SKU 31262 non-GPS displays, an Espressif DevKitC bench mule, and the on-hand Veepeak generic OBD-II adapter with recovery/read-only evidence boundaries. Remains planned until exact received units, vehicle, desired signals, CAN interface, wiring, power, and environment constraints are recorded |
 | OG-017 | planned | Diagnostics/logging foundation | Levels/filtering/redaction plus CAN, wireless, cache, decoder, render, and reset counters tested |
 
 ## CAN/J1939 and telemetry core
@@ -38,7 +38,7 @@ Statuses: `done` means the documented acceptance criteria are evidenced; `planne
 | --- | --- | --- | --- |
 | OG-012 | planned | Gauge rendering framework | View-model boundary and representative numeric/needle/bar/warning/stale screens benchmarked on candidate hardware |
 | OG-013 | planned | Persistent gauge configuration | Versioning, validation, migration, safe defaults, write wear, import/reset/recovery tested |
-| OG-012A | planned | Display hardware feasibility | Exact board build plus measured RAM/flash, boot, frame/update time, touch, brightness, power, and recovery |
+| OG-012A | planned | Display hardware feasibility | The SKU 31262 two-unit arrival plan defines shipping-demo preservation, exact revision, silicon/flash/security, BOOT/RESET recovery, vendor display/touch/power/IMU baseline, representative valid/warning/unavailable/error/stale rendering, resource/timing/power/heat, independent failure, and restore evidence. No unit has arrived or been tested |
 
 ## Modules and lifecycle
 
