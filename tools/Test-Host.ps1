@@ -207,3 +207,30 @@ Invoke-HostTest `
         (Join-Path $projectRoot 'firmware\components\wireless\test_support\fake_esp_now_transport.cpp'),
         (Join-Path $projectRoot 'tests\host\telemetry_gateway_publisher_tests.cpp')
     )
+
+Invoke-HostTest `
+    -Name 'gateway_telemetry_loop_tests' `
+    -Description 'Bounded gateway telemetry loop' `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\can\include'),
+        (Join-Path $projectRoot 'firmware\components\can\test_support'),
+        (Join-Path $projectRoot 'firmware\components\gateway\include'),
+        (Join-Path $projectRoot 'firmware\components\telemetry\include'),
+        (Join-Path $projectRoot 'firmware\components\wireless\include'),
+        (Join-Path $projectRoot 'firmware\components\wireless\test_support')
+    ) `
+    -Sources @(
+        (Join-Path $projectRoot 'firmware\components\can\src\can_receiver.cpp'),
+        (Join-Path $projectRoot 'firmware\components\can\src\j1939_identifier.cpp'),
+        (Join-Path $projectRoot 'firmware\components\can\src\j1939_decoder.cpp'),
+        (Join-Path $projectRoot 'firmware\components\can\test_support\fake_can_receiver.cpp'),
+        (Join-Path $projectRoot 'firmware\components\gateway\src\gateway_telemetry_loop.cpp'),
+        (Join-Path $projectRoot 'firmware\components\telemetry\src\normalized_signal.cpp'),
+        (Join-Path $projectRoot 'firmware\components\telemetry\src\telemetry_cache.cpp'),
+        (Join-Path $projectRoot 'firmware\components\wireless\src\esp_now_transport.cpp'),
+        (Join-Path $projectRoot 'firmware\components\wireless\src\telemetry_packet.cpp'),
+        (Join-Path $projectRoot 'firmware\components\wireless\src\telemetry_publish_scheduler.cpp'),
+        (Join-Path $projectRoot 'firmware\components\wireless\src\telemetry_gateway_publisher.cpp'),
+        (Join-Path $projectRoot 'firmware\components\wireless\test_support\fake_esp_now_transport.cpp'),
+        (Join-Path $projectRoot 'tests\host\gateway_telemetry_loop_tests.cpp')
+    )

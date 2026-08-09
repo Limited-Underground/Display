@@ -82,8 +82,16 @@ nonblocking transport enqueue. A two-phase prepare/local-queue-commit rule
 advances per-peer sequence only when the local transport accepts the frame;
 later radio loss does not create a blocking retry that starves newer data.
 Gauges use sequence/session and source age plus receiver-local elapsed time for
-loss and staleness. Target-task composition, pairing, real peer limits,
+loss and staleness. ESP-IDF target-task binding, pairing, real peer limits,
 encryption/key handling, channel coexistence, and recovery remain unresolved.
+
+A host-tested cooperative gateway loop now composes passive receive, J1939
+dispatch, normalized cache writes, one cache poll, at most one enqueue for each
+of eight peers, and one transport service call. Its configurable drain limit is
+at most 16 CAN frames per cycle, preventing sustained bus input from starving
+radio work. Input faults do not suppress cache aging, so bus-off still produces
+an explicit stale/no-value publication. ESP-IDF task/ISR ownership, watchdog,
+stack, timing, physical adapters, and concurrency remain unresolved.
 
 ## Gauge rendering
 

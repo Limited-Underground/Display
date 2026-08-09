@@ -31,6 +31,7 @@ Statuses: `done` means the documented acceptance criteria are evidenced; `planne
 | OG-010 | done | Gateway-to-gauge packet format | An explicit fixed 96-byte `OGT0` codec carries up to three registered signals with canonical type/unit/quality, gateway/session/sequence identity, source age, zeroed reserved/unused bytes, and CRC-32. Eight host-test groups cover a normative golden vector, cache-to-wire no-value rules, malformed/incompatible/corrupt frames, sequence gap/duplicate/out-of-order/wrap/restart behavior, exact receiver-local staleness, and fake encrypted delivery plus loss. Its 10 Hz/eight-peer 7,680 payload-byte/s estimate excludes radio overhead and is not physical evidence |
 | OG-010B | done | Telemetry publication scheduler | A cooperative fixed-capacity scheduler holds 8 peers, 8 subscriptions/peer, and 16 latest signals; prioritizes first/quality, deadband change, then periodic refresh; derives exact stale/no-value state; batches 3; and enforces a hard 50 ms peer packet floor. Two-phase prepare/local-queue commit keeps the same sequence after local rejection and advances after acceptance even when injected radio loss creates a receiver gap. Eight host groups cover lifecycle/capacity, coalescing, initial batching, min/deadband/max timing, stale/recovery/unavailable, token/retry, independent peers, and encoded fake transport loss |
 | OG-010C | done | Cache-to-radio gateway publisher | A cooperative composition performs bounded cache full/incremental cursor polls, maps only four registered IDs, counts/skips unknowns, safely resets source/publication baselines on cache epoch change, encodes one 96-byte packet, attempts one nonblocking send, and commits local acceptance/rejection. Seven host groups cover initial/unchanged mapping, clear plus same-value reload, same-sequence local retry, paced 3+1 sync, stale without repoll, accepted injected loss followed by an exact receiver gap, and the actual EEC1 `engine.speed` decoder-to-cache-to-wire path |
+| OG-010D | done | Bounded gateway telemetry loop | A single-owner cooperative composition drains at most 1-16 CAN frames, decodes at most eight signals/frame, writes/polls the cache once, attempts one enqueue for each of eight peers, and services transport once. Nine host groups cover rollback/restart, drain fairness, bad/unsupported input, EEC1 end-to-end fake delivery, no-value transitions, stale publication during bus-off, same-sequence local retry, and overflow/status propagation. ESP-IDF task/ISR timing and physical adapters remain |
 | OG-011 | planned | Gauge pairing and identity | Threat model, discovery/approval, key storage, replacement/reset/revoke/recovery, and peer-limit tests |
 | OG-010A | planned | Physical ESP-NOW characterization | Packet loss, latency, peers, interference/coexistence, reboot recovery, and update-rate evidence on selected boards |
 
@@ -53,9 +54,8 @@ Statuses: `done` means the documented acceptance criteria are evidenced; `planne
 
 ## Recommended sequence
 
-Complete the missing vehicle/power/CAN portions of OG-003A while binding
-OG-010C and completed OG-004 to a bounded target task. Then bind OG-004 to a
-selected ESP-IDF CAN adapter or OG-009 to ESP-IDF radio without confusing a
+Complete the missing vehicle/power/CAN portions of OG-003A while binding the
+completed OG-010D loop to selected ESP-IDF CAN and radio adapters without confusing a
 host-tested interface with on-device or RF acceptance.
 Incoming display work may begin with OG-012A vendor-example and recovery
 evidence, but does not bypass the normalized-data path.
