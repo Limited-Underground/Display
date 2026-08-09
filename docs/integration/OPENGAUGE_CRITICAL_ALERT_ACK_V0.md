@@ -1,8 +1,8 @@
 # OpenGauge Critical Alert Acknowledgement v0
 
-Status: experimental mirrored interoperability contract, 2026-08-09. This is
-not transport authentication, proof of delivery, a retry policy, or physical
-Heltec/MeshCore evidence.
+Status: experimental mirrored interoperability contract with bounded external
+host-mediated Heltec/MeshCore wire evidence, 2026-08-09. This is not transport
+authentication, on-device OpenGauge delivery, or a field result.
 
 ## Boundary
 
@@ -96,15 +96,16 @@ times with zero failures.
 
 ## Remaining gates
 
-- bind ACK generation only after OpenTrail ingress produces a final decision;
+- replace the external host-mediated proof with an authenticated target adapter
+  running the real OpenGauge exporter/outbox/ACK-ingress/policy composition;
 - define authenticated framed serial or local-wireless transport and peer/key
   lifecycle;
-- bind the completed authorization-epoch-aware replay checkpoint to durable
-  commit-last storage with restart, rollback, rotation, revoke, and recovery
-  protection coordinated with the peer registry;
+- bind the completed authorization-epoch-aware replay checkpoint store to
+  target storage with generation allocation, restart, rollback, rotation,
+  revoke, and recovery coordinated with the peer registry and outbox;
 - bind the host-tested retry/terminal result and typed failure evidence to
   operator-visible diagnostics;
 - test loss, duplicate, corruption, reordering, delayed ACK, restart, revoke,
   wrong producer/consumer, wrong channel, and relay behavior;
-- validate physical two-Heltec delivery and document that a SenseCAP repeater
-  forwards traffic but does not itself supply application acknowledgement.
+- test authenticated on-device and field delivery; the passed SenseCAP path
+  forwarded frames but did not itself supply application acknowledgement.

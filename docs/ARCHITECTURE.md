@@ -207,7 +207,14 @@ write/readback/decode, selects the newest unique generation, restores through
 the ingress validator, and keeps one corrupt or interrupted slot recoverable.
 ESP-IDF/NVS binding, coordinated authorization/outbox persistence, secure
 rollback resistance, real cryptographic transport, operator presentation, and
-physical delivery remain unresolved.
+authenticated on-device delivery remain unresolved.
+
+External OT-017D evidence carried the public normative `OGA0` fixture through
+two role-reversed Heltec/SenseCAP cycles and returned correlated responder-made
+`OGK0` bytes with zero loss, duplicates, or new errors. This closes a bounded
+wire-fit/physical-byte question only: the host supplied trust and did not run
+the OpenGauge exporter, outbox, ACK ingress/policy, or checkpoint store on a
+target.
 
 ## Updates and recovery
 
