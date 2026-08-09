@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
+#include <limits>
 
 #include "fake_critical_alert_recovery_storage.hpp"
 
@@ -267,8 +268,38 @@ void test_equal_generation_conflict_fails_closed() {
     const auto loaded = store.restore(restored.ingress, restored.outbox, 100);
     EXPECT(!loaded.restored);
     EXPECT(loaded.error == CriticalAlertRecoveryStoreError::generation_conflict);
+    EXPECT(store.save_next(source.ingress, source.outbox, 12).error ==
+           CriticalAlertRecoveryStoreError::generation_conflict);
     EXPECT(restored.ingress.status().binding_count == 0 &&
            restored.outbox.status().queued_count == 0);
+}
+
+void test_store_allocates_and_rotates_next_generation() {
+    Owners source{};
+    FakeCriticalAlertRecoveryStorage storage{};
+    CriticalAlertRecoveryStore store{storage};
+    auto saved = store.save_next(source.ingress, source.outbox, 0);
+    EXPECT(saved.saved() && saved.generation == 1);
+    EXPECT(saved.written_slot == CriticalAlertRecoverySource::slot_a);
+    saved = store.save_next(source.ingress, source.outbox, 1);
+    EXPECT(saved.saved() && saved.generation == 2);
+    EXPECT(saved.written_slot == CriticalAlertRecoverySource::slot_b);
+    saved = store.save_next(source.ingress, source.outbox, 2);
+    EXPECT(saved.saved() && saved.generation == 3);
+    EXPECT(saved.written_slot == CriticalAlertRecoverySource::slot_a);
+}
+
+void test_next_generation_exhaustion_fails_before_write() {
+    Owners source{};
+    FakeCriticalAlertRecoveryStorage storage{};
+    CriticalAlertRecoveryStore store{storage};
+    const auto maximum = std::numeric_limits<std::uint64_t>::max();
+    EXPECT(store.save(source.ingress, source.outbox, 0, maximum).saved());
+    const auto writes = storage.writes(0) + storage.writes(1);
+    const auto exhausted = store.save_next(source.ingress, source.outbox, 1);
+    EXPECT(exhausted.error ==
+           CriticalAlertRecoveryStoreError::generation_exhausted);
+    EXPECT(storage.writes(0) + storage.writes(1) == writes);
 }
 
 }  // namespace
@@ -282,10 +313,12 @@ int main() {
     test_policy_and_authorization_rejection_are_atomic();
     test_stale_generation_and_reset_failures();
     test_equal_generation_conflict_fails_closed();
+    test_store_allocates_and_rotates_next_generation();
+    test_next_generation_exhaustion_fails_before_write();
     if (failures != 0) {
         std::cerr << failures << " recovery store assertion(s) failed\n";
         return EXIT_FAILURE;
     }
-    std::cout << "PASS: 8 critical alert recovery store scenario groups\n";
+    std::cout << "PASS: 10 critical alert recovery store scenario groups\n";
     return EXIT_SUCCESS;
 }

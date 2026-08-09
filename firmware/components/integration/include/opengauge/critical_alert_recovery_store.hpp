@@ -36,6 +36,7 @@ enum class CriticalAlertRecoveryStoreError : std::uint8_t {
     none = 0,
     no_checkpoint,
     invalid_generation,
+    generation_exhausted,
     stale_generation,
     generation_conflict,
     storage_failure,
@@ -80,6 +81,10 @@ public:
         CriticalAlertOutbox& outbox,
         std::uint64_t now_ms,
         std::uint64_t generation);
+    [[nodiscard]] CriticalAlertRecoverySaveResult save_next(
+        CriticalAlertAckIngress& ingress,
+        CriticalAlertOutbox& outbox,
+        std::uint64_t now_ms);
     [[nodiscard]] CriticalAlertRecoveryLoadResult restore(
         CriticalAlertAckIngress& ingress,
         CriticalAlertOutbox& outbox,

@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <array>
+#include <limits>
 
 namespace opengauge::integration {
 namespace {
@@ -113,6 +114,32 @@ CriticalAlertRecoverySaveResult CriticalAlertRecoveryStore::save(
     result.recovery = recovery;
     result.generation = generation;
     return result;
+}
+
+CriticalAlertRecoverySaveResult CriticalAlertRecoveryStore::save_next(
+    CriticalAlertAckIngress& ingress,
+    CriticalAlertOutbox& outbox,
+    std::uint64_t now_ms) {
+    const auto a = inspect_slot(storage_, 0);
+    const auto b = inspect_slot(storage_, 1);
+    if (a.state == CriticalAlertRecoverySlotState::io_failure ||
+        b.state == CriticalAlertRecoverySlotState::io_failure) {
+        return {CriticalAlertRecoveryStoreError::storage_failure};
+    }
+    if (generation_conflict(a, b)) {
+        return {CriticalAlertRecoveryStoreError::generation_conflict};
+    }
+    std::uint64_t highest = 0;
+    if (a.state == CriticalAlertRecoverySlotState::valid) {
+        highest = a.checkpoint.generation;
+    }
+    if (b.state == CriticalAlertRecoverySlotState::valid) {
+        highest = std::max(highest, b.checkpoint.generation);
+    }
+    if (highest == std::numeric_limits<std::uint64_t>::max()) {
+        return {CriticalAlertRecoveryStoreError::generation_exhausted};
+    }
+    return save(ingress, outbox, now_ms, highest + 1);
 }
 
 CriticalAlertRecoveryLoadResult CriticalAlertRecoveryStore::restore(

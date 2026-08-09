@@ -12,10 +12,13 @@ There is no second wrapper or separately selectable ACK/outbox record. The
 backend provides exact-size read, write, and erase operations and distinguishes
 not-found, invalid request, and I/O failure.
 
-Save requires a caller-owned nonzero generation strictly greater than every
-valid stored generation. It inspects both slots before live export, refuses an
-I/O-degraded or equal-generation-conflict baseline, and targets an empty or
-invalid slot before the older valid slot. It then:
+Normal save owns generation allocation: it inspects both slots under exclusive
+ownership, refuses an I/O-degraded or equal-generation-conflict baseline,
+chooses `highest valid + 1` (or 1 when empty), and reports 64-bit exhaustion
+before export or write. The lower-level explicit-generation operation remains
+available for deterministic recovery tooling but requires a nonzero value
+strictly greater than every valid stored generation. The store targets an empty
+or invalid slot before the older valid slot. It then:
 
 1. exports both live owners into one `OCR0` generation;
 2. writes all 960 bytes;
@@ -41,17 +44,19 @@ non-boot owner rejects the restore without partial ACK/outbox mutation.
 
 ## Host evidence
 
-Eight groups cover explicit first-save layout and newest-generation restore,
+Ten groups cover explicit first-save layout and newest-generation restore,
 empty/invalid-generation/prepared-export handling, partial write recovery,
 corrupt-success readback, degraded I/O with valid restore, policy and
 authorization rejection atomicity, stale generation/reset failure, and equal
-generation conflict. The full 32-executable host matrix and 100 focused store
-repeats pass.
+generation conflict, plus automatic 1/2/3 allocation/rotation and exact
+exhaustion without a write. The full 32-executable host matrix and 100 focused
+store repeats pass.
 
 ## Remaining gates
 
 - bind the exact interface to a selected ESP-IDF storage backend;
-- define generation allocation/exhaustion across factory reset and replacement;
+- define factory-reset/replacement authority and whether generation continuity
+  must survive deliberate erase;
 - inject physical power cuts at backend-specific erase/write/commit boundaries;
 - measure wear, save rate, latency, and boot recovery on selected hardware;
 - add authenticated integrity and trusted rollback protection; CRC is only
