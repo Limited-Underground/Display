@@ -281,6 +281,21 @@ Invoke-HostTest `
     )
 
 Invoke-HostTest `
+    -Name 'gauge_trend_buffer_tests' `
+    -Description 'Bounded fail-visible gauge trend buffer' `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\display\include'),
+        (Join-Path $projectRoot 'firmware\components\telemetry\include'),
+        (Join-Path $projectRoot 'firmware\components\wireless\include')
+    ) `
+    -Sources @(
+        (Join-Path $projectRoot 'firmware\components\display\src\gauge_trend_buffer.cpp'),
+        (Join-Path $projectRoot 'firmware\components\telemetry\src\normalized_signal.cpp'),
+        (Join-Path $projectRoot 'firmware\components\wireless\src\telemetry_packet.cpp'),
+        (Join-Path $projectRoot 'tests\host\gauge_trend_buffer_tests.cpp')
+    )
+
+Invoke-HostTest `
     -Name 'gauge_layout_tests' `
     -Description 'Versioned recoverable gauge layout storage' `
     -IncludeDirectories @(
