@@ -59,7 +59,14 @@ A signal has a stable namespaced ID, type, value when valid, canonical unit, qua
 
 ### Alarm engine
 
-Alarm rules consume normalized signals, not raw frames. Rules include threshold/range, debounce, hysteresis, severity, latching/acknowledgement policy, stale/missing behavior, and rate limits. Display alerts and exported critical events derive from the same validated state but remain independently deliverable.
+Alarm rules consume normalized signals, not raw frames. The host-tested fixed
+16-rule engine provides inclusive above/below/outside-range comparisons, exact
+hysteresis and debounce boundaries, severity, latching/acknowledgement,
+clear/hold/assert behavior for nonvalid or stale input, and bounded periodic
+reminders. Invalid quality never becomes a numeric alarm input. Display alerts
+and exported critical events derive from the same validated state but remain
+independently deliverable; cache-task and exporter composition remain later
+work.
 
 ## ESP-NOW telemetry protocol
 
