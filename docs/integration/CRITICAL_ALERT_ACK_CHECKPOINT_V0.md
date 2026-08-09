@@ -1,8 +1,9 @@
 # Critical Alert ACK Replay Checkpoint v0
 
 Status: deterministic host-tested serialization and atomic-restore contract,
-2026-08-09. This is not a flash/NVS adapter, durable key store, encrypted
-backup, rollback-proof counter, or physical reset/power-loss result.
+2026-08-09. A separate host-tested two-slot store now wraps this record. This
+is not an ESP-IDF/NVS adapter, durable key store, encrypted backup,
+rollback-proof counter, or physical reset/power-loss result.
 
 ## Boundary
 
@@ -78,8 +79,8 @@ ingress suite repeated 100 times each with zero failures.
 
 ## Remaining gates
 
-- store the record through a versioned two-slot/commit-last adapter with
-  generation and rollback policy;
+- bind the host-tested `OAS0` two-slot contract to the selected target backend
+  and restore it before ACK traffic;
 - coordinate atomic durability with the peer-authorization registry and
   protected key-handle lifecycle;
 - define reset, factory-reset, revoke, rotation, lost-peer, backup, and recovery
