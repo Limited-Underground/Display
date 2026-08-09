@@ -37,6 +37,13 @@ Interfaces cover CAN controller/transceiver, clock, ESP-NOW/radio, display, touc
 
 Initial physical operation is passive/listen-only. The CAN adapter returns frame ID, extended/standard form, DLC/data, receive time, error state, and overflow information. A later non-J1939 adapter may feed the same normalization layer.
 
+The host-tested v0 receiver interface deliberately has no transmit method. Its
+bounded fake exercises policy/filtering, FIFO capture, error-warning/passive,
+bus-off, overflow, injected hardware failure, restart, and monotonic timestamps.
+This proves the software boundary, not electrical passivity; every production
+adapter must separately prove that its controller and transceiver cannot
+acknowledge or drive the vehicle bus during initial bring-up.
+
 J1939 processing is decomposed into:
 
 1. 29-bit identifier parsing (priority, data page, PDU format/specific, source address, destination where applicable, and PGN).

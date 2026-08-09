@@ -111,6 +111,24 @@ Invoke-HostTest `
     )
 
 Invoke-HostTest `
+    -Name 'can_receiver_tests' `
+    -Description 'Passive CAN receiver abstraction' `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\can\include'),
+        (Join-Path $projectRoot 'firmware\components\can\test_support'),
+        (Join-Path $projectRoot 'firmware\components\telemetry\include')
+    ) `
+    -Sources @(
+        (Join-Path $projectRoot 'firmware\components\can\src\can_receiver.cpp'),
+        (Join-Path $projectRoot 'firmware\components\can\src\j1939_identifier.cpp'),
+        (Join-Path $projectRoot 'firmware\components\can\src\j1939_decoder.cpp'),
+        (Join-Path $projectRoot 'firmware\components\can\test_support\fake_can_receiver.cpp'),
+        (Join-Path $projectRoot 'firmware\components\telemetry\src\normalized_signal.cpp'),
+        (Join-Path $projectRoot 'firmware\components\telemetry\src\telemetry_cache.cpp'),
+        (Join-Path $projectRoot 'tests\host\can_receiver_tests.cpp')
+    )
+
+Invoke-HostTest `
     -Name 'telemetry_cache_tests' `
     -Description 'Telemetry cache' `
     -IncludeDirectories @(

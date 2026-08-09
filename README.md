@@ -4,7 +4,7 @@ OpenGauge is a proposed free/open-source ESP32 vehicle instrumentation and telem
 
 ## Project status
 
-Architecture/bootstrap phase. The transport-neutral OpenGauge-to-OpenTrail critical-alert v0 codec has deterministic host evidence in both projects. A bounded Classical J1939 identifier parser, fixed decoder registry with one EEC1 engine-speed fixture, normalized signal model, thread-safe fixed-capacity telemetry cache, fake encrypted-unicast ESP-NOW transport contract, explicit 96-byte gateway-to-gauge telemetry codec, per-gauge subscription/deadband/rate scheduler, and cache-to-radio publisher composition are also host-tested. There is still no production firmware, ESP-IDF radio binding, validated CAN hardware, supported display, frozen production protocol, supported-vehicle list, physical alert transport, or validated OTA flow.
+Architecture/bootstrap phase. The transport-neutral OpenGauge-to-OpenTrail critical-alert v0 codec has deterministic host evidence in both projects. A passive Classical CAN receive abstraction/fake, bounded Classical J1939 identifier parser, fixed decoder registry with one EEC1 engine-speed fixture, normalized signal model, thread-safe fixed-capacity telemetry cache, fake encrypted-unicast ESP-NOW transport contract, explicit 96-byte gateway-to-gauge telemetry codec, per-gauge subscription/deadband/rate scheduler, and cache-to-radio publisher composition are also host-tested. There is still no production firmware, ESP-IDF CAN/radio binding, validated CAN hardware, supported display, frozen production protocol, supported-vehicle list, physical alert transport, or validated OTA flow.
 
 Two Waveshare ESP32-S3-Touch-AMOLED-1.75-B units (SKU 31262) are reported ordered for evaluation. They remain candidate hardware until received, identified, built, benchmarked, and recovery-tested. Other candidate and missing hardware is tracked in [the evidence inventory](hardware/INVENTORY.md).
 
@@ -20,7 +20,8 @@ Two Waveshare ESP32-S3-Touch-AMOLED-1.75-B units (SKU 31262) are reported ordere
 
 These are design goals, not verified capabilities.
 
-The bounded critical-alert semantic interface, Classical J1939 identifier
+The bounded critical-alert semantic interface, passive CAN receiver contract,
+Classical J1939 identifier
 rules, one narrow EEC1 engine-speed fixture, normalized signal invariants,
 cache state/staleness/concurrency rules, an opaque wireless transport fake,
 the telemetry packet's serialization/sequence/age rules, and bounded publication
@@ -48,7 +49,7 @@ OpenGauge owns vehicle acquisition, decode/normalization, gauge display, vehicle
 
 ## Start here
 
-Read [the architecture](docs/ARCHITECTURE.md), [project status and assumptions](docs/PROJECT_STATUS.md), [the hardware evidence inventory](hardware/INVENTORY.md), [the J1939 identifier contract](docs/can/J1939_IDENTIFIER_V0.md), [the decoder registry and EEC1 fixture](docs/can/J1939_DECODER_REGISTRY_V0.md), [the normalized signal contract](docs/telemetry/NORMALIZED_SIGNAL_MODEL_V0.md), [the telemetry cache contract](docs/telemetry/TELEMETRY_CACHE_V0.md), [the ESP-NOW transport contract](docs/wireless/ESP_NOW_TRANSPORT_V0.md), [the telemetry packet v0 contract](docs/wireless/TELEMETRY_PACKET_V0.md), [the publication scheduler v0 contract](docs/wireless/TELEMETRY_PUBLISH_SCHEDULER_V0.md), [the gateway publisher composition](docs/wireless/TELEMETRY_GATEWAY_PUBLISHER_V0.md), [the OpenTrail critical-alert v0 contract](docs/integration/OPENGAUGE_CRITICAL_ALERT_V0.md), and [the backlog](tasks/BACKLOG.md). The next core work is an ESP-IDF adapter proof and target task composition, while hardware candidates follow their arrival checklist.
+Read [the architecture](docs/ARCHITECTURE.md), [project status and assumptions](docs/PROJECT_STATUS.md), [the hardware evidence inventory](hardware/INVENTORY.md), [the passive CAN receiver contract](docs/can/CAN_RECEIVER_V0.md), [the J1939 identifier contract](docs/can/J1939_IDENTIFIER_V0.md), [the decoder registry and EEC1 fixture](docs/can/J1939_DECODER_REGISTRY_V0.md), [the normalized signal contract](docs/telemetry/NORMALIZED_SIGNAL_MODEL_V0.md), [the telemetry cache contract](docs/telemetry/TELEMETRY_CACHE_V0.md), [the ESP-NOW transport contract](docs/wireless/ESP_NOW_TRANSPORT_V0.md), [the telemetry packet v0 contract](docs/wireless/TELEMETRY_PACKET_V0.md), [the publication scheduler v0 contract](docs/wireless/TELEMETRY_PUBLISH_SCHEDULER_V0.md), [the gateway publisher composition](docs/wireless/TELEMETRY_GATEWAY_PUBLISHER_V0.md), [the OpenTrail critical-alert v0 contract](docs/integration/OPENGAUGE_CRITICAL_ALERT_V0.md), and [the backlog](tasks/BACKLOG.md). The next core work is a bounded gateway task composition and ESP-IDF adapter proof, while hardware candidates follow their arrival checklist.
 
 ## License and contributions
 

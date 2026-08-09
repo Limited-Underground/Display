@@ -16,7 +16,7 @@ Statuses: `done` means the documented acceptance criteria are evidenced; `planne
 
 | ID | Status | Task | Acceptance evidence |
 | --- | --- | --- | --- |
-| OG-004 | planned | CAN driver abstraction | Listen-only receive/error/overflow metadata and fake-frame source demonstrated; no vehicle dependency |
+| OG-004 | done | CAN driver abstraction | A transmit-incapable passive Classical CAN interface and 16-frame fake expose listen policy, canonical frame/capture data, bus/error/overflow metadata, FIFO/drop-newest behavior, filtering, monotonic time, bus-off/hardware failure, and restart. Eight host groups include EEC1 receive-to-decoder/cache integration. Physical controller/transceiver passivity and ESP-IDF binding remain separate gates |
 | OG-005 | done | J1939 identifier parser | Five host-test groups validate priority/DP/PF/PS/SA, PDU1 destination and PGN zeroing, PDU2 group extension, the PF boundary, DP=1, and fail-closed standard/out-of-range/J1939-22 identifiers |
 | OG-006 | done | PGN decoder registry | A fixed eight-entry registry rejects invalid/noncanonical/duplicate/full/unknown dispatch, revalidates normalized output, and hosts one narrowly bounded EEC1 engine-speed fixture. Five host-test groups cover valid/highest-valid, reserved/out-of-range, error, unavailable, frame/length/capacity, and bad-decoder paths. Licensed/current J1939 data plus captured traffic remain required before a vehicle-support claim |
 | OG-007 | done | Normalized signal model | Six host-test groups validate fixed namespaced IDs, typed integer/Boolean values, canonical units and bounds, explicit no-value quality states, protocol-specific J1939/OBD/GPS/synthetic provenance, sample/receive time, and exact stale/clock boundaries |
@@ -54,8 +54,8 @@ Statuses: `done` means the documented acceptance criteria are evidenced; `planne
 ## Recommended sequence
 
 Complete the missing vehicle/power/CAN portions of OG-003A while binding
-OG-010C to a bounded target task and ESP-IDF adapter. Then bind OG-004 to
-selected physical CAN hardware or OG-009 to ESP-IDF radio without confusing a
+OG-010C and completed OG-004 to a bounded target task. Then bind OG-004 to a
+selected ESP-IDF CAN adapter or OG-009 to ESP-IDF radio without confusing a
 host-tested interface with on-device or RF acceptance.
 Incoming display work may begin with OG-012A vendor-example and recovery
 evidence, but does not bypass the normalized-data path.
