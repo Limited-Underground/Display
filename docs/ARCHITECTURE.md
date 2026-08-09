@@ -201,9 +201,13 @@ epoch; rotation or revoke invalidates stale state. Correlated rejection reasons
 now have one bounded policy: rate-limited/internal-error responses release the
 entry after normal backoff while six deterministic refusals terminate with
 typed event/condition/reason/attempt evidence; a retry at the attempt limit also
-terminates. Durable coordinated storage, rollback protection, real
-cryptographic transport, operator presentation, and physical delivery remain
-unresolved.
+terminates. A fixed 320-byte `OAS0` envelope now binds the `OAI0` payload to a
+strict caller-owned generation and a two-slot host store that verifies full
+write/readback/decode, selects the newest unique generation, restores through
+the ingress validator, and keeps one corrupt or interrupted slot recoverable.
+ESP-IDF/NVS binding, coordinated authorization/outbox persistence, secure
+rollback resistance, real cryptographic transport, operator presentation, and
+physical delivery remain unresolved.
 
 ## Updates and recovery
 
