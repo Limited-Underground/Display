@@ -133,3 +133,18 @@ Invoke-HostTest `
         (Join-Path $projectRoot 'firmware\components\wireless\test_support\fake_esp_now_transport.cpp'),
         (Join-Path $projectRoot 'tests\host\esp_now_transport_tests.cpp')
     )
+
+Invoke-HostTest `
+    -Name 'telemetry_packet_tests' `
+    -Description 'Gateway-to-gauge telemetry packet' `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\telemetry\include'),
+        (Join-Path $projectRoot 'firmware\components\wireless\include'),
+        (Join-Path $projectRoot 'firmware\components\wireless\test_support')
+    ) `
+    -Sources @(
+        (Join-Path $projectRoot 'firmware\components\telemetry\src\normalized_signal.cpp'),
+        (Join-Path $projectRoot 'firmware\components\wireless\src\telemetry_packet.cpp'),
+        (Join-Path $projectRoot 'firmware\components\wireless\test_support\fake_esp_now_transport.cpp'),
+        (Join-Path $projectRoot 'tests\host\telemetry_packet_tests.cpp')
+    )

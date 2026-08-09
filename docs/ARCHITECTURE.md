@@ -58,9 +58,15 @@ Alarm rules consume normalized signals, not raw frames. Rules include threshold/
 
 The transport and semantic codec are separate. Never serialize compiler-dependent structs directly.
 
-An envelope should eventually provide protocol/schema version, message type, gateway/source identity, target/broadcast scope, sequence number, payload length, flags, and integrity/authentication metadata. Payload types may include capabilities, telemetry batches, events/alarms, heartbeat/time, pairing/configuration, diagnostics, and update coordination.
+The host-tested telemetry v0 packet now provides an explicit fixed-length
+version/type, gateway and boot-session identity, sequence, gateway uptime,
+three registered signal entries with source age, canonical reserved bytes, and
+CRC corruption detection. It remains a pre-production contract: CRC is not
+authentication, target authorization comes from provisioned unicast peers, and
+capabilities, events/alarms, heartbeat/time, pairing/configuration, diagnostics,
+and update coordination still require separate formats.
 
-Telemetry is subscription/rate-policy driven. The gateway sends normalized selected signals at a bounded rate, with change/deadband and periodic refresh where appropriate. Gauges use sequence and age data for loss and staleness; packet loss must not cause blocking retries that starve newer data. Pairing, peer limits, encryption/key handling, channel coexistence, and recovery remain unresolved.
+Telemetry is intended to be subscription/rate-policy driven. The gateway sends normalized selected signals at a bounded rate, with change/deadband and periodic refresh where appropriate. Gauges use the v0 sequence/session and source-age fields plus receiver-local elapsed time for loss and staleness; packet loss must not cause blocking retries that starve newer data. The scheduler, pairing, real peer limits, encryption/key handling, channel coexistence, and recovery remain unresolved.
 
 ## Gauge rendering
 

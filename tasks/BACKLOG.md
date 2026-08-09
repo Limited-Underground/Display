@@ -28,7 +28,7 @@ Statuses: `done` means the documented acceptance criteria are evidenced; `planne
 | ID | Status | Task | Acceptance evidence |
 | --- | --- | --- | --- |
 | OG-009 | done | ESP-NOW transport abstraction | An opaque 250-byte encrypted-unicast contract and deterministic fake provide explicit start/peer/send/receive/completion/status behavior; fixed eight-peer and four-frame fake capacities; channel/encryption agreement; latency/RSSI; missing/offline/mismatch/rejection/loss outcomes; buffer preservation; and completion backpressure across eight host-test groups. Radio completion is not an application ACK. ESP-IDF binding, keys, physical traffic, channel coexistence, and capacity measurements remain later gates |
-| OG-010 | planned | Gateway-to-gauge packet format | Explicit versioned codec, byte/rate budget, telemetry batching, sequence/age, corrupt/incompatible fixtures |
+| OG-010 | done | Gateway-to-gauge packet format | An explicit fixed 96-byte `OGT0` codec carries up to three registered signals with canonical type/unit/quality, gateway/session/sequence identity, source age, zeroed reserved/unused bytes, and CRC-32. Eight host-test groups cover a normative golden vector, cache-to-wire no-value rules, malformed/incompatible/corrupt frames, sequence gap/duplicate/out-of-order/wrap/restart behavior, exact receiver-local staleness, and fake encrypted delivery plus loss. Its 10 Hz/eight-peer 7,680 payload-byte/s estimate excludes radio overhead and is not physical evidence |
 | OG-011 | planned | Gauge pairing and identity | Threat model, discovery/approval, key storage, replacement/reset/revoke/recovery, and peer-limit tests |
 | OG-010A | planned | Physical ESP-NOW characterization | Packet loss, latency, peers, interference/coexistence, reboot recovery, and update-rate evidence on selected boards |
 
@@ -52,7 +52,8 @@ Statuses: `done` means the documented acceptance criteria are evidenced; `planne
 ## Recommended sequence
 
 Complete the missing vehicle/power/CAN portions of OG-003A while implementing
-OG-010 with explicit serialization and a measured packet/rate budget. Only then
-bind OG-004 to selected physical CAN hardware or OG-009 to ESP-IDF radio.
+subscription/change/deadband scheduling over OG-010. Then bind OG-004 to
+selected physical CAN hardware or OG-009 to ESP-IDF radio without confusing a
+host-tested interface with on-device or RF acceptance.
 Incoming display work may begin with OG-012A vendor-example and recovery
 evidence, but does not bypass the normalized-data path.

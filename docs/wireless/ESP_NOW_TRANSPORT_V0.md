@@ -94,8 +94,9 @@ Run all host suites with `tools/Test-Host.ps1`.
 
 ## Next boundary
 
-OG-010 will define a small explicit telemetry frame with gateway identity,
-sequence, source time/age, typed normalized values, payload length, and
-integrity checks. OG-011 must define pairing/key lifecycle before physical
-encrypted traffic. An ESP-IDF adapter then remains an OG-009 hardware binding,
-not implied by this host fake.
+OG-010 now defines the fixed 96-byte `OGT0` telemetry frame with gateway and
+boot-session identity, sequence, source age, three registered typed values,
+canonical reserved bytes, and CRC corruption detection. See
+`TELEMETRY_PACKET_V0.md`. OG-011 must define pairing/key lifecycle before
+physical encrypted traffic. An ESP-IDF adapter remains an OG-009 hardware
+binding, not implied by this host fake or packet codec.
