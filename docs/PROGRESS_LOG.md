@@ -34,6 +34,10 @@ public chronology.
   valid record below the supplied floor without live import; save allocation
   advances beyond both trusted and local generations. Ten focused groups, the
   unchanged 36-executable matrix, and 100 repeats pass.
+- Documented the target storage/boot acceptance boundary: exact two-slot
+  semantics, protected key-handle resolution, separate trusted-generation
+  authority, boot/save ordering, coordinated reset, and physical interruption
+  evidence. No ESP-IDF target implementation is claimed.
 - Kept all target claims bounded: there is no ESP-IDF storage/radio/CAN binding,
   protected on-device key persistence, physical power-cut evidence, or vehicle
   validation yet.

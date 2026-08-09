@@ -89,7 +89,7 @@ OpenGauge owns vehicle acquisition, decode/normalization, gauge display, vehicle
 
 ## Start here
 
-Read [the dated progress log](docs/PROGRESS_LOG.md), [the latest live-state physical evidence](tests/hardware/OG-018M-2026-08-09.md), [the recoverable system store](docs/integration/CRITICAL_ALERT_SYSTEM_RECOVERY_STORE_V0.md), [the architecture](docs/ARCHITECTURE.md), [project status and assumptions](docs/PROJECT_STATUS.md), [the hardware evidence inventory](hardware/INVENTORY.md), [the peer authorization model](docs/security/PEER_AUTHORIZATION_V0.md), and [the backlog](tasks/BACKLOG.md). Detailed component specifications and physical evidence remain organized under `docs/` and `tests/`. The next core work is target storage/adapters and authenticated on-device transport.
+Read [the dated progress log](docs/PROGRESS_LOG.md), [the latest live-state physical evidence](tests/hardware/OG-018M-2026-08-09.md), [the recoverable system store](docs/integration/CRITICAL_ALERT_SYSTEM_RECOVERY_STORE_V0.md), [the target storage/boot plan](docs/integration/TARGET_SYSTEM_RECOVERY_ADAPTER_PLAN.md), [the architecture](docs/ARCHITECTURE.md), [project status and assumptions](docs/PROJECT_STATUS.md), [the hardware evidence inventory](hardware/INVENTORY.md), [the peer authorization model](docs/security/PEER_AUTHORIZATION_V0.md), and [the backlog](tasks/BACKLOG.md). Detailed component specifications and physical evidence remain organized under `docs/` and `tests/`. The next core work is selecting an exact target storage/key/trust mechanism and authenticated on-device transport.
 
 ## License and contributions
 
