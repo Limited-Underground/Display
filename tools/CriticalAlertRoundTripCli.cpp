@@ -56,10 +56,10 @@ std::vector<std::uint8_t> from_hex(const std::string& text) {
     return bytes;
 }
 
-int verify_accepted(int argc, char** argv) {
+int verify(int argc, char** argv, bool accepted) {
     if (argc != 9) {
         throw std::invalid_argument(
-            "verify-accepted requires alert-hex ack-hex consumer-id "
+            "verification requires alert-hex ack-hex consumer-id "
             "boot-session logical-peer-id key-handle channel");
     }
     const auto alert_bytes = from_hex(argv[2]);
@@ -136,14 +136,28 @@ int verify_accepted(int argc, char** argv) {
     const auto result = ingress.receive(
         ack_bytes.data(), ack_bytes.size(), context, 1);
     const auto outbox_status = outbox.status();
-    const bool success =
-        result.processed() && result.outbox_completed &&
+    const auto ingress_status = ingress.status();
+    const bool accepted_success =
+        result.outbox_completed &&
         result.disposition == AlertAckDisposition::accepted &&
         result.reason == AlertAckReason::none &&
-        outbox_status.queued_count == 0 &&
-        outbox_status.in_flight_count == 0 &&
         outbox_status.acknowledgements == 1 &&
-        ingress.status().accepted == 1;
+        ingress_status.accepted == 1;
+    const bool stale_success =
+        !result.outbox_completed &&
+        result.disposition == AlertAckDisposition::rejected &&
+        result.reason == AlertAckReason::stale &&
+        result.remote_rejection_action ==
+            CriticalRemoteRejectionAction::terminal &&
+        !result.retry_released && result.terminal_failure &&
+        outbox_status.acknowledgements == 0 &&
+        outbox_status.remote_terminal_failures == 1 &&
+        ingress_status.remote_rejections == 1 &&
+        ingress_status.remote_terminal_failures == 1;
+    const bool success =
+        result.processed() && outbox_status.queued_count == 0 &&
+        outbox_status.in_flight_count == 0 &&
+        (accepted ? accepted_success : stale_success);
     std::cout
         << "{\"processed\":" << (result.processed() ? "true" : "false")
         << ",\"outbox_completed\":"
@@ -153,6 +167,15 @@ int verify_accepted(int argc, char** argv) {
                     result.reason == AlertAckReason::none
                 ? "true"
                 : "false")
+        << ",\"rejected_stale\":"
+        << (result.disposition == AlertAckDisposition::rejected &&
+                    result.reason == AlertAckReason::stale
+                ? "true"
+                : "false")
+        << ",\"retry_released\":"
+        << (result.retry_released ? "true" : "false")
+        << ",\"terminal_failure\":"
+        << (result.terminal_failure ? "true" : "false")
         << ",\"queued_count\":" << outbox_status.queued_count
         << ",\"in_flight_count\":" << outbox_status.in_flight_count
         << ",\"acknowledgements\":" << outbox_status.acknowledgements
@@ -165,10 +188,14 @@ int verify_accepted(int argc, char** argv) {
 int main(int argc, char** argv) {
     try {
         if (argc < 2) {
-            throw std::invalid_argument("expected verify-accepted");
+            throw std::invalid_argument(
+                "expected verify-accepted or verify-stale");
         }
         if (std::string(argv[1]) == "verify-accepted") {
-            return verify_accepted(argc, argv);
+            return verify(argc, argv, true);
+        }
+        if (std::string(argv[1]) == "verify-stale") {
+            return verify(argc, argv, false);
         }
         throw std::invalid_argument("unknown command");
     } catch (const std::exception& error) {

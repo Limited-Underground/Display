@@ -224,6 +224,13 @@ cycles ended with one acknowledgement and no queued/in-flight entry. The host
 still reconstructed state after receipt; it did not keep a durable on-device
 pipeline alive across the physical wait.
 
+OG-018J exercised the terminal negative branch in two additional role-reversed
+cycles. Each exact stale rejection passed authorization/session/replay/
+correlation, produced zero delivery acknowledgements and
+`outbox_completed=false`, and recorded terminal failure with no retry release.
+This proves the host composition does not convert this physical rejection into
+success. Retryable rejection and persistent target-state interruption remain.
+
 ## Updates and recovery
 
 OTA design must include image authenticity/integrity, hardware target compatibility, version policy, sufficient partition/storage layout, atomic boot selection, health confirmation, rollback, interruption handling, and a documented USB/physical recovery path. Update coordination must never simultaneously remove all useful instrumentation by default.

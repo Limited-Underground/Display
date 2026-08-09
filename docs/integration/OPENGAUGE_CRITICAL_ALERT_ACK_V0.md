@@ -97,6 +97,11 @@ times with zero failures.
 
 ## Remaining gates
 
+OG-018J has now carried two exact role-reversed stale rejections through the
+physical bench and this production host policy. Both remained explicit
+non-success with zero acknowledgements, `outbox_completed=false`, and terminal
+failure. Retryable physical rejection and persistent target-state cases remain.
+
 - replace the passed host reconstruction of outbox/authorization/ACK ingress
   with a persistent authenticated target adapter running the full exporter,
   outbox, ACK-ingress/policy, and recovery composition;
