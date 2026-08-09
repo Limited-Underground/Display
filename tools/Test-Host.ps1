@@ -134,6 +134,20 @@ Invoke-HostTest `
     )
 
 Invoke-HostTest `
+    -Name 'critical_alert_recovery_checkpoint_tests' `
+    -Description 'Coordinated critical alert recovery checkpoint codec' `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\identity\include'),
+        (Join-Path $projectRoot 'firmware\components\integration\include')
+    ) `
+    -Sources @(
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_outbox_checkpoint.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_recovery_checkpoint.cpp'),
+        (Join-Path $projectRoot 'tests\host\critical_alert_recovery_checkpoint_tests.cpp')
+    )
+
+Invoke-HostTest `
     -Name 'critical_alert_ack_ingress_tests' `
     -Description 'Authenticated critical alert ACK ingress and correlation' `
     -IncludeDirectories @(
