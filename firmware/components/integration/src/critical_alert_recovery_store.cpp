@@ -94,7 +94,13 @@ CriticalAlertRecoverySaveResult CriticalAlertRecoveryStore::save(
     }
     if (storage_.write_slot(target, encoded.data(), encoded.size()) !=
         CriticalAlertRecoveryStorageError::none) {
-        return {CriticalAlertRecoveryStoreError::storage_failure};
+        CriticalAlertRecoverySaveResult result{
+            CriticalAlertRecoveryStoreError::storage_failure};
+        result.written_slot = source_for(target);
+        result.recovery = recovery;
+        result.generation = generation;
+        result.commit_uncertain = true;
+        return result;
     }
     std::array<std::uint8_t, kCriticalAlertRecoveryCheckpointBytes> verified{};
     if (storage_.read_slot(target, verified.data(), verified.size()) !=

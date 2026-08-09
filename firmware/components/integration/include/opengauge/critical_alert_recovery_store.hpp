@@ -68,6 +68,7 @@ struct CriticalAlertRecoverySaveResult {
     CriticalAlertRecoverySource written_slot{CriticalAlertRecoverySource::none};
     CriticalAlertRecoveryResult recovery{};
     std::uint64_t generation{0};
+    bool commit_uncertain{false};
     [[nodiscard]] constexpr bool saved() const {
         return error == CriticalAlertRecoveryStoreError::none;
     }

@@ -30,6 +30,13 @@ A failed or partially written target never overwrites the newest known-good
 slot. A backend reporting write success with corrupt bytes is a verification
 failure, not a successful save.
 
+Any backend write error is conservatively returned with `commit_uncertain`, the
+target slot, and intended generation because the generic interface cannot know
+whether zero, some, or all bytes reached durable media. The caller must not
+blindly reuse that generation. Boot inspection is the reconciliation authority:
+an incomplete prefix is invalid and falls back to the other slot; a complete
+valid record whose write later reported I/O failure is selected normally.
+
 ## Boot recovery
 
 Restore decodes both slots independently. It selects the unique greatest valid
@@ -44,13 +51,15 @@ non-boot owner rejects the restore without partial ACK/outbox mutation.
 
 ## Host evidence
 
-Ten groups cover explicit first-save layout and newest-generation restore,
+Twelve groups cover explicit first-save layout and newest-generation restore,
 empty/invalid-generation/prepared-export handling, partial write recovery,
 corrupt-success readback, degraded I/O with valid restore, policy and
 authorization rejection atomicity, stale generation/reset failure, and equal
 generation conflict, plus automatic 1/2/3 allocation/rotation and exact
-exhaustion without a write. The full 32-executable host matrix and 100 focused
-store repeats pass.
+exhaustion without a write. They also sweep 16 interrupted overwrite lengths at
+magic/header, nested checkpoint, tail, and CRC boundaries, and reconcile a full
+write followed by a reported failure. The full 32-executable host matrix and
+100 focused store repeats pass.
 
 ## Remaining gates
 

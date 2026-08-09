@@ -35,7 +35,15 @@ CriticalAlertRecoveryStorageError FakeCriticalAlertRecoveryStorage::write_slot(
         std::copy(data, data + size / 2, slots_[slot].begin());
         return CriticalAlertRecoveryStorageError::io_failure;
     }
+    if (behavior == FakeRecoveryWriteBehavior::fail_after_configured_prefix) {
+        const auto bytes = std::min(size, next_partial_bytes_[slot]);
+        next_partial_bytes_[slot] = 0;
+        std::copy(data, data + bytes, slots_[slot].begin());
+        return CriticalAlertRecoveryStorageError::io_failure;
+    }
     std::copy(data, data + size, slots_[slot].begin());
+    if (behavior == FakeRecoveryWriteBehavior::fail_after_full_write)
+        return CriticalAlertRecoveryStorageError::io_failure;
     if (behavior == FakeRecoveryWriteBehavior::corrupt_after_success)
         slots_[slot][100] ^= 0x5AU;
     return CriticalAlertRecoveryStorageError::none;
@@ -60,6 +68,14 @@ void FakeCriticalAlertRecoveryStorage::fail_next_read(std::uint8_t slot) {
 void FakeCriticalAlertRecoveryStorage::set_next_write_behavior(
     std::uint8_t slot, FakeRecoveryWriteBehavior behavior) {
     if (slot < 2) next_write_[slot] = behavior;
+}
+void FakeCriticalAlertRecoveryStorage::set_next_partial_write_bytes(
+    std::uint8_t slot, std::size_t bytes) {
+    if (slot < 2) {
+        next_write_[slot] =
+            FakeRecoveryWriteBehavior::fail_after_configured_prefix;
+        next_partial_bytes_[slot] = bytes;
+    }
 }
 void FakeCriticalAlertRecoveryStorage::fail_next_erase(std::uint8_t slot) {
     if (slot < 2) fail_erase_[slot] = true;

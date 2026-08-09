@@ -176,13 +176,56 @@ void test_partial_write_preserves_last_good() {
     CriticalAlertRecoveryStore store{storage};
     EXPECT(store.save(source.ingress, source.outbox, 10, 1).saved());
     storage.set_next_write_behavior(1, FakeRecoveryWriteBehavior::fail_after_partial_write);
-    EXPECT(store.save(source.ingress, source.outbox, 11, 2).error ==
-           CriticalAlertRecoveryStoreError::storage_failure);
+    const auto interrupted = store.save(source.ingress, source.outbox, 11, 2);
+    EXPECT(interrupted.error == CriticalAlertRecoveryStoreError::storage_failure);
+    EXPECT(interrupted.commit_uncertain && interrupted.generation == 2);
     Owners restored{configuration(), false};
     const auto loaded = store.restore(restored.ingress, restored.outbox, 100);
     EXPECT(loaded.restored && loaded.generation == 1);
     EXPECT(loaded.slot_b == CriticalAlertRecoverySlotState::invalid);
     EXPECT(loaded.recovery_required);
+}
+
+void test_interrupted_overwrite_boundaries_preserve_newest_good() {
+    constexpr std::array<std::size_t, 16> boundaries{{
+        0, 1, 4, 5, 8, 16, 24, 25,
+        303, 304, 305, 943, 944, 955, 956, 959}};
+    for (const auto boundary : boundaries) {
+        Owners source{};
+        source.create_retry();
+        FakeCriticalAlertRecoveryStorage storage{};
+        CriticalAlertRecoveryStore store{storage};
+        EXPECT(store.save_next(source.ingress, source.outbox, 10).saved());
+        EXPECT(store.save_next(source.ingress, source.outbox, 11).saved());
+        storage.set_next_partial_write_bytes(0, boundary);
+        const auto interrupted =
+            store.save_next(source.ingress, source.outbox, 12);
+        EXPECT(interrupted.error ==
+               CriticalAlertRecoveryStoreError::storage_failure);
+        EXPECT(interrupted.commit_uncertain && interrupted.generation == 3);
+        Owners restored{configuration(), false};
+        const auto loaded = store.restore(
+            restored.ingress, restored.outbox, 100);
+        EXPECT(loaded.restored && loaded.generation == 2);
+        EXPECT(loaded.source == CriticalAlertRecoverySource::slot_b);
+    }
+}
+
+void test_full_write_failure_reconciles_committed_generation() {
+    Owners source{};
+    source.create_retry();
+    FakeCriticalAlertRecoveryStorage storage{};
+    CriticalAlertRecoveryStore store{storage};
+    EXPECT(store.save_next(source.ingress, source.outbox, 10).saved());
+    storage.set_next_write_behavior(
+        1, FakeRecoveryWriteBehavior::fail_after_full_write);
+    const auto uncertain = store.save_next(source.ingress, source.outbox, 11);
+    EXPECT(uncertain.error == CriticalAlertRecoveryStoreError::storage_failure);
+    EXPECT(uncertain.commit_uncertain && uncertain.generation == 2);
+    Owners restored{configuration(), false};
+    const auto loaded = store.restore(restored.ingress, restored.outbox, 100);
+    EXPECT(loaded.restored && loaded.generation == 2);
+    EXPECT(loaded.source == CriticalAlertRecoverySource::slot_b);
 }
 
 void test_corrupt_readback_preserves_other_good() {
@@ -308,6 +351,8 @@ int main() {
     test_first_save_layout_and_newest_restore();
     test_empty_invalid_generation_and_prepared_export();
     test_partial_write_preserves_last_good();
+    test_interrupted_overwrite_boundaries_preserve_newest_good();
+    test_full_write_failure_reconciles_committed_generation();
     test_corrupt_readback_preserves_other_good();
     test_io_degradation_is_visible_with_restore();
     test_policy_and_authorization_rejection_are_atomic();
@@ -319,6 +364,6 @@ int main() {
         std::cerr << failures << " recovery store assertion(s) failed\n";
         return EXIT_FAILURE;
     }
-    std::cout << "PASS: 10 critical alert recovery store scenario groups\n";
+    std::cout << "PASS: 12 critical alert recovery store scenario groups\n";
     return EXIT_SUCCESS;
 }
