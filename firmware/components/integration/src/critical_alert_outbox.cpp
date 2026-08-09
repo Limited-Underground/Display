@@ -534,6 +534,14 @@ CriticalOutboxError CriticalAlertOutbox::import_checkpoint(
     return CriticalOutboxError::none;
 }
 
+CriticalOutboxError CriticalAlertOutbox::validate_checkpoint_import(
+    const std::uint8_t* checkpoint,
+    std::size_t checkpoint_size,
+    std::uint64_t now_ms) const {
+    auto candidate = *this;
+    return candidate.import_checkpoint(checkpoint, checkpoint_size, now_ms);
+}
+
 CriticalOutboxError CriticalAlertOutbox::advance_clock(std::uint64_t now_ms) {
     if (has_clock_ && now_ms < last_monotonic_ms_) {
         return CriticalOutboxError::clock_regression;

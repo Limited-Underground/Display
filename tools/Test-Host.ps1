@@ -165,6 +165,25 @@ Invoke-HostTest `
     )
 
 Invoke-HostTest `
+    -Name 'critical_alert_recovery_tests' `
+    -Description 'Coordinated live critical alert recovery' `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\identity\include'),
+        (Join-Path $projectRoot 'firmware\components\integration\include')
+    ) `
+    -Sources @(
+        (Join-Path $projectRoot 'firmware\components\identity\src\peer_authorization.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_ack.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_outbox_checkpoint.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_outbox.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_ack_ingress.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_recovery_checkpoint.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_recovery.cpp'),
+        (Join-Path $projectRoot 'tests\host\critical_alert_recovery_tests.cpp')
+    )
+
+Invoke-HostTest `
     -Name 'critical_alert_ack_checkpoint_tests' `
     -Description 'Critical alert ACK binding and replay checkpoint' `
     -IncludeDirectories @(

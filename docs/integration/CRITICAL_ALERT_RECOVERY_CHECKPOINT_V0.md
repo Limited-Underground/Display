@@ -1,8 +1,9 @@
 # Coordinated Critical Alert Recovery Checkpoint v0
 
-Status: canonical generation envelope with deterministic host evidence,
-2026-08-09. Live dual export/import, recoverable storage, power-loss behavior,
-authenticated integrity, and rollback resistance are not yet implemented.
+Status: canonical generation envelope plus serialized live dual export/import
+with deterministic host evidence, 2026-08-09. Recoverable storage, physical
+power-loss behavior, authenticated integrity, and rollback resistance are not
+yet implemented.
 
 ## Boundary
 
@@ -39,13 +40,21 @@ both nested checkpoints before atomically replacing caller output.
 
 ## Evidence and remaining gates
 
-Four host groups cover deterministic layout/round trip, generation and nested
+Four codec groups cover deterministic layout/round trip, generation and nested
 input rejection with unchanged output, outer shape/version/padding/CRC, and
-nested tamper with atomic decode. The full 30-executable matrix and 100 focused
-repeats pass.
+nested tamper with atomic decode. Five live-coordinator groups cover exact
+same-generation export/restore, invalid/stopped export atomicity, prepared-send
+refusal, policy mismatch, authorization-epoch mismatch, corruption, exact
+restored retry readiness, and replay preservation. The full 31-executable
+matrix and 100 focused coordinator repeats pass.
 
-Next work must serialize both live owners while exporting, preflight both
-boot-only imports before either mutates, and place `OCR0` in a verified two-slot
-store with newest-unique-generation selection and interruption injection.
-Target storage, power-cut/wear evidence, secure integrity, and trusted rollback
-protection remain separate acceptance gates.
+The coordinator requires exclusive ownership of ingress and outbox for the
+operation. Export changes caller output only after both component exports and
+outer encoding succeed. Import decodes once, then runs each exact boot import
+against a private component copy. Only after both preflights succeed does it
+restore the outbox and ACK replay binding from those same bytes. No concurrent
+component mutation is permitted between preflight and commit.
+
+Next place `OCR0` in a verified two-slot store with newest-unique-generation
+selection and interruption injection. Target storage, power-cut/wear evidence,
+secure integrity, and trusted rollback protection remain separate gates.

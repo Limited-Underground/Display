@@ -118,6 +118,9 @@ public:
     [[nodiscard]] CriticalAlertAckIngressError import_checkpoint(
         const std::uint8_t* checkpoint,
         std::size_t checkpoint_size);
+    [[nodiscard]] CriticalAlertAckIngressError validate_checkpoint_import(
+        const std::uint8_t* checkpoint,
+        std::size_t checkpoint_size) const;
 
     [[nodiscard]] CriticalAlertAckIngressResult receive(
         const std::uint8_t* frame,

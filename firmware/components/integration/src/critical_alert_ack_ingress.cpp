@@ -302,6 +302,14 @@ CriticalAlertAckIngressError CriticalAlertAckIngress::import_checkpoint(
     return CriticalAlertAckIngressError::none;
 }
 
+CriticalAlertAckIngressError
+CriticalAlertAckIngress::validate_checkpoint_import(
+    const std::uint8_t* checkpoint,
+    std::size_t checkpoint_size) const {
+    auto candidate = *this;
+    return candidate.import_checkpoint(checkpoint, checkpoint_size);
+}
+
 CriticalAlertAckIngressResult CriticalAlertAckIngress::receive(
     const std::uint8_t* frame,
     std::size_t frame_size,

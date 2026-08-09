@@ -142,6 +142,10 @@ public:
         const std::uint8_t* checkpoint,
         std::size_t checkpoint_size,
         std::uint64_t now_ms);
+    [[nodiscard]] CriticalOutboxError validate_checkpoint_import(
+        const std::uint8_t* checkpoint,
+        std::size_t checkpoint_size,
+        std::uint64_t now_ms) const;
     [[nodiscard]] CriticalAlertOutboxStatus status() const;
 
 private:
