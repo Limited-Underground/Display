@@ -6,6 +6,8 @@ OpenGauge is a proposed free/open-source ESP32 vehicle instrumentation and telem
 
 ## Current snapshot — 2026-08-09
 
+### Hardware and integration
+
 - **Phase:** architecture plus host-tested components and bounded three-radio
   bench integration; no production firmware or supported vehicle yet.
 - **Bench hardware used by the shared OpenTrail link:** two Heltec V4 OLED USB
@@ -13,15 +15,26 @@ OpenGauge is a proposed free/open-source ESP32 vehicle instrumentation and telem
 - **Latest physical result:** accepted, terminal-rejection, retryable-rejection,
   retry-to-accept, and live-state alert/ACK cycles completed with zero observed
   message loss, duplicates, or new radio errors.
-- **Latest software result:** known empty/checksum-invalid peer media can now be
-  repaired only from an exact operationally degraded boot result. Repair writes
-  and verifies a new generation, advances/readbacks trust, and proves both slots
-  valid. The complete 39-executable host matrix and 100 focused repeats pass.
+
+### Software and safety
+
+- **Latest software result:** boot, save, and repair outcomes now map into one
+  bounded operator-status record with state, reason, action, slot health,
+  generations, and transport/repair flags. It deliberately exposes no peer ID,
+  key handle, address, credential, or raw checkpoint data; inconsistent input
+  fails closed. The complete 40-executable host matrix and 100 focused repeats
+  pass locally.
+
+### Validation and operations
+
 - **Public validation:** GitHub Actions now runs the complete Windows host matrix
-  on every `main` push and pull request. The current warning-free public run
-  passes all 39 executables with zero annotations. OpenTrail now has a
+  on every `main` push and pull request; the badge above is the current-run
+  authority. OpenTrail has a
   [separate public host workflow](https://github.com/nbjelanovic/OpenTrail/actions/workflows/host-validation.yml)
   for its own transport, routing, GPS, persistence, and MeshCore lease suites.
+
+### Remaining gates
+
 - **Still unproved:** ESP-IDF target adapters, protected on-device keys/storage,
   physical power-cut behavior, real CAN/J1939 vehicle input, displays, and field
   radio performance.
@@ -53,6 +66,7 @@ Architecture/bootstrap phase. The transport-neutral OpenGauge-to-OpenTrail criti
 - A host-tested [system-recovery boot coordinator](docs/integration/CRITICAL_ALERT_SYSTEM_RECOVERY_BOOT_V0.md) now combines provisioning state, trusted-generation state, two-slot inspection, protected-key validation, and `ORS0` restore. Exactly empty slots plus independently unprovisioned trust are required for first boot; rollback/conflict enter safe mode, missing keys/storage/trust require service, degraded restore remains visible, and interrupted trusted-floor advancement is read back exactly before transport is enabled. Ten focused groups, the full 38-executable matrix, and 100 repeats pass; no target task or protected backend is claimed.
 - Boot degradation now distinguishes known media state from uncertainty. A surviving checkpoint beside an empty or checksum-invalid slot may be operational with repair required; a surviving checkpoint beside an unreadable slot remains service-only, does not advance trust, and cannot enable transport because the unreadable slot may hide a newer committed generation. Ten boot groups, the full 38-executable matrix, and 100 repeats pass.
 - A host-tested [known-degraded repair coordinator](docs/integration/CRITICAL_ALERT_SYSTEM_RECOVERY_REPAIR_V0.md) accepts only an exact operational `restored_degraded` boot result whose current store still has one matching valid generation and one known empty/invalid peer slot. It commits the next `ORS0`, advances and reads back trust, then proves both slots valid before reporting repaired. Healthy, unreadable, service, and stale evidence cannot write; uncertain commit/trust update requires reboot reconciliation. Five groups, the full 39-executable matrix, and 100 repeats pass.
+- A host-tested [redacted recovery status boundary](docs/integration/CRITICAL_ALERT_SYSTEM_RECOVERY_STATUS_V0.md) converts boot, save, and repair results into one fixed-shape operator record. It preserves actionable state/reason/action, slot health, generations, protected-key error category, and transport/repair flags while omitting peer IDs, key handles, addresses, credentials, and raw checkpoint data. Unknown or incoherent results fail closed. Seven groups, the full 40-executable matrix, and 100 repeats pass locally; target logging/rendering and persistent audit remain unproved.
 - A host-tested [system-recovery save coordinator](docs/integration/CRITICAL_ALERT_SYSTEM_RECOVERY_SAVE_V0.md) now enforces the complementary ordering. It requires exact local/trusted generation agreement, writes and verifies the next `ORS0`, advances trust only afterward, and verifies exact trust readback. Local-ahead and uncertain commits require reboot reconciliation; local-behind is rollback; missing recovery and failed trust/storage stay service-visible. Eight groups, the full 38-executable matrix, and 100 repeats pass; no physical durability is claimed.
 - Across each two-cycle set, radio loss/duplicates/errors were zero, SenseCAP recorded exact aggregate +4 flood RX/TX, repeat stayed enabled, and cleanup passed 4/4.
 
@@ -101,7 +115,7 @@ OpenGauge owns vehicle acquisition, decode/normalization, gauge display, vehicle
 
 ## Start here
 
-Read [the dated progress log](docs/PROGRESS_LOG.md), [the latest live-state physical evidence](tests/hardware/OG-018M-2026-08-09.md), [the recoverable system store](docs/integration/CRITICAL_ALERT_SYSTEM_RECOVERY_STORE_V0.md), [the target storage/boot plan](docs/integration/TARGET_SYSTEM_RECOVERY_ADAPTER_PLAN.md), [the architecture](docs/ARCHITECTURE.md), [project status and assumptions](docs/PROJECT_STATUS.md), [the hardware evidence inventory](hardware/INVENTORY.md), [the peer authorization model](docs/security/PEER_AUTHORIZATION_V0.md), and [the backlog](tasks/BACKLOG.md). Detailed component specifications and physical evidence remain organized under `docs/` and `tests/`. The next core work is selecting an exact target storage/key/trust mechanism and authenticated on-device transport.
+Read [the dated progress log](docs/PROGRESS_LOG.md), [the redacted recovery status boundary](docs/integration/CRITICAL_ALERT_SYSTEM_RECOVERY_STATUS_V0.md), [the latest live-state physical evidence](tests/hardware/OG-018M-2026-08-09.md), [the recoverable system store](docs/integration/CRITICAL_ALERT_SYSTEM_RECOVERY_STORE_V0.md), [the target storage/boot plan](docs/integration/TARGET_SYSTEM_RECOVERY_ADAPTER_PLAN.md), [the architecture](docs/ARCHITECTURE.md), [project status and assumptions](docs/PROJECT_STATUS.md), [the hardware evidence inventory](hardware/INVENTORY.md), [the peer authorization model](docs/security/PEER_AUTHORIZATION_V0.md), and [the backlog](tasks/BACKLOG.md). Detailed component specifications and physical evidence remain organized under `docs/` and `tests/`. The next core work is selecting an exact target storage/key/trust mechanism and authenticated on-device transport.
 
 ## License and contributions
 

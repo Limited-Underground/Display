@@ -6,12 +6,17 @@ public chronology.
 
 ## 2026-08-09
 
+### Connected hardware and integration
+
 - Built deterministic host foundations for passive CAN/J1939 acquisition,
   normalized telemetry, alarms, diagnostics, GPS state, gauge presentation,
   update rollback, peer authorization, and the OpenTrail critical-alert path.
 - Proved physical `OGA0` alert and `OGK0` acknowledgement delivery through two
   Heltec companions and a SenseCAP repeater, including accepted, terminal stale,
   retryable rate-limit, retry-to-accept, and live host-state lifecycles.
+
+### Recovery software and safety
+
 - Added canonical ACK replay and outbox checkpoints, preflighted combined `OCR0`
   recovery, a recoverable two-slot host store, store-owned generations, and
   uncertain-commit reconciliation.
@@ -62,12 +67,24 @@ public chronology.
   new `ORS0`, advances/readbacks trust, and verifies both slots valid. Unreadable,
   healthy, service, stale, and uncertain cases fail closed. Five groups, the
   39-executable matrix, and 100 repeats pass.
+- Added a fixed-shape, redacted operator status for boot, save, and repair
+  outcomes. It preserves coarse state/reason/action, slot health, checkpoint
+  generations, protected-key failure category, and transport/repair flags while
+  excluding peer IDs, key handles, addresses, credentials, and raw checkpoint
+  bytes. Unknown or incoherent results fail closed. Seven groups, the complete
+  40-executable matrix, and 100 focused repeats pass locally.
+
+### Public validation and project operations
+
 - Added public GitHub Actions validation for every `main` push and pull request.
-  The Windows 2025/UCRT64 workflow uses commit-pinned actions; its current
-  warning-free run passes the full 39-executable matrix with zero annotations.
+  The Windows 2025/UCRT64 workflow uses commit-pinned actions and runs the
+  complete matrix; the repository badge is the current-run authority.
 - Linked OpenTrail's separate public workflow after it passed both verifier CLI
   builds, 23 C++ test executables, and the four-group Python MeshCore lease suite
   with zero annotations. The two CI scopes remain distinct.
+
+### Remaining gates
+
 - Kept all target claims bounded: there is no ESP-IDF storage/radio/CAN binding,
   protected on-device key persistence, physical power-cut evidence, or vehicle
   validation yet.

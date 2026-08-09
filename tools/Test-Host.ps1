@@ -284,6 +284,18 @@ Invoke-HostTest `
     )
 
 Invoke-HostTest `
+    -Name 'critical_alert_system_recovery_status_tests' `
+    -Description 'Redacted alert-system recovery operator status' `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\identity\include'),
+        (Join-Path $projectRoot 'firmware\components\integration\include')
+    ) `
+    -Sources @(
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_system_recovery_status.cpp'),
+        (Join-Path $projectRoot 'tests\host\critical_alert_system_recovery_status_tests.cpp')
+    )
+
+Invoke-HostTest `
     -Name 'critical_alert_ack_ingress_tests' `
     -Description 'Authenticated critical alert ACK ingress and correlation' `
     -IncludeDirectories @(
