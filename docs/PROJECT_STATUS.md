@@ -75,20 +75,22 @@ hardware remain unvalidated.
 - The recovery status now has a versioned diagnostics adapter. One 32-bit word carries operation, coarse state/reason/action, slot health, protected-key failure class, and transport/attention/repair/redaction flags into the existing ring. Generations and identity-bearing fields are omitted; bad magic/version/enums or incoherent flags are rejected before a record. Eight focused groups, the complete 41-executable matrix, and 100 repeats pass locally. Exact target logger, persistent retention/export, and physical failure capture remain unproved.
 - Public GitHub Actions validates the full Windows host matrix on `main` pushes and pull requests. The workflow uses Windows 2025, an explicitly located UCRT64 GCC toolchain, least-privilege read-only contents permission, concurrency cancellation, time bounds, and commit-pinned action dependencies; its current-main warning-free run passes all 41 executables with zero annotations.
 - OpenTrail has a separate public Windows workflow for its own repository.
-  Public run `31412142091` builds three verifier/planning CLIs and passes 32 C++
-  executables plus the Python evidence suites. It includes twelve revision-bound
-  local-interface, eleven fail-visible power-state, eight fail-closed secure-
-  randomness, and eight checked monotonic-clock groups alongside replay,
-  counter, packet-budget, pilot, benchmark, and field evidence. The interface
-  contract binds semantic action slots to the exact successfully shown frame and
-  requires hold-only critical confirmation without selecting a renderer. Power,
-  randomness, and clock retain typed failure behavior. Deterministic fakes do
-  not prove target display/input, power, entropy, or time behavior. Protected
-  target bindings/storage, authenticated rollback, reset/migration, power-cut/
-  wear, durable outbox, and physical evidence remain open. OpenGauge links this
-  as separate OpenTrail platform/transport evidence, not proof of OpenGauge CAN,
-  ESP-NOW, display/input, target, storage, power, critical delivery, or vehicle
-  behavior.
+  Public run `31415094006` builds three verifier/planning CLIs and passes 33 C++
+  executables plus the Python evidence suites. It includes eight portable-client
+  composition, twelve revision-bound local-interface, eleven fail-visible power-
+  state, eight fail-closed secure-randomness, and eight checked monotonic-clock
+  groups alongside replay, counter, packet-budget, pilot, benchmark, and field
+  evidence. The composition preflight binds ten target-facing endpoints,
+  including separate 64-byte multi-domain and 704-byte replay storage, while
+  performing no mutable adapter I/O. The interface contract binds semantic
+  action slots to the exact successfully shown frame and requires hold-only
+  critical confirmation without selecting a renderer. Deterministic host fakes
+  do not prove target display/input, power, entropy, time, storage, or board
+  behavior. Protected target bindings/storage, authenticated rollback, reset/
+  migration, power-cut/wear, durable outbox, and physical evidence remain open.
+  OpenGauge links this as separate OpenTrail platform/transport evidence, not
+  proof of OpenGauge CAN, ESP-NOW, display/input, target, storage, power,
+  critical delivery, or vehicle behavior.
 - The v0 alarm engine holds 16 normalized-signal rules with inclusive above/below/outside-range comparison, exact hysteresis and assert/clear debounce, four severities, nonvalid clear/hold/assert policy, latching/acknowledgement, atomic bounded events, and periodic reminders. Ten host groups cover thresholds, signed-safe hysteresis, chatter, stale/unavailable no-value behavior, latch/ack paths, clock/type/unit rejection, capacity, diagnostics, and restart. Cache-task, display, critical-event, persistence, and reviewed vehicle-rule composition remain.
 - The cache-to-alarm evaluator scans all 16 latest snapshots at each monotonic poll rather than only changed generations, so unchanged values advance debounce, exact cache staleness, and reminders. It preflights the whole poll, aggregates up to 16 events, skips unruled signals, and treats a cache epoch as a runtime-reset boundary without inventing clears. Seven host groups cover capacity/lifecycle, unchanged state, stale/reminder boundaries, reset/reassert, aggregation, incompatible input, cache failure, and clock regression. Target-task timing and event consumers remain.
 - ESP-NOW and persistent formats use explicit versioned serialization, not raw C/C++ memory layouts.
