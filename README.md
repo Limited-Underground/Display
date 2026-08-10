@@ -36,8 +36,11 @@ OpenGauge is a proposed free/open-source ESP32 vehicle instrumentation and telem
   expose target/lock/test gates and the candidate LoRa header/tag/airtime cost.
   Its [immutable-forwarding decision](https://github.com/nbjelanovic/OpenTrail/blob/main/docs/decisions/0004-immutable-first-release-forwarding.md)
   limits the first release to one exact-byte repeater and shows that individual
-  broadcast-source authentication adds a 64-byte signature candidate. These do
-  not validate OpenGauge ESP-NOW, storage, keys, or target firmware.
+  broadcast-source authentication adds a 64-byte signature candidate. The
+  separate [replay coordinator](https://github.com/nbjelanovic/OpenTrail/blob/main/docs/protocol/SINGLE_REPEATER_REPLAY_COORDINATOR_V0.md)
+  now saves each eligible replay observation before permitting repeater queue
+  release and restores/repairs it across host restart. These do not validate
+  OpenGauge ESP-NOW, storage, keys, or target firmware.
 
 ### Software and safety
 
@@ -55,12 +58,13 @@ OpenGauge is a proposed free/open-source ESP32 vehicle instrumentation and telem
   41 executables with zero annotations. OpenTrail has a
   [separate public host workflow](https://github.com/nbjelanovic/OpenTrail/actions/workflows/host-validation.yml)
   for its own transport, routing, GPS, persistence, field-load planning, and
-  field evidence. Its current run passes 27 C++ executables, including the
+  field evidence. Its current run passes 28 C++ executables, including the
   ten-group rollback-safe outbound counter, nine-group protected-packet budget,
-  and nine-group immutable single-repeater policy, plus four MeshCore lease,
-  six field-plan/evidence, nine pilot-result, and eight crypto-benchmark
-  scenario groups. That evidence belongs to OpenTrail and is not OpenGauge
-  target-security proof.
+  nine-group immutable single-repeater policy, and nine-group reboot-safe
+  repeater replay coordinator, plus four MeshCore lease, six field-plan/
+  evidence, nine pilot-result, and eight crypto-benchmark scenario groups.
+  OpenTrail run `31372816356` passed that matrix. The evidence belongs to
+  OpenTrail and is not OpenGauge target-security proof.
 
 ### Remaining gates
 
