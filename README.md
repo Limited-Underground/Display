@@ -57,6 +57,14 @@ OpenGauge is a proposed free/open-source ESP32 vehicle instrumentation and telem
   and a bounded fake. It does not estimate percentage from voltage or prove an
   ESP-IDF adapter, charger behavior, battery life, physical thresholds, or any
   OpenGauge target property.
+- **Separate OpenTrail local-interface prerequisite:** its
+  [semantic display/input boundary](https://github.com/nbjelanovic/OpenTrail/blob/main/docs/platform/LOCAL_INTERFACE_V0.md)
+  binds normalized action slots to the exact semantic frame successfully shown,
+  independent of OLED/button or touch rendering. Twelve groups plus 100 focused
+  repeats cover atomic presentation, stale/invalid input, and hold-only critical
+  confirmation. It proves no OpenGauge renderer, display/input adapter,
+  accessibility/readability, critical-alert delivery, or physical target
+  behavior.
 
 ### Software and safety
 
@@ -74,14 +82,14 @@ OpenGauge is a proposed free/open-source ESP32 vehicle instrumentation and telem
   41 executables with zero annotations. OpenTrail has a
   [separate public host workflow](https://github.com/nbjelanovic/OpenTrail/actions/workflows/host-validation.yml)
   for its own transport, routing, GPS, persistence, field-load planning, and
-  field evidence. Its current run passes 31 C++ executables, including the
-  eleven-group power-state, eight-group secure-randomness, and eight-group
-  monotonic-clock boundaries,
+  field evidence. Its current run passes 32 C++ executables, including the
+  twelve-group local-interface, eleven-group power-state, eight-group secure-
+  randomness, and eight-group monotonic-clock boundaries,
   ten-group rollback-safe outbound counter, nine-group protected-packet budget,
   nine-group immutable single-repeater policy, and nine-group reboot-safe
   repeater replay coordinator, plus four MeshCore lease, six field-plan/
   evidence, nine pilot-result, and eight crypto-benchmark scenario groups.
-  OpenTrail run `31409862103` passed that complete matrix publicly.
+  OpenTrail run `31412142091` passed that complete matrix publicly.
   The evidence belongs to
   OpenTrail and is not proof of any OpenGauge target behavior.
 
