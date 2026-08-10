@@ -1,1 +1,6 @@
+# Python test/cache output
+__pycache__/
+*.py[cod]
+
+# Host build output
 build/
