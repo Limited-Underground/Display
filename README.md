@@ -6,15 +6,6 @@ OpenGauge is a proposed free/open-source ESP32 vehicle instrumentation and telem
 
 ## Current snapshot — 2026-08-10
 
-### Working name
-
-- **ECLU is provisional:** a deeper exact-name screen found no exact USPTO
-  record, but it did find an active UK registration in an unrelated class,
-  occupied exact domains and GitHub account, and several search collisions.
-- **Current decision:** keep OpenGauge as the repository and technical name;
-  keep ECLU out of protocols, persistent identifiers, and hardware markings.
-  See the dated [working-name review](docs/branding/ECLU_WORKING_NAME_REVIEW.md).
-
 ### Hardware and integration
 
 - **Phase:** architecture plus host-tested components and bounded three-radio

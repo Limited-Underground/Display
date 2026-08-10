@@ -40,11 +40,6 @@ hardware remain unvalidated.
 
 ## Decisions captured
 
-- ECLU is a provisional, reversible umbrella-name candidate only. The repositories,
-  protocol namespaces, persistent formats, device identities, and hardware
-  identifiers remain neutral until professional clearance and a final naming
-  decision. The 2026-08-10 exact-name screen is recorded in
-  `docs/branding/ECLU_WORKING_NAME_REVIEW.md`.
 - Gateway and displays are separate roles with independent failure boundaries.
 - The initial CAN path is passive/listen-only. Its v0 host interface contains no transmit operation and carries canonical Classical frames, capture time, bus state, and overflow metadata. Eight fake-receiver groups cover lifecycle, policy/filtering, malformed frames, FIFO/clock behavior, overflow, bus-off, hardware failure, restart, and EEC1 receive-to-cache integration. This is not evidence of an electrically passive production adapter.
 - Raw J1939 frames are not the default gauge-network payload; the gateway publishes normalized selected signals.
@@ -141,8 +136,6 @@ No hardware is considered supported until repeatable test evidence is recorded.
 ### Optional integrations and governance
 
 - GPS topology, APU protocol/control safety, OpenTrail physical event transport/key lifecycle/replay protection, cellular/SMS scope; the semantic v0 schema is host-tested
-- Final umbrella/product naming and professional trademark clearance; ECLU is
-  only a date-stamped working candidate
 - Code of conduct, CI, release process, supported hardware/vehicle evidence, and safety/legal disclaimers; Apache-2.0 licensing, contribution guidance, and security reporting are established
 
 ## Next decision checkpoint
