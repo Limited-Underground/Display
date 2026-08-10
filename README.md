@@ -47,8 +47,11 @@ OpenGauge is a proposed free/open-source ESP32 vehicle instrumentation and telem
   41 executables with zero annotations. OpenTrail has a
   [separate public host workflow](https://github.com/nbjelanovic/OpenTrail/actions/workflows/host-validation.yml)
   for its own transport, routing, GPS, persistence, field-load planning, and
-  field evidence. Its current run passes 24 C++ executables plus four MeshCore
-  lease, six field-plan/evidence, and nine pilot-result scenario groups.
+  field evidence. Its current run passes 25 C++ executables, including the new
+  ten-group rollback-safe outbound-counter prerequisite, plus four MeshCore
+  lease, six field-plan/evidence, and nine pilot-result scenario groups. That
+  counter evidence belongs to OpenTrail and is not OpenGauge target-security
+  proof.
 
 ### Remaining gates
 
