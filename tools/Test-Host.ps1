@@ -765,3 +765,18 @@ Invoke-HostTest `
         (Join-Path $projectRoot 'firmware\components\wireless\test_support\fake_esp_now_transport.cpp'),
         (Join-Path $projectRoot 'tests\host\gateway_telemetry_loop_tests.cpp')
     )
+
+$python = Get-Command python -ErrorAction SilentlyContinue
+if ($null -eq $python) {
+    throw 'Python was not found for publication-safety validation.'
+}
+
+& $python.Source (Join-Path $projectRoot 'tests\host\publication_safety_tests.py')
+if ($LASTEXITCODE -ne 0) {
+    throw "Publication-safety scanner tests failed with exit code $LASTEXITCODE."
+}
+
+& $python.Source (Join-Path $projectRoot 'tools\Test-PublicationSafety.py') --root $projectRoot
+if ($LASTEXITCODE -ne 0) {
+    throw "Publication-safety tracked-content scan failed with exit code $LASTEXITCODE."
+}
