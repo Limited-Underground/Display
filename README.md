@@ -34,7 +34,10 @@ OpenGauge is a proposed free/open-source ESP32 vehicle instrumentation and telem
   [benchmark evidence boundary](https://github.com/nbjelanovic/OpenTrail/blob/main/docs/security/CRYPTO_BENCHMARK_EVIDENCE_V0.md)
   and [protected-packet budget](https://github.com/nbjelanovic/OpenTrail/blob/main/docs/protocol/PROTECTED_PACKET_BUDGET_V0.md)
   expose target/lock/test gates and the candidate LoRa header/tag/airtime cost.
-  They do not validate OpenGauge ESP-NOW, storage, keys, or target firmware.
+  Its [immutable-forwarding decision](https://github.com/nbjelanovic/OpenTrail/blob/main/docs/decisions/0004-immutable-first-release-forwarding.md)
+  limits the first release to one exact-byte repeater and shows that individual
+  broadcast-source authentication adds a 64-byte signature candidate. These do
+  not validate OpenGauge ESP-NOW, storage, keys, or target firmware.
 
 ### Software and safety
 
@@ -52,11 +55,12 @@ OpenGauge is a proposed free/open-source ESP32 vehicle instrumentation and telem
   41 executables with zero annotations. OpenTrail has a
   [separate public host workflow](https://github.com/nbjelanovic/OpenTrail/actions/workflows/host-validation.yml)
   for its own transport, routing, GPS, persistence, field-load planning, and
-  field evidence. Its current run passes 26 C++ executables, including the
-  ten-group rollback-safe outbound counter and eight-group protected-packet
-  budget, plus four MeshCore lease, six field-plan/evidence, nine pilot-result,
-  and eight crypto-benchmark scenario groups. That evidence belongs to
-  OpenTrail and is not OpenGauge target-security proof.
+  field evidence. Its current run passes 27 C++ executables, including the
+  ten-group rollback-safe outbound counter, nine-group protected-packet budget,
+  and nine-group immutable single-repeater policy, plus four MeshCore lease,
+  six field-plan/evidence, nine pilot-result, and eight crypto-benchmark
+  scenario groups. That evidence belongs to OpenTrail and is not OpenGauge
+  target-security proof.
 
 ### Remaining gates
 

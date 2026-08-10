@@ -22,16 +22,19 @@ public chronology.
 - Linked OpenTrail's deterministic four-client, four-plus-repeater, and
   eight-plus-repeater load model as separate planning evidence. It does not
   substitute for OpenGauge ESP-NOW, display, CAN, or vehicle validation.
-- Confirmed OpenTrail's expanded public workflow passes 26 strict C++
+- Confirmed OpenTrail's expanded public workflow passes 27 strict C++
   executables, three verifier/planning CLI builds, four MeshCore lease groups,
   six privacy-safe field-plan/evidence groups, and nine pilot-result groups.
 - Linked OpenTrail's ten-group rollback-safe outbound-counter prerequisite as
   separate packet-security groundwork. It is not evidence for OpenGauge target
   storage, keys, ESP-NOW, CAN, display, or vehicle behavior.
-- Linked OpenTrail's strict crypto-benchmark evidence boundary and eight-group
-  protected-packet budget. The latter exposes a 36-byte candidate authenticated
-  header plus 16-byte tag and the unresolved mutable-repeater-routing cost. It
-  does not establish OpenGauge ESP-NOW overhead, security, or target behavior.
+- Linked OpenTrail's strict crypto-benchmark evidence boundary and protected-
+  packet budget, which now has nine groups. The latter exposes a
+  36-byte candidate authenticated header plus 16-byte tag and a separate
+  64-byte signed-group source-authentication candidate.
+- Linked OpenTrail's zero/one-repeater decision and nine-group exact-byte host
+  policy. It does not rewrite a protected TTL and does not establish OpenGauge
+  ESP-NOW overhead, security, routing, or target behavior.
 - Linked OpenTrail's versioned four-person standalone plan and deterministic
   pass/fail/ineligible/invalid result evaluator. The plan requires no OpenGauge
   device or vehicle connection and remains blocked on an exact four-unit client
