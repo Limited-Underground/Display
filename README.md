@@ -42,6 +42,13 @@ OpenGauge is a proposed free/open-source ESP32 vehicle instrumentation and telem
   ESP-IDF entropy/DRBG adapter, production key generation, cold-start/brownout,
   or RF/ADC concurrency evidence is claimed, and this is not OpenGauge target
   security evidence.
+- **Separate OpenTrail time prerequisite:** its host-tested
+  [checked monotonic-clock boundary](https://github.com/nbjelanovic/OpenTrail/blob/main/docs/platform/MONOTONIC_CLOCK_V0.md)
+  keeps boot-local elapsed milliseconds separate from UTC, permits equal ticks
+  and temporary not-ready recovery, and latches rollback/source failure for the
+  current boot composition. Eight groups plus 100 focused repeats pass. No
+  ESP-IDF timer/task/deep-sleep/brownout or physical timing evidence is claimed,
+  and this is not OpenGauge target evidence.
 
 ### Software and safety
 
@@ -59,13 +66,13 @@ OpenGauge is a proposed free/open-source ESP32 vehicle instrumentation and telem
   41 executables with zero annotations. OpenTrail has a
   [separate public host workflow](https://github.com/nbjelanovic/OpenTrail/actions/workflows/host-validation.yml)
   for its own transport, routing, GPS, persistence, field-load planning, and
-  field evidence. Its current run passes 29 C++ executables, including the
-  eight-group secure-randomness boundary, ten-group rollback-safe outbound
-  counter, nine-group protected-packet budget, nine-group immutable single-
-  repeater policy, and nine-group reboot-safe repeater replay coordinator,
-  plus four MeshCore lease, six field-plan/evidence, nine pilot-result, and
-  eight crypto-benchmark scenario groups. OpenTrail run `31404903707` passed
-  that complete matrix publicly.
+  field evidence. Its current run passes 30 C++ executables, including the
+  eight-group secure-randomness and eight-group monotonic-clock boundaries,
+  ten-group rollback-safe outbound counter, nine-group protected-packet budget,
+  nine-group immutable single-repeater policy, and nine-group reboot-safe
+  repeater replay coordinator, plus four MeshCore lease, six field-plan/
+  evidence, nine pilot-result, and eight crypto-benchmark scenario groups.
+  OpenTrail run `31407498672` passed that complete matrix publicly.
   The evidence belongs to
   OpenTrail and is not OpenGauge target-security proof.
 

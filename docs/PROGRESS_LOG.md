@@ -11,14 +11,19 @@ public chronology.
 - Linked OpenTrail's deterministic four-client, four-plus-repeater, and
   eight-plus-repeater load model as separate planning evidence. It does not
   substitute for OpenGauge ESP-NOW, display, CAN, or vehicle validation.
-- Confirmed OpenTrail public run `31404903707` passes 29 strict C++
+- Confirmed OpenTrail public run `31407498672` passes 30 strict C++
   executables, three verifier/planning CLI builds, four MeshCore lease groups,
   six field-plan/evidence, nine pilot-result, eight crypto-benchmark, and eight
-  secure-randomness scenario groups.
+  secure-randomness plus eight monotonic-clock scenario groups.
 - Linked OpenTrail's fail-closed secure-random source as separate security
   groundwork: typed readiness, bounded 1-64-byte requests, and complete output
   or no change. Its deterministic fake and host evidence do not prove target
   entropy/DRBG behavior or any OpenGauge target security property.
+- Linked OpenTrail's checked monotonic-clock boundary as separate platform
+  groundwork. It keeps boot-local elapsed time separate from UTC, permits equal
+  ticks and temporary not-ready recovery, and latches rollback/source failure.
+  No ESP-IDF timer/task/deep-sleep/brownout or physical timing evidence exists,
+  and this does not prove any OpenGauge target property.
 - Linked OpenTrail's ten-group rollback-safe outbound-counter prerequisite as
   separate packet-security groundwork. It is not evidence for OpenGauge target
   storage, keys, ESP-NOW, CAN, display, or vehicle behavior.
