@@ -30,6 +30,11 @@ OpenGauge is a proposed free/open-source ESP32 vehicle instrumentation and telem
   [plan](https://github.com/nbjelanovic/OpenTrail/blob/main/docs/testing/FOUR_PERSON_PILOT_V0.md)
   and [result evaluator](https://github.com/nbjelanovic/OpenTrail/blob/main/docs/testing/FOUR_PERSON_PILOT_RESULT_V0.md)
   are public but remain blocked on the exact four-unit hardware/firmware freeze.
+- **Separate OpenTrail security sizing:** OpenTrail's
+  [benchmark evidence boundary](https://github.com/nbjelanovic/OpenTrail/blob/main/docs/security/CRYPTO_BENCHMARK_EVIDENCE_V0.md)
+  and [protected-packet budget](https://github.com/nbjelanovic/OpenTrail/blob/main/docs/protocol/PROTECTED_PACKET_BUDGET_V0.md)
+  expose target/lock/test gates and the candidate LoRa header/tag/airtime cost.
+  They do not validate OpenGauge ESP-NOW, storage, keys, or target firmware.
 
 ### Software and safety
 
@@ -47,11 +52,11 @@ OpenGauge is a proposed free/open-source ESP32 vehicle instrumentation and telem
   41 executables with zero annotations. OpenTrail has a
   [separate public host workflow](https://github.com/nbjelanovic/OpenTrail/actions/workflows/host-validation.yml)
   for its own transport, routing, GPS, persistence, field-load planning, and
-  field evidence. Its current run passes 25 C++ executables, including the new
-  ten-group rollback-safe outbound-counter prerequisite, plus four MeshCore
-  lease, six field-plan/evidence, and nine pilot-result scenario groups. That
-  counter evidence belongs to OpenTrail and is not OpenGauge target-security
-  proof.
+  field evidence. Its current run passes 26 C++ executables, including the
+  ten-group rollback-safe outbound counter and eight-group protected-packet
+  budget, plus four MeshCore lease, six field-plan/evidence, nine pilot-result,
+  and eight crypto-benchmark scenario groups. That evidence belongs to
+  OpenTrail and is not OpenGauge target-security proof.
 
 ### Remaining gates
 
