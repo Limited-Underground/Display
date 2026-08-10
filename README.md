@@ -39,8 +39,11 @@ OpenGauge is a proposed free/open-source ESP32 vehicle instrumentation and telem
   broadcast-source authentication adds a 64-byte signature candidate. The
   separate [replay coordinator](https://github.com/nbjelanovic/OpenTrail/blob/main/docs/protocol/SINGLE_REPEATER_REPLAY_COORDINATOR_V0.md)
   now saves each eligible replay observation before permitting repeater queue
-  release and restores/repairs it across host restart. These do not validate
-  OpenGauge ESP-NOW, storage, keys, or target firmware.
+  release and restores/repairs it across host restart. Its fixed-size
+  [`ODS0/v1` store](https://github.com/nbjelanovic/OpenTrail/blob/main/docs/persistence/DUPLICATE_CHECKPOINT_STORE_V1.md)
+  now embeds the exact group context and epoch, refusing mismatched and legacy
+  unbound media without overwrite. These do not validate OpenGauge ESP-NOW,
+  storage, keys, or target firmware.
 
 ### Software and safety
 
@@ -63,7 +66,8 @@ OpenGauge is a proposed free/open-source ESP32 vehicle instrumentation and telem
   nine-group immutable single-repeater policy, and nine-group reboot-safe
   repeater replay coordinator, plus four MeshCore lease, six field-plan/
   evidence, nine pilot-result, and eight crypto-benchmark scenario groups.
-  OpenTrail run `31372816356` passed that matrix. The evidence belongs to
+  OpenTrail run `31374678550` passed that matrix with the context-bound store.
+  The evidence belongs to
   OpenTrail and is not OpenGauge target-security proof.
 
 ### Remaining gates

@@ -22,7 +22,7 @@ public chronology.
 - Linked OpenTrail's deterministic four-client, four-plus-repeater, and
   eight-plus-repeater load model as separate planning evidence. It does not
   substitute for OpenGauge ESP-NOW, display, CAN, or vehicle validation.
-- Confirmed OpenTrail public run `31372816356` passes 28 strict C++
+- Confirmed OpenTrail public run `31374678550` passes 28 strict C++
   executables, three verifier/planning CLI builds, four MeshCore lease groups,
   six privacy-safe field-plan/evidence groups, and nine pilot-result groups.
 - Linked OpenTrail's ten-group rollback-safe outbound-counter prerequisite as
@@ -41,6 +41,11 @@ public chronology.
   persistence. Its volatile frame-loss tradeoff, protected target storage,
   power cuts, wear, and durable outbox remain OpenTrail gates; none of this is
   OpenGauge target evidence.
+- Linked OpenTrail's ten-group context-bound `ODS0/v1` store. The same 704-byte
+  slots now embed group context and epoch; mismatched and legacy unbound media
+  require service without restore or overwrite. Protected integrity, rollback,
+  reset/migration, and physical storage evidence remain OpenTrail gates and do
+  not validate OpenGauge persistence.
 - Linked OpenTrail's versioned four-person standalone plan and deterministic
   pass/fail/ineligible/invalid result evaluator. The plan requires no OpenGauge
   device or vehicle connection and remains blocked on an exact four-unit client
