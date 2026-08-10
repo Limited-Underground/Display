@@ -4,6 +4,28 @@ Progress is grouped by calendar day, newest first. Detailed acceptance criteria
 remain in [the engineering backlog](../tasks/BACKLOG.md); this log is the concise
 public chronology.
 
+## 2026-08-10
+
+### Project identity
+
+- Completed a deeper point-in-time screen of the provisional ECLU umbrella
+  name across official United States and United Kingdom trademark sources,
+  TMview, domains, developer namespaces, and electronics/search uses.
+- Rated the working name yellow/moderate: no exact USPTO result was found, but
+  an active UK class-17 registration, occupied exact domains/GitHub account,
+  and several search collisions prevent treating it as globally clear.
+- Kept OpenGauge, protocol/persistence names, device identities, and hardware
+  markings unchanged so the human-facing brand remains inexpensive to replace.
+
+### Cross-project field-test planning
+
+- Linked OpenTrail's deterministic four-client, four-plus-repeater, and
+  eight-plus-repeater load model as separate planning evidence. It does not
+  substitute for OpenGauge ESP-NOW, display, CAN, or vehicle validation.
+- Confirmed OpenTrail's expanded public workflow passes 24 strict C++
+  executables, three verifier/planning CLI builds, and the Python MeshCore lease
+  suite.
+
 ## 2026-08-09
 
 ### Connected hardware and integration

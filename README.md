@@ -4,7 +4,16 @@
 
 OpenGauge is a proposed free/open-source ESP32 vehicle instrumentation and telemetry platform. Its baseline architecture separates a listen-only CAN/J1939 gateway from independently operating wireless gauge displays.
 
-## Current snapshot — 2026-08-09
+## Current snapshot — 2026-08-10
+
+### Working name
+
+- **ECLU is provisional:** a deeper exact-name screen found no exact USPTO
+  record, but it did find an active UK registration in an unrelated class,
+  occupied exact domains and GitHub account, and several search collisions.
+- **Current decision:** keep OpenGauge as the repository and technical name;
+  keep ECLU out of protocols, persistent identifiers, and hardware markings.
+  See the dated [working-name review](docs/branding/ECLU_WORKING_NAME_REVIEW.md).
 
 ### Hardware and integration
 
@@ -31,7 +40,8 @@ OpenGauge is a proposed free/open-source ESP32 vehicle instrumentation and telem
   on every `main` push and pull request. The current warning-free run passes all
   41 executables with zero annotations. OpenTrail has a
   [separate public host workflow](https://github.com/nbjelanovic/OpenTrail/actions/workflows/host-validation.yml)
-  for its own transport, routing, GPS, persistence, and MeshCore lease suites.
+  for its own transport, routing, GPS, persistence, field-load planning, and
+  MeshCore lease suites; its current expanded 24-executable run passes.
 
 ### Remaining gates
 

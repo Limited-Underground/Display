@@ -1,6 +1,6 @@
 # OpenGauge Project Status, Assumptions, and Open Questions
 
-Status date: 2026-08-09
+Status date: 2026-08-10
 
 ## Conceptual goals
 
@@ -40,6 +40,11 @@ hardware remain unvalidated.
 
 ## Decisions captured
 
+- ECLU is a provisional, reversible umbrella-name candidate only. The repositories,
+  protocol namespaces, persistent formats, device identities, and hardware
+  identifiers remain neutral until professional clearance and a final naming
+  decision. The 2026-08-10 exact-name screen is recorded in
+  `docs/branding/ECLU_WORKING_NAME_REVIEW.md`.
 - Gateway and displays are separate roles with independent failure boundaries.
 - The initial CAN path is passive/listen-only. Its v0 host interface contains no transmit operation and carries canonical Classical frames, capture time, bus state, and overflow metadata. Eight fake-receiver groups cover lifecycle, policy/filtering, malformed frames, FIFO/clock behavior, overflow, bus-off, hardware failure, restart, and EEC1 receive-to-cache integration. This is not evidence of an electrically passive production adapter.
 - Raw J1939 frames are not the default gauge-network payload; the gateway publishes normalized selected signals.
@@ -74,7 +79,7 @@ hardware remain unvalidated.
 - Boot, save, and repair results now feed a fixed-shape redacted operator-status boundary. The record retains coarse state/reason/action, slot health, observed/trusted generations, protected-key error class, transport permission, and repair attention while structurally excluding peer IDs and key handles. Unknown or inconsistent inputs fail closed. Seven focused groups, the complete 40-executable matrix, and 100 repeats pass locally. Target logging, display rendering, persistent audit retention, and physical service workflows remain unproved.
 - The recovery status now has a versioned diagnostics adapter. One 32-bit word carries operation, coarse state/reason/action, slot health, protected-key failure class, and transport/attention/repair/redaction flags into the existing ring. Generations and identity-bearing fields are omitted; bad magic/version/enums or incoherent flags are rejected before a record. Eight focused groups, the complete 41-executable matrix, and 100 repeats pass locally. Exact target logger, persistent retention/export, and physical failure capture remain unproved.
 - Public GitHub Actions validates the full Windows host matrix on `main` pushes and pull requests. The workflow uses Windows 2025, an explicitly located UCRT64 GCC toolchain, least-privilege read-only contents permission, concurrency cancellation, time bounds, and commit-pinned action dependencies; its current-main warning-free run passes all 41 executables with zero annotations.
-- OpenTrail has a separate public Windows workflow for its own repository. Its current-main warning-free run builds both verifier CLIs and passes 23 C++ test executables plus the Python MeshCore lease suite with zero annotations. OpenGauge links it as separate transport/routing/GPS/persistence evidence rather than treating it as proof of OpenGauge target behavior.
+- OpenTrail has a separate public Windows workflow for its own repository. Its current-main expanded run builds three verifier/planning CLIs and passes 24 C++ test executables plus the Python MeshCore lease suite. OpenGauge links it as separate transport/routing/GPS/persistence/field-load evidence rather than treating it as proof of OpenGauge target behavior.
 - The v0 alarm engine holds 16 normalized-signal rules with inclusive above/below/outside-range comparison, exact hysteresis and assert/clear debounce, four severities, nonvalid clear/hold/assert policy, latching/acknowledgement, atomic bounded events, and periodic reminders. Ten host groups cover thresholds, signed-safe hysteresis, chatter, stale/unavailable no-value behavior, latch/ack paths, clock/type/unit rejection, capacity, diagnostics, and restart. Cache-task, display, critical-event, persistence, and reviewed vehicle-rule composition remain.
 - The cache-to-alarm evaluator scans all 16 latest snapshots at each monotonic poll rather than only changed generations, so unchanged values advance debounce, exact cache staleness, and reminders. It preflights the whole poll, aggregates up to 16 events, skips unruled signals, and treats a cache epoch as a runtime-reset boundary without inventing clears. Seven host groups cover capacity/lifecycle, unchanged state, stale/reminder boundaries, reset/reassert, aggregation, incompatible input, cache failure, and clock regression. Target-task timing and event consumers remain.
 - ESP-NOW and persistent formats use explicit versioned serialization, not raw C/C++ memory layouts.
@@ -136,6 +141,8 @@ No hardware is considered supported until repeatable test evidence is recorded.
 ### Optional integrations and governance
 
 - GPS topology, APU protocol/control safety, OpenTrail physical event transport/key lifecycle/replay protection, cellular/SMS scope; the semantic v0 schema is host-tested
+- Final umbrella/product naming and professional trademark clearance; ECLU is
+  only a date-stamped working candidate
 - Code of conduct, CI, release process, supported hardware/vehicle evidence, and safety/legal disclaimers; Apache-2.0 licensing, contribution guidance, and security reporting are established
 
 ## Next decision checkpoint
