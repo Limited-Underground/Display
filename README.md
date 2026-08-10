@@ -24,6 +24,12 @@ OpenGauge is a proposed free/open-source ESP32 vehicle instrumentation and telem
 - **Latest physical result:** accepted, terminal-rejection, retryable-rejection,
   retry-to-accept, and live-state alert/ACK cycles completed with zero observed
   message loss, duplicates, or new radio errors.
+- **Separate first radio pilot:** OpenTrail now defines a four-person,
+  four-standalone-client test with no required repeater, phone, server, laptop,
+  internet, vehicle connection, or OpenGauge hardware during the session. Its
+  [plan](https://github.com/nbjelanovic/OpenTrail/blob/main/docs/testing/FOUR_PERSON_PILOT_V0.md)
+  and [result evaluator](https://github.com/nbjelanovic/OpenTrail/blob/main/docs/testing/FOUR_PERSON_PILOT_RESULT_V0.md)
+  are public but remain blocked on the exact four-unit hardware/firmware freeze.
 
 ### Software and safety
 
@@ -41,7 +47,8 @@ OpenGauge is a proposed free/open-source ESP32 vehicle instrumentation and telem
   41 executables with zero annotations. OpenTrail has a
   [separate public host workflow](https://github.com/nbjelanovic/OpenTrail/actions/workflows/host-validation.yml)
   for its own transport, routing, GPS, persistence, field-load planning, and
-  MeshCore lease suites; its current expanded 24-executable run passes.
+  field evidence. Its current run passes 24 C++ executables plus four MeshCore
+  lease, six field-plan/evidence, and nine pilot-result scenario groups.
 
 ### Remaining gates
 
