@@ -6,6 +6,21 @@ public chronology.
 
 ## 2026-08-12
 
+### Cross-store canonical layout transfer proof
+
+- Composed the existing canonical exporter and confirmed importer across two
+  independent fake stores without adding a hidden transfer shortcut.
+- Source generation 2 exports exactly, while a destination already at
+  generation 10 performs no write during preview and stores the confirmed
+  content as its own generation 11. Restart selects that destination record.
+- Re-importing the same source record under a new confirmation token returns
+  unchanged at generation 11 with no extra write; destination re-export carries
+  generation 11 and the transferred content.
+- Eleven cumulative workflow groups pass 100/100 focused repeats plus the
+  complete 47-executable host matrix including publication safety. File
+  transport, source/destination authorization, and physical behavior remain
+  open.
+
 ### Fail-closed canonical layout export
 
 - Added `GaugeLayoutStore::export_current`, which reuses normal boot selection
@@ -78,12 +93,12 @@ public chronology.
 - The projection is derived before the method returns from the coordinator's
   immediate post-operation status. Callers no longer supply or later re-pair
   an operation observation with mutable state.
-- Ten groups cover lifecycle/policy, exact prompt staging, mismatch without
+- Eleven groups cover lifecycle/policy, exact prompt staging, mismatch without
   prompt loss, apply/unchanged persistence, cancel/expiry, ordinary failure
   versus uncertainty, clock rollback, same-boot request replay, and confirmed
-  default restoration without slot erase, and strict confirmed import with
-  non-authoritative source generation. Both underlying error and projected next
-  action remain available.
+  default restoration without slot erase, strict confirmed import with
+  non-authoritative source generation, and independent export/import transfer.
+  Both underlying error and projected next action remain available.
 - The suite passes 100/100 focused repeats plus the complete 47-executable host
   matrix including publication safety. The facade owns no lock, RTOS task,
   renderer, local-input proof, source authority, diagnostic policy, or target

@@ -62,3 +62,7 @@ The cumulative tenth workflow group proves:
 The strict focused suite passes 100/100 repeats plus the complete 47-executable
 host matrix including publication safety. Source authorization/authenticity,
 target file/UI adapters, physical input, and on-device storage remain required.
+
+The separate [transfer proof](GAUGE_LAYOUT_TRANSFER_V0.md) composes this
+confirmed boundary with canonical export from an independent store. Source
+generation remains preview metadata throughout.

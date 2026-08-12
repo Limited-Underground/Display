@@ -376,6 +376,76 @@ void test_import_record_validates_before_staging_and_ignores_generation() {
     EXPECT(loaded.brightness_percent == 72);
 }
 
+void test_export_import_transfer_uses_destination_generation() {
+    FakeGaugeLayoutStorage source_storage{};
+    configuration::GaugeLayoutStore source_store{source_storage};
+    auto source_first = layout(60);
+    source_first.generation = 1;
+    EXPECT(source_store.save(source_first).saved());
+    auto source_current = layout(84);
+    source_current.generation = 2;
+    EXPECT(source_store.save(source_current).saved());
+
+    std::array<std::uint8_t, configuration::kGaugeLayoutRecordBytes> record{};
+    auto safe_default = layout();
+    safe_default.generation = 1;
+    const auto exported = source_store.export_current(
+        safe_default, record.data(), record.size());
+    EXPECT(exported.exported());
+    EXPECT(exported.load.source == configuration::GaugeLayoutSource::slot_b);
+
+    FakeGaugeLayoutStorage destination_storage{};
+    configuration::GaugeLayoutStore destination_store{destination_storage};
+    auto destination_current = layout(40);
+    destination_current.generation = 10;
+    EXPECT(destination_store.save(destination_current).saved());
+    configuration::GaugeLayoutChangeWorkflow destination{destination_store};
+    EXPECT(destination.start({100}, 0).projected());
+
+    auto imported = destination.stage_import_record(
+        200, record.data(), record.size(), 1);
+    EXPECT(imported.decoded());
+    EXPECT(imported.summary.source_generation == 2);
+    EXPECT(imported.workflow.status.state ==
+           configuration::GaugeLayoutChangeOperatorState::
+               confirmation_required);
+    EXPECT(destination_storage.writes(0) + destination_storage.writes(1) == 1);
+
+    auto confirmed = destination.confirm(200, 2);
+    EXPECT(confirmed.persistence.changed());
+    EXPECT(confirmed.persistence.generation == 11);
+    EXPECT(destination_storage.writes(0) + destination_storage.writes(1) == 2);
+    EXPECT(destination_storage.erases(0) + destination_storage.erases(1) == 0);
+
+    configuration::GaugeLayoutStore restarted{destination_storage};
+    configuration::GaugeLayout loaded{};
+    const auto load_result = restarted.load(safe_default, loaded);
+    EXPECT(load_result.source == configuration::GaugeLayoutSource::slot_b);
+    EXPECT(loaded.generation == 11);
+    EXPECT(loaded.brightness_percent == 84);
+
+    imported = destination.stage_import_record(
+        201, record.data(), record.size(), 3);
+    EXPECT(imported.decoded());
+    confirmed = destination.confirm(201, 4);
+    EXPECT(confirmed.persistence.succeeded());
+    EXPECT(!confirmed.persistence.changed());
+    EXPECT(confirmed.persistence.generation == 11);
+    EXPECT(destination_storage.writes(0) + destination_storage.writes(1) == 2);
+
+    std::array<std::uint8_t, configuration::kGaugeLayoutRecordBytes>
+        destination_record{};
+    const auto destination_export = restarted.export_current(
+        safe_default, destination_record.data(), destination_record.size());
+    EXPECT(destination_export.exported());
+    configuration::GaugeLayout destination_decoded{};
+    EXPECT(configuration::decode_gauge_layout(
+               destination_record.data(), destination_record.size(),
+               destination_decoded).succeeded());
+    EXPECT(destination_decoded.generation == 11);
+    EXPECT(destination_decoded.brightness_percent == 84);
+}
+
 }  // namespace
 
 int main() {
@@ -389,12 +459,13 @@ int main() {
     test_same_boot_request_replay_is_projected_as_rejection();
     test_restore_default_uses_confirmed_generation_not_slot_erase();
     test_import_record_validates_before_staging_and_ignores_generation();
+    test_export_import_transfer_uses_destination_generation();
 
     if (failures != 0) {
         std::cerr << failures
                   << " layout-change workflow assertion(s) failed\n";
         return EXIT_FAILURE;
     }
-    std::cout << "PASS: 10 layout-change workflow groups\n";
+    std::cout << "PASS: 11 layout-change workflow groups\n";
     return EXIT_SUCCESS;
 }

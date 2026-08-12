@@ -57,3 +57,7 @@ The cumulative thirteenth layout group proves:
 The focused suite passes 100/100 repeats plus the complete 47-executable host
 matrix including publication safety. File/download binding,
 access/confidentiality policy, and physical target behavior remain required.
+
+The separate [transfer proof](GAUGE_LAYOUT_TRANSFER_V0.md) composes this
+memory-level output with confirmed local import on an independent store. It
+does not add file transport or trust.

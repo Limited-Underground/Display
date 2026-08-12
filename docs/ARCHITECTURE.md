@@ -175,6 +175,13 @@ equal-generation ambiguity, and any unreadable-slot uncertainty fail without
 changing caller output. File/download transport, access/confidentiality policy,
 and target behavior remain outside this boundary.
 
+The host-tested [transfer composition](configuration/GAUGE_LAYOUT_TRANSFER_V0.md)
+connects only these memory-level boundaries. It proves source generations are
+preview metadata, destination generation allocation stays local, no destination
+write occurs before confirmation, restart selects the confirmed destination
+record, and an identical repeat import is write-suppressed. It does not define
+file transport, trust between devices, user identity, or hardware behavior.
+
 Reset attempts both slot erases. If either backend commit is uncertain, that
 typed result takes precedence over ordinary failure and the caller must restart
 and inspect both slots before retrying. Safe default is selected only when both

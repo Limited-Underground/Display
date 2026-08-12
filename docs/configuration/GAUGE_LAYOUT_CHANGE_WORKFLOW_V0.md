@@ -80,12 +80,14 @@ successfully displayed frame and local action.
 
 ## Evidence
 
-Ten deterministic groups cover lifecycle/policy, exact prompt stage,
+Eleven deterministic groups cover lifecycle/policy, exact prompt stage,
 mismatched confirmation, changed/unchanged persistence, cancellation/expiry,
 ordinary failure versus uncertain commit, clock rollback, request replay, and
-confirmed default restoration across restart with zero erases, plus exact local
-import validation and non-authoritative source generation. The focused suite
-passes 100/100 repeats plus the complete 47-executable strict host matrix.
+confirmed default restoration across restart with zero erases, exact local
+import validation and non-authoritative source generation, plus independent
+export/import transfer with destination-local generation allocation and repeat
+suppression. The focused suite passes 100/100 repeats plus the complete
+47-executable strict host matrix.
 
 This is application-boundary evidence, not target task serialization, physical
 presence, display readability, authenticated configuration, storage durability,

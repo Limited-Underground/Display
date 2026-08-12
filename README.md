@@ -68,7 +68,15 @@ OpenGauge is a proposed free/open-source ESP32 vehicle instrumentation and telem
 
 ### Software and safety
 
-- **Latest software result:** canonical layout export now uses the same normal
+- **Latest software result:** a host transfer proof now composes canonical
+  export and confirmed import across two independent stores. Source generation
+  2 is previewed but cannot control a destination already at generation 10;
+  exact confirmation creates destination generation 11, restart selects it,
+  identical re-import causes no write, and re-export preserves generation 11.
+  Eleven workflow groups pass 100/100 focused repeats plus the complete
+  47-executable host matrix. File transport, source/destination authorization,
+  and hardware remain.
+- **Canonical export result:** canonical layout export uses the same normal
   two-slot selection as boot and returns its source/slot/recovery evidence. It
   emits one exact `OGL0` record for a known safe fallback or valid selected
   slot, but fails closed with no caller-buffer change on bad capacity, invalid
@@ -106,8 +114,9 @@ OpenGauge is a proposed free/open-source ESP32 vehicle instrumentation and telem
   owns the coordinator and returns each stage/confirm/cancel/service operation
   with the operator projection derived from the immediate post-operation state.
   This removes a caller-controlled gap where stale status could be paired with
-  an older result. Ten cumulative groups pass 100/100 focused repeats plus the
-  complete 47-executable host matrix. It still requires one serialized target owner and
+  an older result. Eleven cumulative groups pass 100/100 focused repeats plus
+  the complete 47-executable host matrix. It still requires one serialized
+  target owner and
   proves no renderer, input device, source authority, or hardware path.
 - **Diagnostic groundwork:** a host-tested
   [redacted layout-change diagnostic event](docs/diagnostics/GAUGE_LAYOUT_CHANGE_STATUS_DIAGNOSTIC_EVENT_V0.md)
@@ -192,9 +201,10 @@ Architecture/bootstrap phase. The transport-neutral OpenGauge-to-OpenTrail criti
 - Reset now preserves `commit_uncertain` when either slot erase reaches an uncertain backend commit while still attempting both erases. Four adapter restart cases cover failure at the first or second commit, each applied or unapplied. Applied uncertainty yields safe default only after restart observes both keys absent; unapplied uncertainty restores the surviving slot with recovery required. Eleven adapter groups and thirteen cumulative core groups pass 100/100 repeats. No reset confirmation workflow, physical interruption, or target atomicity is claimed.
 - Gauge-layout changes now run through a host-tested [single-use local confirmation coordinator](docs/configuration/GAUGE_LAYOUT_CHANGE_CONFIRMATION_V0.md). One validated request may be pending; confirmation must repeat its exact nonzero ID before the exact timeout boundary, and a successfully staged ID can never be reused in the same coordinator start cycle. Mismatch, cancel, expiry, replay, and clock rollback cannot write. The request is consumed before persistence, so ordinary failure and commit uncertainty cannot replay an old approval. Restart inspection plus a newly confirmed request suppresses a rewrite after an applied uncertain commit. Ten groups pass 100/100 focused repeats and remain in the complete 47-executable matrix. Physical-presence proof, renderer/input binding, cross-boot input flushing, ESP-IDF serialization, authenticated configuration, and physical interruption remain unproved.
 - A host-tested [operator projection](docs/configuration/GAUGE_LAYOUT_CHANGE_OPERATOR_STATUS_V0.md) derives one fixed semantic state/action record from coordinator status, the immediately observed operation result, and boot-local time. It preserves the pending request token and exact remaining time only while confirmation is allowed, distinguishes normal retry from restart reconciliation, and rejects incoherent evidence. Eight groups pass 100/100 repeats and remain in the complete 47-executable matrix. Text, localization, target concurrency, and physical UI behavior remain unproved.
-- A host-tested [workflow facade](docs/configuration/GAUGE_LAYOUT_CHANGE_WORKFLOW_V0.md) pairs every operation with that immediate projection under one API. Nine cumulative groups pass 100/100 repeats and the complete 47-executable matrix. It owns no lock/task and is not target concurrency evidence.
+- A host-tested [workflow facade](docs/configuration/GAUGE_LAYOUT_CHANGE_WORKFLOW_V0.md) pairs every operation with that immediate projection under one API. Eleven cumulative groups pass 100/100 focused repeats plus the complete 47-executable matrix. It owns no lock/task and is not target concurrency evidence.
 - The same workflow now exposes explicit default restoration through the normal confirmed save path. A custom generation becomes the compiled default at the next generation, restarts from that persisted slot, suppresses an identical repeat without a write, rejects an invalid default, and performs zero erases. Nine cumulative workflow groups pass 100/100 repeats in the 47-executable matrix. Destructive storage erase remains outside this user path.
 - A strict [local layout-import boundary](docs/configuration/GAUGE_LAYOUT_IMPORT_V0.md) decodes one exact canonical `OGL0` record before staging it under the same confirmation workflow. It reports a bounded preview summary, preserves exact codec errors, ignores source generation for local allocation, performs no stage-time write, and leaves an existing prompt unchanged when another record is corrupt. Ten cumulative workflow groups pass 100/100 focused repeats plus the complete 47-executable matrix. File selection, source authorization/authenticity, renderer/input binding, and physical storage remain unproved.
+- A host-tested [layout transfer composition](docs/configuration/GAUGE_LAYOUT_TRANSFER_V0.md) exports source generation 2, previews it against independent destination generation 10 without writing, confirms it as destination generation 11, restarts and re-exports it, and suppresses an identical repeat import. Eleven cumulative workflow groups pass 100/100 focused repeats plus the complete 47-executable matrix. File transport, source/destination authorization, and physical evidence remain unproved.
 - A host-tested [layout-change diagnostic event](docs/diagnostics/GAUGE_LAYOUT_CHANGE_STATUS_DIAGNOSTIC_EVENT_V0.md) reduces the operator projection to a canonical redacted word for the fixed diagnostics ring. Eight groups pass 100/100 repeats and remain in the complete 47-executable matrix. It is not persistent audit storage or target log evidence.
 - The system store now accepts an external trusted generation boundary: `restore_at_or_above` rejects a selected valid record below the minimum without importing any owner, while `save_next_after` advances beyond both the trusted value and every valid local slot. Ten focused groups, the unchanged 36-executable matrix, and 100 repeats pass. The hardware-backed trusted source itself is intentionally not invented by this host layer.
 - Target-style restore now accepts a protected-key validator. Only active peers are presented as logical metadata plus opaque handle; revoked entries are skipped. Unavailable, wrong-purpose, and backend-failed handles produce typed peer-specific evidence before outbox/ACK preflight or any live import. Eight system and eleven store groups, the unchanged 36-executable matrix, and 100 focused repeats each pass; no raw key or concrete protected backend is claimed.
