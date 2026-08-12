@@ -174,6 +174,11 @@ while confirmation is still allowed and distinguishes ordinary retry from
 restart reconciliation. It formats no text, records no diagnostic, and cannot
 substitute for target task ownership or physical-presence evidence.
 
+The [workflow facade](configuration/GAUGE_LAYOUT_CHANGE_WORKFLOW_V0.md) owns the
+coordinator and derives that projection immediately after each operation before
+returning one combined result. This removes caller-controlled result/status
+re-pairing but does not add a mutex, RTOS task, or source/UI authority.
+
 The [redacted diagnostic adapter](diagnostics/GAUGE_LAYOUT_CHANGE_STATUS_DIAGNOSTIC_EVENT_V0.md)
 reduces that live record to coarse state/action/flags in one versioned 32-bit
 word. Request tokens, time, generation, layout content, labels, and counters do

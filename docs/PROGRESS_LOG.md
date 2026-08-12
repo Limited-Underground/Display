@@ -6,6 +6,23 @@ public chronology.
 
 ## 2026-08-12
 
+### Atomic layout-change workflow facade
+
+- Added one facade that owns the coordinator and returns operation error,
+  persistence evidence, projection error, and operator status together for
+  start, stop, snapshot, stage, confirm, cancel, and expiry service.
+- The projection is derived before the method returns from the coordinator's
+  immediate post-operation status. Callers no longer supply or later re-pair
+  an operation observation with mutable state.
+- Eight groups cover lifecycle/policy, exact prompt staging, mismatch without
+  prompt loss, apply/unchanged persistence, cancel/expiry, ordinary failure
+  versus uncertainty, clock rollback, and same-boot request replay. Both
+  underlying error and projected next action remain available.
+- The suite passes 100/100 focused repeats and the complete 47-executable host
+  matrix including publication safety. The facade owns no lock, RTOS task,
+  renderer, local-input proof, source authority, diagnostic policy, or target
+  backend.
+
 ### Redacted layout-change diagnostic event
 
 - Added a separate magic/versioned 32-bit diagnostic encoding for coarse
@@ -18,7 +35,7 @@ public chronology.
 - The adapter records through the existing fixed diagnostic ring under the
   configuration event family. Normal lifecycle state is info, expiry/rejection
   is warning, and persistence failure/uncertainty or clock fault is error.
-- Eight groups pass 100/100 focused repeats and the complete 46-executable host
+- Eight groups pass 100/100 focused repeats and remain in the complete 47-executable host
   matrix including publication safety. Target logger binding, persistent
   retention/export, and physical failure capture remain open.
 
@@ -37,7 +54,7 @@ public chronology.
   Ordinary failure asks for a newly staged request, while uncertain commit asks
   for restart reconciliation. Impossible state/operation/store combinations
   are rejected instead of becoming plausible UI state.
-- Eight groups pass 100/100 focused repeats and remain in the complete 46-executable host
+- Eight groups pass 100/100 focused repeats and remain in the complete 47-executable host
   matrix including publication safety. Rendering, localized text, diagnostic
   retention, source authority, target concurrency, and physical input remain
   open.
@@ -58,7 +75,7 @@ public chronology.
   after an applied uncertain commit observes the stored generation and performs
   no additional write.
 - Ten deterministic groups pass 100/100 focused repeats and remain in the
-  complete 46-executable host matrix including publication safety. This does not prove
+  complete 47-executable host matrix including publication safety. This does not prove
   physical-presence input, rendering, cross-boot input flushing, target task
   serialization, authenticated configuration, ESP-IDF storage, or power-cut
   behavior.
@@ -79,7 +96,7 @@ public chronology.
   returns a distinct uncertain result: restart suppresses a rewrite when the
   new generation exists and performs one normal retry when it does not. Ten
   adapter and twelve core groups pass 100/100 focused repeats and remain in the
-  complete 46-executable host matrix including publication safety. ESP-IDF
+  complete 47-executable host matrix including publication safety. ESP-IDF
   binding, physical power cuts, wear, migration, and configuration authenticity
   remain open.
 
@@ -96,7 +113,7 @@ public chronology.
   by advancing separate trust after restart; unapplied uncertainty restores the
   prior trusted generation without inventing a newer record.
   The focused suite passes 100/100 repeats and remains in the complete
-  46-executable host matrix including publication safety. ESP-IDF binding, protected keys,
+  47-executable host matrix including publication safety. ESP-IDF binding, protected keys,
   authenticated integrity, trusted generation, locking, physical interruption,
   endurance, and on-device boot evidence remain open.
 

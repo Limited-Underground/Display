@@ -789,6 +789,30 @@ Invoke-HostTest `
     )
 
 Invoke-HostTest `
+    -Name 'gauge_layout_change_workflow_tests' `
+    -Description 'Atomic layout-change operation and operator projection' `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\configuration\include'),
+        (Join-Path $projectRoot 'firmware\components\configuration\test_support'),
+        (Join-Path $projectRoot 'firmware\components\display\include'),
+        (Join-Path $projectRoot 'firmware\components\telemetry\include'),
+        (Join-Path $projectRoot 'firmware\components\wireless\include')
+    ) `
+    -Sources @(
+        (Join-Path $projectRoot 'firmware\components\configuration\src\gauge_layout.cpp'),
+        (Join-Path $projectRoot 'firmware\components\configuration\src\gauge_layout_change_coordinator.cpp'),
+        (Join-Path $projectRoot 'firmware\components\configuration\src\gauge_layout_change_operator_status.cpp'),
+        (Join-Path $projectRoot 'firmware\components\configuration\src\gauge_layout_change_workflow.cpp'),
+        (Join-Path $projectRoot 'firmware\components\configuration\test_support\fake_gauge_layout_storage.cpp'),
+        (Join-Path $projectRoot 'firmware\components\display\src\gauge_view_model.cpp'),
+        (Join-Path $projectRoot 'firmware\components\telemetry\src\normalized_signal.cpp'),
+        (Join-Path $projectRoot 'firmware\components\wireless\src\esp_now_transport.cpp'),
+        (Join-Path $projectRoot 'firmware\components\wireless\src\telemetry_packet.cpp'),
+        (Join-Path $projectRoot 'firmware\components\wireless\src\gauge_telemetry_receiver.cpp'),
+        (Join-Path $projectRoot 'tests\host\gauge_layout_change_workflow_tests.cpp')
+    )
+
+Invoke-HostTest `
     -Name 'telemetry_publish_scheduler_tests' `
     -Description 'Telemetry publish scheduler' `
     -IncludeDirectories @(
