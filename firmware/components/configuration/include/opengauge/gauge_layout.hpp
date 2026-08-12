@@ -94,6 +94,7 @@ enum class GaugeLayoutStoreError : std::uint8_t {
     generation_conflict,
     storage_failure,
     verification_failure,
+    generation_exhausted,
 };
 
 enum class GaugeLayoutSource : std::uint8_t {
@@ -124,6 +125,26 @@ struct GaugeLayoutSaveResult {
     }
 };
 
+enum class GaugeLayoutUpdateState : std::uint8_t {
+    unchanged = 0,
+    updated,
+};
+
+struct GaugeLayoutUpdateResult {
+    GaugeLayoutStoreError error{GaugeLayoutStoreError::storage_failure};
+    GaugeLayoutUpdateState state{GaugeLayoutUpdateState::unchanged};
+    GaugeLayoutSource active_slot{GaugeLayoutSource::none};
+    std::uint64_t generation{0};
+
+    [[nodiscard]] constexpr bool succeeded() const {
+        return error == GaugeLayoutStoreError::none;
+    }
+
+    [[nodiscard]] constexpr bool changed() const {
+        return succeeded() && state == GaugeLayoutUpdateState::updated;
+    }
+};
+
 class GaugeLayoutStore {
 public:
     explicit GaugeLayoutStore(GaugeLayoutStorage& storage);
@@ -132,6 +153,11 @@ public:
         const GaugeLayout& safe_default,
         GaugeLayout& output);
     [[nodiscard]] GaugeLayoutSaveResult save(const GaugeLayout& layout);
+    // Treats desired.generation as non-authoritative. Under exclusive store
+    // ownership, assigns highest-valid + 1 only when canonical layout content
+    // changed; otherwise returns the active generation without writing.
+    [[nodiscard]] GaugeLayoutUpdateResult save_next_if_changed(
+        const GaugeLayout& desired);
     [[nodiscard]] GaugeLayoutStoreError reset();
 
 private:

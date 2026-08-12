@@ -152,9 +152,10 @@ accidental corruption only. A backend-neutral
 [key/value adapter](configuration/GAUGE_LAYOUT_KV_TARGET_ADAPTER_V0.md) now
 fixes exact `og_config` / `gauge_layout` / `ogl0_a|b` binding, commits complete
 writes and present-key erases, and leaves failed commits for restart selection.
-Schema migration, generation persistence, unchanged-write suppression,
-ESP-IDF binding, security, and physical power-cut/endurance evidence remain
-unresolved.
+A store-owned update path compares canonical content at the active generation,
+suppresses unchanged writes, and allocates the next generation only for a real
+change. Schema migration, ESP-IDF binding, security, and physical
+power-cut/endurance evidence remain unresolved.
 
 ## GPS and auxiliary modules
 

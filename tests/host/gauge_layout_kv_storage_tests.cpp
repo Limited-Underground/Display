@@ -394,6 +394,34 @@ void test_real_store_reset_erases_both_keys() {
     EXPECT(result.recovery_required && loaded.generation == 9);
 }
 
+void test_store_owned_updates_suppress_unchanged_kv_writes() {
+    FakeKvBackend backend;
+    GaugeLayoutKvStorage storage(backend);
+    GaugeLayoutStore store(storage);
+
+    const auto first = store.save_next_if_changed(layout(0));
+    EXPECT(first.changed() && first.generation == 1);
+    EXPECT(backend.write_calls == 1 && backend.commit_calls == 1);
+    const auto unchanged = store.save_next_if_changed(layout(500));
+    EXPECT(unchanged.succeeded() && !unchanged.changed());
+    EXPECT(unchanged.generation == 1);
+    EXPECT(backend.write_calls == 1 && backend.commit_calls == 1);
+
+    auto changed = layout(0);
+    changed.theme = GaugeTheme::light;
+    const auto second = store.save_next_if_changed(changed);
+    EXPECT(second.changed() && second.generation == 2);
+    EXPECT(backend.write_calls == 2 && backend.commit_calls == 2);
+
+    GaugeLayoutKvStorage restarted_storage(backend);
+    GaugeLayoutStore restarted_store(restarted_storage);
+    GaugeLayout loaded{};
+    const auto result = restarted_store.load(layout(9), loaded);
+    EXPECT(result.source == GaugeLayoutSource::slot_b);
+    EXPECT(!result.recovery_required && loaded.generation == 2);
+    EXPECT(loaded.theme == GaugeTheme::light);
+}
+
 }  // namespace
 
 int main() {
@@ -405,11 +433,12 @@ int main() {
     test_applied_failed_commit_is_selected_after_restart();
     test_unapplied_failed_commit_preserves_prior_layout();
     test_real_store_reset_erases_both_keys();
+    test_store_owned_updates_suppress_unchanged_kv_writes();
 
     if (failures != 0) {
         std::cerr << failures << " layout key/value assertion(s) failed\n";
         return EXIT_FAILURE;
     }
-    std::cout << "PASS: 8 gauge layout key/value storage groups\n";
+    std::cout << "PASS: 9 gauge layout key/value storage groups\n";
     return EXIT_SUCCESS;
 }

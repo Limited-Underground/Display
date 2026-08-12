@@ -49,10 +49,14 @@ slot or the older valid slot, writes the full record, reads it back, compares
 every byte, and decodes it again. A partial or corrupt write cannot displace the
 other valid slot. No record is declared saved until verification completes.
 
-The strategy alternates writes between slots after both exist. It does not yet
-deduplicate semantically unchanged layouts, persist/allocate generation values,
-handle 64-bit generation exhaustion, quantify flash wear, or guarantee backend
-atomicity.
+The strategy alternates writes between slots after both exist. The
+`save_next_if_changed` path treats the requested generation as
+non-authoritative, compares canonical content at the active generation,
+performs no write for an exact semantic match, and otherwise allocates
+highest-valid plus one. It rejects unreadable/conflicted baselines and 64-bit
+exhaustion before a write. The explicit-generation `save` path remains for
+controlled import/tests. Neither path quantifies flash wear or guarantees
+backend atomicity.
 
 The target-shaped [key/value adapter](GAUGE_LAYOUT_KV_TARGET_ADAPTER_V0.md)
 binds the slots to exact 576-byte `og_config` / `gauge_layout` / `ogl0_a|b`
@@ -62,7 +66,7 @@ closes the common byte-binding boundary, not ESP-IDF or physical durability.
 
 ## Host evidence
 
-`tests/host/gauge_layout_tests.cpp` covers nine groups:
+`tests/host/gauge_layout_tests.cpp` covers twelve groups:
 
 1. explicit wire offsets plus signed-range and two-widget round trip;
 2. layout/range/duplicate validation and output arguments;
@@ -73,6 +77,10 @@ closes the common byte-binding boundary, not ESP-IDF or physical durability.
 7. interrupted partial write preserving the last good slot;
 8. corrupt post-write verification preserving the other good slot;
 9. explicit read/erase failure and partial-reset behavior.
+10. store-owned generation 1/2 allocation and unchanged-write suppression;
+11. invalid input, equal-generation conflict, and generation exhaustion before
+    write; and
+12. read/write failures remaining explicit in the automatic update path.
 
 The suite also repeated 100 times with zero failures.
 
@@ -85,5 +93,4 @@ The suite also repeated 100 times with zero failures.
   synchronization, size/alignment, erase-block, and commit semantics;
 - measure normal-save wear, unchanged-save suppression, rapid user edits,
   brownout at each write phase, corrupt sectors, full storage, and recovery;
-- persist generation safely and define exhaustion behavior;
 - authorize and authenticate any nonlocal configuration source.

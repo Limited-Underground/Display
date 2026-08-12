@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
+#include <limits>
 #include <string_view>
 
 #include "fake_gauge_layout_storage.hpp"
@@ -275,6 +276,93 @@ void test_io_failure_and_reset_are_explicit() {
     EXPECT(!storage.present(1));
 }
 
+void test_store_allocates_generations_and_suppresses_unchanged_writes() {
+    FakeGaugeLayoutStorage storage{};
+    configuration::GaugeLayoutStore store{storage};
+    const auto first = store.save_next_if_changed(layout(0));
+    EXPECT(first.succeeded() && first.changed());
+    EXPECT(first.generation == 1);
+    EXPECT(first.active_slot == configuration::GaugeLayoutSource::slot_a);
+    EXPECT(storage.writes(0) == 1 && storage.writes(1) == 0);
+
+    const auto unchanged = store.save_next_if_changed(layout(999));
+    EXPECT(unchanged.succeeded() && !unchanged.changed());
+    EXPECT(unchanged.generation == 1);
+    EXPECT(unchanged.active_slot ==
+           configuration::GaugeLayoutSource::slot_a);
+    EXPECT(storage.writes(0) == 1 && storage.writes(1) == 0);
+
+    auto changed = layout(0);
+    changed.brightness_percent = 66;
+    const auto second = store.save_next_if_changed(changed);
+    EXPECT(second.succeeded() && second.changed());
+    EXPECT(second.generation == 2);
+    EXPECT(second.active_slot == configuration::GaugeLayoutSource::slot_b);
+    EXPECT(storage.writes(0) == 1 && storage.writes(1) == 1);
+}
+
+void test_automatic_update_rejects_invalid_conflict_and_exhaustion() {
+    FakeGaugeLayoutStorage invalid_storage{};
+    configuration::GaugeLayoutStore invalid_store{invalid_storage};
+    auto invalid = layout(0);
+    invalid.layout_id = 0;
+    EXPECT(invalid_store.save_next_if_changed(invalid).error ==
+           configuration::GaugeLayoutStoreError::invalid_layout);
+    EXPECT(invalid_storage.writes(0) + invalid_storage.writes(1) == 0);
+
+    FakeGaugeLayoutStorage conflict_storage{};
+    auto first = layout(4);
+    auto second = layout(4);
+    second.brightness_percent = 80;
+    std::array<std::uint8_t, configuration::kGaugeLayoutRecordBytes> bytes{};
+    EXPECT(configuration::encode_gauge_layout(
+               first, bytes.data(), bytes.size()).succeeded());
+    EXPECT(conflict_storage.write_slot(
+               0, bytes.data(), bytes.size()) ==
+           configuration::LayoutStorageError::none);
+    EXPECT(configuration::encode_gauge_layout(
+               second, bytes.data(), bytes.size()).succeeded());
+    EXPECT(conflict_storage.write_slot(
+               1, bytes.data(), bytes.size()) ==
+           configuration::LayoutStorageError::none);
+    configuration::GaugeLayoutStore conflict_store{conflict_storage};
+    EXPECT(conflict_store.save_next_if_changed(layout(0)).error ==
+           configuration::GaugeLayoutStoreError::generation_conflict);
+    EXPECT(conflict_storage.writes(0) + conflict_storage.writes(1) == 2);
+
+    FakeGaugeLayoutStorage exhausted_storage{};
+    const auto exhausted = layout(
+        std::numeric_limits<std::uint64_t>::max());
+    EXPECT(configuration::encode_gauge_layout(
+               exhausted, bytes.data(), bytes.size()).succeeded());
+    EXPECT(exhausted_storage.write_slot(
+               0, bytes.data(), bytes.size()) ==
+           configuration::LayoutStorageError::none);
+    configuration::GaugeLayoutStore exhausted_store{exhausted_storage};
+    auto changed = layout(0);
+    changed.brightness_percent = 90;
+    EXPECT(exhausted_store.save_next_if_changed(changed).error ==
+           configuration::GaugeLayoutStoreError::generation_exhausted);
+    EXPECT(exhausted_storage.writes(0) + exhausted_storage.writes(1) == 1);
+}
+
+void test_automatic_update_keeps_storage_failures_visible() {
+    FakeGaugeLayoutStorage read_storage{};
+    read_storage.fail_next_read(0);
+    configuration::GaugeLayoutStore read_store{read_storage};
+    EXPECT(read_store.save_next_if_changed(layout(0)).error ==
+           configuration::GaugeLayoutStoreError::storage_failure);
+    EXPECT(read_storage.writes(0) + read_storage.writes(1) == 0);
+
+    FakeGaugeLayoutStorage write_storage{};
+    write_storage.set_next_write_behavior(
+        0, FakeWriteBehavior::fail_before_write);
+    configuration::GaugeLayoutStore write_store{write_storage};
+    EXPECT(write_store.save_next_if_changed(layout(0)).error ==
+           configuration::GaugeLayoutStoreError::storage_failure);
+    EXPECT(write_storage.writes(0) == 1 && !write_storage.present(0));
+}
+
 }  // namespace
 
 int main() {
@@ -287,11 +375,14 @@ int main() {
     test_partial_write_keeps_last_good_slot();
     test_verify_failure_keeps_other_good_slot();
     test_io_failure_and_reset_are_explicit();
+    test_store_allocates_generations_and_suppresses_unchanged_writes();
+    test_automatic_update_rejects_invalid_conflict_and_exhaustion();
+    test_automatic_update_keeps_storage_failures_visible();
 
     if (failures != 0) {
         std::cerr << failures << " gauge layout assertion(s) failed\n";
         return EXIT_FAILURE;
     }
-    std::cout << "PASS: 9 gauge layout scenario groups\n";
+    std::cout << "PASS: 12 gauge layout scenario groups\n";
     return EXIT_SUCCESS;
 }

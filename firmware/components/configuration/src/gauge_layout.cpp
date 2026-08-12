@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <array>
 #include <cstring>
+#include <limits>
 
 namespace opengauge::configuration {
 namespace {
@@ -369,6 +370,71 @@ GaugeLayoutSaveResult GaugeLayoutStore::save(const GaugeLayout& layout) {
         return {GaugeLayoutStoreError::verification_failure};
     }
     return {GaugeLayoutStoreError::none, source_for_slot(target)};
+}
+
+GaugeLayoutUpdateResult GaugeLayoutStore::save_next_if_changed(
+    const GaugeLayout& desired) {
+    GaugeLayout candidate = desired;
+    candidate.generation = 1;
+    if (validate_gauge_layout(candidate) != GaugeLayoutCodecError::none) {
+        return {GaugeLayoutStoreError::invalid_layout};
+    }
+
+    const auto a = inspect_slot(storage_, 0);
+    const auto b = inspect_slot(storage_, 1);
+    if (a.state == LayoutSlotState::io_failure ||
+        b.state == LayoutSlotState::io_failure) {
+        return {GaugeLayoutStoreError::storage_failure};
+    }
+    if (a.state == LayoutSlotState::valid &&
+        b.state == LayoutSlotState::valid &&
+        a.layout.generation == b.layout.generation && a.bytes != b.bytes) {
+        return {GaugeLayoutStoreError::generation_conflict};
+    }
+
+    const InspectedSlot* active = nullptr;
+    GaugeLayoutSource active_source = GaugeLayoutSource::none;
+    if (a.state == LayoutSlotState::valid &&
+        (b.state != LayoutSlotState::valid ||
+         a.layout.generation >= b.layout.generation)) {
+        active = &a;
+        active_source = GaugeLayoutSource::slot_a;
+    } else if (b.state == LayoutSlotState::valid) {
+        active = &b;
+        active_source = GaugeLayoutSource::slot_b;
+    }
+
+    std::uint64_t highest_generation = 0;
+    if (active != nullptr) {
+        highest_generation = active->layout.generation;
+        candidate.generation = highest_generation;
+        std::array<std::uint8_t, kGaugeLayoutRecordBytes> comparable{};
+        if (!encode_gauge_layout(
+                 candidate, comparable.data(), comparable.size()).succeeded()) {
+            return {GaugeLayoutStoreError::invalid_layout};
+        }
+        if (comparable == active->bytes) {
+            return {
+                GaugeLayoutStoreError::none,
+                GaugeLayoutUpdateState::unchanged,
+                active_source,
+                highest_generation};
+        }
+    }
+
+    if (highest_generation == std::numeric_limits<std::uint64_t>::max()) {
+        return {GaugeLayoutStoreError::generation_exhausted};
+    }
+    candidate.generation = highest_generation + 1;
+    const auto saved = save(candidate);
+    if (!saved.saved()) {
+        return {saved.error};
+    }
+    return {
+        GaugeLayoutStoreError::none,
+        GaugeLayoutUpdateState::updated,
+        saved.written_slot,
+        candidate.generation};
 }
 
 GaugeLayoutStoreError GaugeLayoutStore::reset() {
