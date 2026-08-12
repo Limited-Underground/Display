@@ -1,6 +1,8 @@
+#include <array>
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
+#include <limits>
 #include <string_view>
 
 #include "fake_gauge_layout_storage.hpp"
@@ -309,6 +311,71 @@ void test_restore_default_uses_confirmed_generation_not_slot_erase() {
     EXPECT(storage.writes(0) + storage.writes(1) == 2);
 }
 
+void test_import_record_validates_before_staging_and_ignores_generation() {
+    FakeGaugeLayoutStorage storage{};
+    configuration::GaugeLayoutStore store{storage};
+    configuration::GaugeLayoutChangeWorkflow workflow{store};
+    EXPECT(workflow.start({100}, 0).projected());
+
+    auto imported = layout(72);
+    imported.generation = std::numeric_limits<std::uint64_t>::max();
+    std::array<std::uint8_t, configuration::kGaugeLayoutRecordBytes> record{};
+    EXPECT(configuration::encode_gauge_layout(
+               imported, record.data(), record.size()).succeeded());
+
+    auto result = workflow.stage_import_record(
+        100, record.data(), record.size() - 1, 1);
+    EXPECT(!result.decoded());
+    EXPECT(result.codec_error ==
+           configuration::GaugeLayoutCodecError::invalid_argument);
+    EXPECT(result.workflow.projected());
+    EXPECT(result.workflow.status.state ==
+           configuration::GaugeLayoutChangeOperatorState::ready);
+    EXPECT(storage.writes(0) + storage.writes(1) == 0);
+
+    result = workflow.stage_import_record(100, record.data(), record.size(), 2);
+    EXPECT(result.decoded());
+    EXPECT(result.summary.source_generation ==
+           std::numeric_limits<std::uint64_t>::max());
+    EXPECT(result.summary.layout_id == imported.layout_id);
+    EXPECT(result.summary.theme == imported.theme);
+    EXPECT(result.summary.brightness_percent == 72);
+    EXPECT(result.summary.widget_count == imported.widget_count);
+    EXPECT(result.workflow.projected());
+    EXPECT(result.workflow.status.state ==
+           configuration::GaugeLayoutChangeOperatorState::
+               confirmation_required);
+    EXPECT(result.workflow.status.pending_request_id == 100);
+    EXPECT(storage.writes(0) + storage.writes(1) == 0);
+
+    auto corrupt = record;
+    corrupt[100] ^= 0x40U;
+    result = workflow.stage_import_record(
+        101, corrupt.data(), corrupt.size(), 3);
+    EXPECT(!result.decoded());
+    EXPECT(result.codec_error ==
+           configuration::GaugeLayoutCodecError::checksum_mismatch);
+    EXPECT(result.workflow.projected());
+    EXPECT(result.workflow.status.pending_request_id == 100);
+    EXPECT(storage.writes(0) + storage.writes(1) == 0);
+
+    const auto confirmed = workflow.confirm(100, 4);
+    EXPECT(confirmed.projected());
+    EXPECT(confirmed.persistence.changed());
+    EXPECT(confirmed.persistence.generation == 1);
+    EXPECT(storage.writes(0) + storage.writes(1) == 1);
+    EXPECT(storage.erases(0) + storage.erases(1) == 0);
+
+    configuration::GaugeLayoutStore restarted{storage};
+    configuration::GaugeLayout loaded{};
+    auto safe_default = layout();
+    safe_default.generation = 1;
+    const auto load_result = restarted.load(safe_default, loaded);
+    EXPECT(load_result.source == configuration::GaugeLayoutSource::slot_a);
+    EXPECT(loaded.generation == 1);
+    EXPECT(loaded.brightness_percent == 72);
+}
+
 }  // namespace
 
 int main() {
@@ -321,12 +388,13 @@ int main() {
     test_clock_regression_consumes_prompt_and_projects_fault();
     test_same_boot_request_replay_is_projected_as_rejection();
     test_restore_default_uses_confirmed_generation_not_slot_erase();
+    test_import_record_validates_before_staging_and_ignores_generation();
 
     if (failures != 0) {
         std::cerr << failures
                   << " layout-change workflow assertion(s) failed\n";
         return EXIT_FAILURE;
     }
-    std::cout << "PASS: 9 layout-change workflow groups\n";
+    std::cout << "PASS: 10 layout-change workflow groups\n";
     return EXIT_SUCCESS;
 }

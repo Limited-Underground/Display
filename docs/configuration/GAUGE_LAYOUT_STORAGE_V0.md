@@ -112,11 +112,15 @@ new generation only when content changed, and retains two-slot recovery.
 
 The suite also repeated 100 times with zero failures.
 
+The strict [local import boundary](GAUGE_LAYOUT_IMPORT_V0.md) reuses this exact
+decoder before staging any change. Source generation never controls local
+allocation, and no imported content is persisted before local confirmation.
+
 ## Remaining persistence gates
 
 - implement and host-test version migration before introducing schema 2;
-- define safe import/export, validation feedback, reset confirmation, and UI
-  recovery workflows;
+- define canonical export, reset service confirmation, and target UI recovery
+  workflows;
 - bind the key/value backend to the exact board storage API with task ownership,
   synchronization, size/alignment, erase-block, and commit semantics;
 - measure normal-save wear, unchanged-save suppression, rapid user edits,

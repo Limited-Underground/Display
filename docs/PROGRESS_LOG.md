@@ -6,6 +6,24 @@ public chronology.
 
 ## 2026-08-12
 
+### Strict confirmed local layout import
+
+- Added `stage_import_record` to the layout-change workflow. It accepts only
+  the exact 576-byte canonical `OGL0` record and preserves the decoder's typed
+  length, magic, version, canonical-form, checksum, and layout errors.
+- Successful decode returns only a bounded summary for preview and then stages
+  the decoded content under the existing single-use confirmation token. The
+  record's source generation is informational; confirmation allocates the
+  normal next local generation.
+- Short input cannot consume a request ID. Corrupt input performs no write and
+  cannot replace an already-live confirmation prompt. Even a source generation
+  of `UINT64_MAX` becomes local generation 1 on empty storage after exact
+  confirmation, with zero erases.
+- Ten cumulative workflow groups pass 100/100 focused repeats plus the complete
+  47-executable host matrix including publication safety. File selection,
+  source authorization/authenticity, renderer/input binding, and physical
+  target behavior remain open.
+
 ### Confirmed restore-default path without erase
 
 - Added `stage_restore_default` to the existing layout-change workflow, sharing
@@ -44,12 +62,13 @@ public chronology.
 - The projection is derived before the method returns from the coordinator's
   immediate post-operation status. Callers no longer supply or later re-pair
   an operation observation with mutable state.
-- Nine groups cover lifecycle/policy, exact prompt staging, mismatch without
+- Ten groups cover lifecycle/policy, exact prompt staging, mismatch without
   prompt loss, apply/unchanged persistence, cancel/expiry, ordinary failure
   versus uncertainty, clock rollback, same-boot request replay, and confirmed
-  default restoration without slot erase. Both underlying error and projected
-  next action remain available.
-- The suite passes 100/100 focused repeats and the complete 47-executable host
+  default restoration without slot erase, and strict confirmed import with
+  non-authoritative source generation. Both underlying error and projected next
+  action remain available.
+- The suite passes 100/100 focused repeats plus the complete 47-executable host
   matrix including publication safety. The facade owns no lock, RTOS task,
   renderer, local-input proof, source authority, diagnostic policy, or target
   backend.

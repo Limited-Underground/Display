@@ -45,6 +45,32 @@ GaugeLayoutChangeWorkflow::stage_restore_default(
     return stage(request_id, compiled_default, now_ms);
 }
 
+GaugeLayoutImportWorkflowResult
+GaugeLayoutChangeWorkflow::stage_import_record(
+    std::uint32_t request_id,
+    const std::uint8_t* record,
+    std::size_t size,
+    std::uint64_t now_ms) {
+    GaugeLayoutImportWorkflowResult result{};
+    GaugeLayout imported{};
+    const auto decoded = decode_gauge_layout(record, size, imported);
+    result.codec_error = decoded.error;
+    if (!decoded.succeeded()) {
+        result.workflow = snapshot(now_ms);
+        return result;
+    }
+
+    result.summary = {
+        imported.generation,
+        imported.layout_id,
+        imported.theme,
+        imported.brightness_percent,
+        imported.widget_count,
+    };
+    result.workflow = stage(request_id, imported, now_ms);
+    return result;
+}
+
 GaugeLayoutChangeWorkflowResult GaugeLayoutChangeWorkflow::confirm(
     std::uint32_t request_id,
     std::uint64_t now_ms) {

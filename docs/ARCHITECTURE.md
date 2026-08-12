@@ -189,6 +189,15 @@ Its explicit restore-default entrypoint uses the same confirmed save path and
 stores the validated compiled default as a normal next generation; it never
 invokes destructive two-slot erase.
 
+Its [local import boundary](configuration/GAUGE_LAYOUT_IMPORT_V0.md) accepts
+only one exact canonical `OGL0` record, preserves codec validation errors,
+returns a bounded structural summary, and stages decoded content through that
+same confirmation workflow. The record's source generation is never local
+storage authority. Invalid input cannot consume a request ID or displace an
+existing prompt, and successful decode performs no persistence before exact
+confirmation. File transport, source authorization/authenticity, and target UI
+remain outside this boundary.
+
 The [redacted diagnostic adapter](diagnostics/GAUGE_LAYOUT_CHANGE_STATUS_DIAGNOSTIC_EVENT_V0.md)
 reduces that live record to coarse state/action/flags in one versioned 32-bit
 word. Request tokens, time, generation, layout content, labels, and counters do

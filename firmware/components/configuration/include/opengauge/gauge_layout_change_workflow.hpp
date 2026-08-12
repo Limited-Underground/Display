@@ -16,6 +16,25 @@ struct GaugeLayoutChangeWorkflowResult {
     }
 };
 
+struct GaugeLayoutImportSummary {
+    std::uint64_t source_generation{0};
+    std::uint32_t layout_id{0};
+    GaugeTheme theme{GaugeTheme::dark};
+    std::uint8_t brightness_percent{0};
+    std::uint8_t widget_count{0};
+};
+
+struct GaugeLayoutImportWorkflowResult {
+    GaugeLayoutCodecError codec_error{
+        GaugeLayoutCodecError::invalid_argument};
+    GaugeLayoutImportSummary summary{};
+    GaugeLayoutChangeWorkflowResult workflow{};
+
+    [[nodiscard]] constexpr bool decoded() const {
+        return codec_error == GaugeLayoutCodecError::none;
+    }
+};
+
 // One serialized application boundary for coordinator operation plus immediate
 // operator projection. It owns no mutex/task and performs no rendering,
 // diagnostics, source authorization, physical-presence proof, or target I/O.
@@ -39,6 +58,14 @@ public:
     [[nodiscard]] GaugeLayoutChangeWorkflowResult stage_restore_default(
         std::uint32_t request_id,
         const GaugeLayout& compiled_default,
+        std::uint64_t now_ms);
+    // Accepts only one exact, canonical OGL0 record. The record generation is
+    // reported as source metadata but is not storage authority; confirmation
+    // allocates the normal next local generation through stage().
+    [[nodiscard]] GaugeLayoutImportWorkflowResult stage_import_record(
+        std::uint32_t request_id,
+        const std::uint8_t* record,
+        std::size_t size,
         std::uint64_t now_ms);
     [[nodiscard]] GaugeLayoutChangeWorkflowResult confirm(
         std::uint32_t request_id,
