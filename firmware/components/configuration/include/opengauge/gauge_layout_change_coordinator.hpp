@@ -19,6 +19,7 @@ enum class GaugeLayoutChangeError : std::uint8_t {
     invalid_state,
     invalid_policy,
     invalid_request,
+    request_not_newer,
     invalid_layout,
     change_pending,
     no_change_pending,
@@ -42,6 +43,8 @@ struct GaugeLayoutChangeResult {
 struct GaugeLayoutChangeStatus {
     GaugeLayoutChangeState state{GaugeLayoutChangeState::stopped};
     std::uint32_t pending_request_id{0};
+    // Highest successfully staged request in this coordinator start cycle.
+    std::uint32_t last_request_id{0};
     std::uint64_t pending_opened_ms{0};
     std::uint32_t staged_count{0};
     std::uint32_t applied_count{0};

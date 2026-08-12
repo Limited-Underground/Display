@@ -11,17 +11,21 @@ public chronology.
 - Added a semantic coordinator that stages at most one validated layout change
   under an exact nonzero request ID and a caller-supplied monotonic timestamp.
 - Confirmation must repeat that ID before the exact configured boundary.
-  Mismatch, cancellation, expiry, and clock rollback leave storage untouched;
-  clock rollback also consumes any pending request.
+  Successfully staged IDs must increase strictly within one coordinator start
+  cycle; invalid or already-pending proposals do not consume an ID, while
+  cancelled, failed, uncertain, and completed proposals do. Mismatch, replay,
+  cancellation, expiry, and clock rollback leave storage untouched; clock
+  rollback also consumes any pending request.
 - The request is consumed before persistence. Ordinary failure therefore needs
   a new local confirmation, while commit uncertainty requires restart
   inspection rather than replaying an old approval. A newly confirmed request
   after an applied uncertain commit observes the stored generation and performs
   no additional write.
-- Nine deterministic groups pass 100/100 focused repeats and the complete
+- Ten deterministic groups pass 100/100 focused repeats and the complete
   44-executable host matrix including publication safety. This does not prove
-  physical-presence input, rendering, target task serialization, authenticated
-  configuration, ESP-IDF storage, or power-cut behavior.
+  physical-presence input, rendering, cross-boot input flushing, target task
+  serialization, authenticated configuration, ESP-IDF storage, or power-cut
+  behavior.
 
 ### Target-shaped `OGL0` gauge-layout key/value storage
 

@@ -159,11 +159,13 @@ both slots; an applied generation is then accepted without rewrite, while an
 unapplied generation can be attempted normally. A separate
 [local confirmation coordinator](configuration/GAUGE_LAYOUT_CHANGE_CONFIRMATION_V0.md)
 admits one validated request under an exact ID and deadline, consumes approval
-before persistence, and rejects mismatch, expiry, cancellation, and clock
-rollback. It does not prove who supplied the request or confirmation: target
-composition must bind both to serialized local input and a successfully shown
-prompt. Schema migration, ESP-IDF binding, security, and physical power-cut/
-endurance evidence remain unresolved.
+before persistence, requires successfully staged IDs to increase during each
+start cycle, and rejects mismatch, same-boot reuse, expiry, cancellation, and
+clock rollback. It does not prove who supplied the request or confirmation:
+target composition must bind both to serialized local input and a successfully
+shown prompt, and must flush obsolete input across restart. Schema migration,
+ESP-IDF binding, security, and physical power-cut/endurance evidence remain
+unresolved.
 
 ## GPS and auxiliary modules
 

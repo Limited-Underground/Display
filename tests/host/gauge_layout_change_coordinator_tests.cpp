@@ -1,6 +1,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
+#include <limits>
 #include <string_view>
 
 #include "fake_gauge_layout_storage.hpp"
@@ -97,8 +98,61 @@ void test_stage_validates_and_allows_only_one_pending_change() {
     const auto status = coordinator.status();
     EXPECT(status.state == configuration::GaugeLayoutChangeState::pending);
     EXPECT(status.pending_request_id == 10);
+    EXPECT(status.last_request_id == 10);
     EXPECT(status.pending_opened_ms == 3);
     EXPECT(status.staged_count == 1);
+}
+
+void test_consumed_request_ids_cannot_be_reused_in_one_boot() {
+    FakeGaugeLayoutStorage storage{};
+    configuration::GaugeLayoutStore store{storage};
+    configuration::GaugeLayoutChangeCoordinator coordinator{store};
+    EXPECT(coordinator.start({100}) ==
+           configuration::GaugeLayoutChangeError::none);
+
+    auto invalid = layout();
+    invalid.layout_id = 0;
+    EXPECT(coordinator.stage(100, invalid, 0) ==
+           configuration::GaugeLayoutChangeError::invalid_layout);
+    EXPECT(coordinator.status().last_request_id == 0);
+    EXPECT(coordinator.stage(100, layout(), 1) ==
+           configuration::GaugeLayoutChangeError::none);
+    EXPECT(coordinator.cancel(100) ==
+           configuration::GaugeLayoutChangeError::none);
+    EXPECT(coordinator.stage(100, layout(), 2) ==
+           configuration::GaugeLayoutChangeError::request_not_newer);
+    EXPECT(coordinator.stage(99, layout(), 3) ==
+           configuration::GaugeLayoutChangeError::request_not_newer);
+
+    EXPECT(coordinator.stage(101, layout(), 4) ==
+           configuration::GaugeLayoutChangeError::none);
+    storage.set_next_write_behavior(0, FakeWriteBehavior::fail_before_write);
+    EXPECT(coordinator.confirm(101, 5).error ==
+           configuration::GaugeLayoutChangeError::persistence_failed);
+    EXPECT(coordinator.stage(101, layout(), 6) ==
+           configuration::GaugeLayoutChangeError::request_not_newer);
+    EXPECT(coordinator.stage(102, layout(), 7) ==
+           configuration::GaugeLayoutChangeError::none);
+    EXPECT(coordinator.cancel(102) ==
+           configuration::GaugeLayoutChangeError::none);
+    coordinator.stop();
+    EXPECT(coordinator.start({100}) ==
+           configuration::GaugeLayoutChangeError::none);
+    EXPECT(coordinator.stage(
+               std::numeric_limits<std::uint32_t>::max(), layout(), 0) ==
+           configuration::GaugeLayoutChangeError::none);
+    EXPECT(coordinator.cancel(std::numeric_limits<std::uint32_t>::max()) ==
+           configuration::GaugeLayoutChangeError::none);
+    EXPECT(coordinator.stage(
+               std::numeric_limits<std::uint32_t>::max(), layout(), 1) ==
+           configuration::GaugeLayoutChangeError::request_not_newer);
+    EXPECT(coordinator.stage(1, layout(), 2) ==
+           configuration::GaugeLayoutChangeError::request_not_newer);
+    coordinator.stop();
+    EXPECT(coordinator.start({100}) ==
+           configuration::GaugeLayoutChangeError::none);
+    EXPECT(coordinator.stage(1, layout(), 0) ==
+           configuration::GaugeLayoutChangeError::none);
 }
 
 void test_exact_confirmation_persists_once() {
@@ -257,6 +311,7 @@ void test_uncertain_commit_requires_restart_and_never_replays_approval() {
 int main() {
     test_lifecycle_and_policy_are_explicit();
     test_stage_validates_and_allows_only_one_pending_change();
+    test_consumed_request_ids_cannot_be_reused_in_one_boot();
     test_exact_confirmation_persists_once();
     test_unchanged_confirmation_suppresses_write();
     test_mismatch_and_cancel_do_not_apply();
@@ -270,6 +325,6 @@ int main() {
                   << " gauge layout change coordinator assertion(s) failed\n";
         return EXIT_FAILURE;
     }
-    std::cout << "PASS: 9 gauge layout change coordinator scenario groups\n";
+    std::cout << "PASS: 10 gauge layout change coordinator scenario groups\n";
     return EXIT_SUCCESS;
 }

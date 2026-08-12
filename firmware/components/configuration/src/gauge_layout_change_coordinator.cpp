@@ -64,11 +64,15 @@ GaugeLayoutChangeError GaugeLayoutChangeCoordinator::stage(
     if (status_.state == GaugeLayoutChangeState::pending) {
         return GaugeLayoutChangeError::change_pending;
     }
+    if (request_id <= status_.last_request_id) {
+        return GaugeLayoutChangeError::request_not_newer;
+    }
 
     pending_ = desired;
     pending_.generation = 0;
     status_.state = GaugeLayoutChangeState::pending;
     status_.pending_request_id = request_id;
+    status_.last_request_id = request_id;
     status_.pending_opened_ms = now_ms;
     saturating_increment(status_.staged_count);
     return GaugeLayoutChangeError::none;
