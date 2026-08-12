@@ -13,14 +13,16 @@ public chronology.
 - Added exact 576-byte `og_config` / `gauge_layout` / `ogl0_a|b` layout
   binding with explicit commit after write/present-key erase, idempotent
   missing-key erase, strict value size, and distinct missing versus I/O errors.
-- Nine deterministic groups exercise exact operations, backend failures, real
+- Ten deterministic groups exercise exact operations, backend failures, real
   layout rotation/reset, and restart selection after both applied and
   unapplied failed commits. A store-owned update path now ignores caller
   generation, allocates highest-valid plus one only for changed canonical
   content, rejects conflict/I/O/exhaustion before writing, and performs zero
-  backend write/commit calls for unchanged content. Nine adapter and twelve
-  core groups pass 100/100 focused repeats and the complete 43-executable host
-  matrix including publication safety. ESP-IDF binding, physical power cuts,
+  backend write/commit calls for unchanged content. Backend commit failure now
+  returns a distinct uncertain result: restart suppresses a rewrite when the
+  new generation exists and performs one normal retry when it does not. Ten
+  adapter and twelve core groups pass 100/100 focused repeats and the complete
+  43-executable host matrix including publication safety. ESP-IDF binding, physical power cuts,
   wear, migration, and configuration authenticity remain open.
 
 ### Target-shaped `ORS0` key/value storage

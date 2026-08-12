@@ -28,17 +28,20 @@ corruption; it does not authenticate a layout or provide access control.
   reports success.
 - A present-key erase reports success only after commit; missing-key erase is
   idempotent and creates no redundant commit.
-- A failed commit remains uncertain. On restart the existing store reads both
-  slots and selects the unique newest valid generation rather than assuming the
+- A failed commit returns a distinct `commit_uncertain` result. On restart the
+  existing store reads both slots and selects the unique newest valid
+  generation rather than assuming the
   operation either failed or succeeded.
 
-Nine deterministic groups cover fixed binding and invalid arguments, exact /
+Ten deterministic groups cover fixed binding and invalid arguments, exact /
 missing / wrong-sized / failed reads, write/erase commit behavior, backend
 failure mapping, real store rotation and restart, selection of an applied
 failed commit, preservation of the prior layout after an unapplied failed
 commit, real two-key reset with safe-default fallback, and store-owned
 generation allocation with zero backend writes/commits for unchanged canonical
-content. The focused suite passes 100/100 repeats and the complete
+content, and restart reconciliation that suppresses rewriting an applied
+uncertain generation while retrying an unapplied generation exactly once. The
+focused suite passes 100/100 repeats and the complete
 43-executable host matrix passes under strict C++17 warnings-as-errors including
 publication safety.
 

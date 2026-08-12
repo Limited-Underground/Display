@@ -355,9 +355,13 @@ GaugeLayoutSaveResult GaugeLayoutStore::save(const GaugeLayout& layout) {
         target = a.layout.generation <= b.layout.generation ? 0 : 1;
     }
 
-    if (storage_.write_slot(target, encoded.data(), encoded.size()) !=
-        LayoutStorageError::none) {
-        return {GaugeLayoutStoreError::storage_failure};
+    const auto written =
+        storage_.write_slot(target, encoded.data(), encoded.size());
+    if (written != LayoutStorageError::none) {
+        return {
+            written == LayoutStorageError::commit_uncertain
+                ? GaugeLayoutStoreError::commit_uncertain
+                : GaugeLayoutStoreError::storage_failure};
     }
     std::array<std::uint8_t, kGaugeLayoutRecordBytes> verified{};
     if (storage_.read_slot(target, verified.data(), verified.size()) !=

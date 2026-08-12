@@ -63,6 +63,7 @@ enum class LayoutStorageError : std::uint8_t {
     not_found,
     invalid_argument,
     io_failure,
+    commit_uncertain,
 };
 
 class GaugeLayoutStorage {
@@ -95,6 +96,7 @@ enum class GaugeLayoutStoreError : std::uint8_t {
     storage_failure,
     verification_failure,
     generation_exhausted,
+    commit_uncertain,
 };
 
 enum class GaugeLayoutSource : std::uint8_t {
@@ -122,6 +124,10 @@ struct GaugeLayoutSaveResult {
 
     [[nodiscard]] constexpr bool saved() const {
         return error == GaugeLayoutStoreError::none;
+    }
+
+    [[nodiscard]] constexpr bool uncertain() const {
+        return error == GaugeLayoutStoreError::commit_uncertain;
     }
 };
 

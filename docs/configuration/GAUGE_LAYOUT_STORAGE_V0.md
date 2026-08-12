@@ -58,10 +58,18 @@ exhaustion before a write. The explicit-generation `save` path remains for
 controlled import/tests. Neither path quantifies flash wear or guarantees
 backend atomicity.
 
+When the key/value adapter reports commit uncertainty, the store returns a
+typed `commit_uncertain` result. The caller must restart or otherwise surrender
+exclusive ownership before deciding whether to retry. On restart, normal slot
+inspection selects an applied newer record; if it was not applied, the prior
+generation remains active and a later update can allocate the same next
+generation normally.
+
 The target-shaped [key/value adapter](GAUGE_LAYOUT_KV_TARGET_ADAPTER_V0.md)
 binds the slots to exact 576-byte `og_config` / `gauge_layout` / `ogl0_a|b`
 blobs and requires explicit backend commit after write or present-key erase.
-It leaves failed commits for normal two-slot selection after restart. This
+It reports a failed commit as uncertain and leaves it for normal two-slot
+selection after restart. This
 closes the common byte-binding boundary, not ESP-IDF or physical durability.
 
 ## Host evidence

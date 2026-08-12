@@ -315,7 +315,7 @@ void test_backend_failures_are_mapped() {
            LayoutStorageError::io_failure);
     backend.fail_commit(1, false);
     EXPECT(storage.write_slot(0, bytes.data(), bytes.size()) ==
-           LayoutStorageError::io_failure);
+           LayoutStorageError::commit_uncertain);
     EXPECT(!backend.present[0]);
     backend.clear_failure();
     backend.fail_erase_slot = 0;
@@ -345,8 +345,7 @@ void test_applied_failed_commit_is_selected_after_restart() {
     GaugeLayoutStore store(storage);
     EXPECT(store.save(layout(1)).saved());
     backend.fail_commit(1, true);
-    EXPECT(store.save(layout(2)).error ==
-           GaugeLayoutStoreError::storage_failure);
+    EXPECT(store.save(layout(2)).uncertain());
     EXPECT(backend.present[1]);
 
     backend.clear_failure();
@@ -365,8 +364,7 @@ void test_unapplied_failed_commit_preserves_prior_layout() {
     GaugeLayoutStore store(storage);
     EXPECT(store.save(layout(1)).saved());
     backend.fail_commit(1, false);
-    EXPECT(store.save(layout(2)).error ==
-           GaugeLayoutStoreError::storage_failure);
+    EXPECT(store.save(layout(2)).uncertain());
     EXPECT(!backend.present[1]);
 
     backend.clear_failure();
@@ -422,6 +420,47 @@ void test_store_owned_updates_suppress_unchanged_kv_writes() {
     EXPECT(loaded.theme == GaugeTheme::light);
 }
 
+void test_uncertain_updates_reconcile_before_retry() {
+    FakeKvBackend applied_backend;
+    GaugeLayoutKvStorage applied_storage(applied_backend);
+    GaugeLayoutStore applied_store(applied_storage);
+    EXPECT(applied_store.save_next_if_changed(layout(0)).changed());
+    auto desired = layout(0);
+    desired.brightness_percent = 70;
+    applied_backend.fail_commit(1, true);
+    const auto applied = applied_store.save_next_if_changed(desired);
+    EXPECT(applied.error == GaugeLayoutStoreError::commit_uncertain);
+    EXPECT(!applied.succeeded() && !applied.changed());
+    EXPECT(applied_backend.present[1]);
+
+    applied_backend.clear_failure();
+    GaugeLayoutKvStorage applied_restarted_storage(applied_backend);
+    GaugeLayoutStore applied_restarted_store(applied_restarted_storage);
+    const auto reconciled =
+        applied_restarted_store.save_next_if_changed(desired);
+    EXPECT(reconciled.succeeded() && !reconciled.changed());
+    EXPECT(reconciled.generation == 2);
+    EXPECT(applied_backend.write_calls == 2);
+
+    FakeKvBackend unapplied_backend;
+    GaugeLayoutKvStorage unapplied_storage(unapplied_backend);
+    GaugeLayoutStore unapplied_store(unapplied_storage);
+    EXPECT(unapplied_store.save_next_if_changed(layout(0)).changed());
+    unapplied_backend.fail_commit(1, false);
+    const auto unapplied = unapplied_store.save_next_if_changed(desired);
+    EXPECT(unapplied.error == GaugeLayoutStoreError::commit_uncertain);
+    EXPECT(!unapplied_backend.present[1]);
+
+    unapplied_backend.clear_failure();
+    GaugeLayoutKvStorage unapplied_restarted_storage(unapplied_backend);
+    GaugeLayoutStore unapplied_restarted_store(unapplied_restarted_storage);
+    const auto retried =
+        unapplied_restarted_store.save_next_if_changed(desired);
+    EXPECT(retried.changed() && retried.generation == 2);
+    EXPECT(unapplied_backend.write_calls == 3);
+    EXPECT(unapplied_backend.present[1]);
+}
+
 }  // namespace
 
 int main() {
@@ -434,11 +473,12 @@ int main() {
     test_unapplied_failed_commit_preserves_prior_layout();
     test_real_store_reset_erases_both_keys();
     test_store_owned_updates_suppress_unchanged_kv_writes();
+    test_uncertain_updates_reconcile_before_retry();
 
     if (failures != 0) {
         std::cerr << failures << " layout key/value assertion(s) failed\n";
         return EXIT_FAILURE;
     }
-    std::cout << "PASS: 9 gauge layout key/value storage groups\n";
+    std::cout << "PASS: 10 gauge layout key/value storage groups\n";
     return EXIT_SUCCESS;
 }

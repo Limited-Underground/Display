@@ -29,8 +29,11 @@ LayoutStorageError map_error(GaugeLayoutKvBackendError error) {
 }
 
 LayoutStorageError commit_pending(GaugeLayoutKvBackend& backend) {
-    return map_error(backend.commit(
-        kGaugeLayoutPartitionLabel, kGaugeLayoutNamespace));
+    const auto committed = backend.commit(
+        kGaugeLayoutPartitionLabel, kGaugeLayoutNamespace);
+    return committed == GaugeLayoutKvBackendError::io_failure
+               ? LayoutStorageError::commit_uncertain
+               : map_error(committed);
 }
 
 }  // namespace

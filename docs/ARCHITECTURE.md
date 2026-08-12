@@ -154,8 +154,10 @@ fixes exact `og_config` / `gauge_layout` / `ogl0_a|b` binding, commits complete
 writes and present-key erases, and leaves failed commits for restart selection.
 A store-owned update path compares canonical content at the active generation,
 suppresses unchanged writes, and allocates the next generation only for a real
-change. Schema migration, ESP-IDF binding, security, and physical
-power-cut/endurance evidence remain unresolved.
+change. Backend commit failure remains typed as uncertain until restart reads
+both slots; an applied generation is then accepted without rewrite, while an
+unapplied generation can be attempted normally. Schema migration, ESP-IDF
+binding, security, and physical power-cut/endurance evidence remain unresolved.
 
 ## GPS and auxiliary modules
 
