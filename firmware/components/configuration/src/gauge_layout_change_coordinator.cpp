@@ -28,6 +28,7 @@ GaugeLayoutChangeError GaugeLayoutChangeCoordinator::start(
     policy_ = policy;
     status_ = {};
     status_.state = GaugeLayoutChangeState::idle;
+    status_.confirmation_window_ms = policy.confirmation_window_ms;
     pending_ = {};
     last_now_ms_ = 0;
     has_time_ = false;
@@ -38,6 +39,7 @@ void GaugeLayoutChangeCoordinator::stop() {
     clear_pending();
     policy_ = {};
     status_.state = GaugeLayoutChangeState::stopped;
+    status_.confirmation_window_ms = 0;
     has_time_ = false;
     last_now_ms_ = 0;
 }

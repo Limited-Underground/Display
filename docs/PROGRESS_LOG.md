@@ -6,6 +6,26 @@ public chronology.
 
 ## 2026-08-12
 
+### Display-neutral layout-change operator status
+
+- Added a pure fixed-shape projection from coordinator status, one observed
+  operation result, and boot-local time into ready, confirmation-required,
+  applied, unchanged, cancelled, expired, rejected, persistence-failed,
+  restart-required, clock-fault, or unavailable state.
+- The pending request token and exact remaining milliseconds exist only while
+  confirmation is allowed. At the exact deadline the projection removes both
+  and requests coordinator expiry service; an earlier clock sample fails
+  visibly without inventing a valid countdown. A rejected stale/mismatched
+  action flags the rejection without hiding the still-valid pending prompt.
+- Successful persistence requires coherent active-slot/generation evidence.
+  Ordinary failure asks for a newly staged request, while uncertain commit asks
+  for restart reconciliation. Impossible state/operation/store combinations
+  are rejected instead of becoming plausible UI state.
+- Eight groups pass 100/100 focused repeats and the complete 45-executable host
+  matrix including publication safety. Rendering, localized text, diagnostic
+  retention, source authority, target concurrency, and physical input remain
+  open.
+
 ### Single-use local gauge-layout confirmation
 
 - Added a semantic coordinator that stages at most one validated layout change
@@ -21,8 +41,8 @@ public chronology.
   inspection rather than replaying an old approval. A newly confirmed request
   after an applied uncertain commit observes the stored generation and performs
   no additional write.
-- Ten deterministic groups pass 100/100 focused repeats and the complete
-  44-executable host matrix including publication safety. This does not prove
+- Ten deterministic groups pass 100/100 focused repeats and remain in the
+  complete 45-executable host matrix including publication safety. This does not prove
   physical-presence input, rendering, cross-boot input flushing, target task
   serialization, authenticated configuration, ESP-IDF storage, or power-cut
   behavior.
@@ -43,7 +63,7 @@ public chronology.
   returns a distinct uncertain result: restart suppresses a rewrite when the
   new generation exists and performs one normal retry when it does not. Ten
   adapter and twelve core groups pass 100/100 focused repeats and remain in the
-  complete 44-executable host matrix including publication safety. ESP-IDF
+  complete 45-executable host matrix including publication safety. ESP-IDF
   binding, physical power cuts, wear, migration, and configuration authenticity
   remain open.
 
@@ -60,7 +80,7 @@ public chronology.
   by advancing separate trust after restart; unapplied uncertainty restores the
   prior trusted generation without inventing a newer record.
   The focused suite passes 100/100 repeats and remains in the complete
-  44-executable host matrix including publication safety. ESP-IDF binding, protected keys,
+  45-executable host matrix including publication safety. ESP-IDF binding, protected keys,
   authenticated integrity, trusted generation, locking, physical interruption,
   endurance, and on-device boot evidence remain open.
 

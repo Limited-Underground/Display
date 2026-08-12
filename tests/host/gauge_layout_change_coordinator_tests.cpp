@@ -72,9 +72,11 @@ void test_lifecycle_and_policy_are_explicit() {
            configuration::GaugeLayoutChangeError::invalid_state);
     EXPECT(coordinator.status().state ==
            configuration::GaugeLayoutChangeState::idle);
+    EXPECT(coordinator.status().confirmation_window_ms == 100);
     coordinator.stop();
     EXPECT(coordinator.status().state ==
            configuration::GaugeLayoutChangeState::stopped);
+    EXPECT(coordinator.status().confirmation_window_ms == 0);
     EXPECT(coordinator.service(1) ==
            configuration::GaugeLayoutChangeError::invalid_state);
 }

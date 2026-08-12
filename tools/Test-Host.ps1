@@ -759,6 +759,20 @@ Invoke-HostTest `
     )
 
 Invoke-HostTest `
+    -Name 'gauge_layout_change_operator_status_tests' `
+    -Description 'Display-neutral gauge layout change operator projection' `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\configuration\include'),
+        (Join-Path $projectRoot 'firmware\components\display\include'),
+        (Join-Path $projectRoot 'firmware\components\telemetry\include'),
+        (Join-Path $projectRoot 'firmware\components\wireless\include')
+    ) `
+    -Sources @(
+        (Join-Path $projectRoot 'firmware\components\configuration\src\gauge_layout_change_operator_status.cpp'),
+        (Join-Path $projectRoot 'tests\host\gauge_layout_change_operator_status_tests.cpp')
+    )
+
+Invoke-HostTest `
     -Name 'telemetry_publish_scheduler_tests' `
     -Description 'Telemetry publish scheduler' `
     -IncludeDirectories @(

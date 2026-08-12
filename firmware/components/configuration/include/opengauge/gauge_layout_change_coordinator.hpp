@@ -46,6 +46,7 @@ struct GaugeLayoutChangeStatus {
     // Highest successfully staged request in this coordinator start cycle.
     std::uint32_t last_request_id{0};
     std::uint64_t pending_opened_ms{0};
+    std::uint64_t confirmation_window_ms{0};
     std::uint32_t staged_count{0};
     std::uint32_t applied_count{0};
     std::uint32_t unchanged_count{0};

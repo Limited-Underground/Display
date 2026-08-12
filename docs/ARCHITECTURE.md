@@ -167,6 +167,13 @@ shown prompt, and must flush obsolete input across restart. Schema migration,
 ESP-IDF binding, security, and physical power-cut/endurance evidence remain
 unresolved.
 
+A separate [operator-status projection](configuration/GAUGE_LAYOUT_CHANGE_OPERATOR_STATUS_V0.md)
+turns coherent coordinator status and one immediate operation result into a
+fixed semantic state/action record. It carries an opaque request token only
+while confirmation is still allowed and distinguishes ordinary retry from
+restart reconciliation. It formats no text, records no diagnostic, and cannot
+substitute for target task ownership or physical-presence evidence.
+
 ## GPS and auxiliary modules
 
 The GPS role publishes normalized speed, position, altitude, heading, UTC, fix quality, and age. Consumers must distinguish unavailable/stale values.
