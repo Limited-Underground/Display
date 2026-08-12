@@ -2,8 +2,9 @@
 
 Status: design and acceptance boundary, updated 2026-08-12. A backend-neutral
 key/value adapter now implements the exact two-slot byte boundary under host
-tests. No OpenGauge ESP-IDF target/backend, protected monotonic source, or
-on-device boot composition currently implements the complete plan.
+tests, including boot/save composition across restart and uncertain commits.
+No OpenGauge ESP-IDF target/backend, protected monotonic source, or on-device
+boot composition currently implements the complete plan.
 
 ## Why this is separate
 
@@ -47,7 +48,10 @@ fixes partition `og_state`, namespace `og_recovery`, keys `ors0_a|b`, and exact
 1280-byte values. It requires backend commit after write or present-key erase
 and preserves missing versus I/O failure. This closes the common key/value
 mapping only; it supplies no ESP-IDF handles, locking, security configuration,
-authenticated integrity, or physical durability.
+authenticated integrity, or physical durability. Host composition now proves
+the real boot/save coordinators through restarted adapter/store instances for a
+normal two-slot save, an applied uncertain commit that catches trust up after
+restart, and an unapplied uncertain commit that keeps the prior trusted boot.
 
 ### Protected key resolution
 

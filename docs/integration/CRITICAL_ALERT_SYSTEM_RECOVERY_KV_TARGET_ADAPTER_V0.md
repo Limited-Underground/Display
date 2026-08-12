@@ -32,12 +32,16 @@ access-controlled, or rollback-resistant.
 - Failed commits remain uncertain. The upper store inspects both durable slots
   after restart rather than retrying or rolling back blindly.
 
-Nine deterministic groups cover fixed names and public arguments, exact /
+Thirteen deterministic groups cover fixed names and public arguments, exact /
 missing / wrong-sized / failed reads, write and commit failures, durable and
 idempotent erase, real `ORS0` first-save and slot rotation, discovery of a full
 record after an applied-then-failed commit, confirmed empty state after an
 unapplied failed commit, real two-key store reset, and restart-visible erase
-after an applied-then-failed commit. The focused suite passes 100/100 repeats
+after an applied-then-failed commit. The same suite now composes the real boot
+and verified-save coordinators through restarted adapter/store instances. It
+proves normal one-slot and two-slot restart, advances separate trust only after
+discovering an applied uncertain commit, and preserves the prior trusted boot
+after an unapplied uncertain commit. The focused suite passes 100/100 repeats
 and the complete 42-executable host matrix passes under strict C++17
 warnings-as-errors including publication safety.
 

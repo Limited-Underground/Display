@@ -13,8 +13,11 @@ public chronology.
 - Required backend commit after full-blob write or present-key erase, preserved
   missing-key erase as idempotent, and kept failed commits uncertain for
   restart inspection instead of blind retry or rollback.
-- Nine deterministic groups exercise exact reads, failure mapping, real
-  `ORS0` save/rotation/reset, and both applied and unapplied failed commits.
+- Thirteen deterministic groups exercise exact reads, failure mapping, real
+  `ORS0` save/rotation/reset, boot/save composition after restart, and both
+  applied and unapplied uncertain commits. Applied uncertainty is reconciled
+  by advancing separate trust after restart; unapplied uncertainty restores the
+  prior trusted generation without inventing a newer record.
   The focused suite passes 100/100 repeats and the complete 42-executable host
   matrix passes including publication safety. ESP-IDF binding, protected keys,
   authenticated integrity, trusted generation, locking, physical interruption,

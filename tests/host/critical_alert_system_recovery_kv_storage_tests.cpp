@@ -5,7 +5,9 @@
 #include <cstring>
 #include <iostream>
 
+#include "opengauge/critical_alert_system_recovery_boot.hpp"
 #include "opengauge/critical_alert_system_recovery_kv_storage.hpp"
+#include "opengauge/critical_alert_system_recovery_save.hpp"
 
 namespace {
 
@@ -220,6 +222,41 @@ public:
     std::uint32_t commit_calls{0};
 };
 
+class FakeTrustedGeneration final
+    : public CriticalAlertSystemTrustedGenerationSource {
+public:
+    CriticalAlertSystemTrustedGenerationRead read() override {
+        ++reads;
+        return {CriticalAlertSystemTrustedGenerationError::none, generation};
+    }
+
+    CriticalAlertSystemTrustedGenerationError advance_to(
+        std::uint64_t requested) override {
+        ++advances;
+        requested_generation = requested;
+        generation = requested;
+        return CriticalAlertSystemTrustedGenerationError::none;
+    }
+
+    std::uint64_t generation{1};
+    std::uint64_t requested_generation{0};
+    std::size_t reads{0};
+    std::size_t advances{0};
+};
+
+class AcceptKeys final : public CriticalAlertSystemRecoveryKeyValidator {
+public:
+    CriticalAlertSystemRecoveryKeyValidationError validate(
+        const PeerAuthorizationEntry& peer) override {
+        ++calls;
+        EXPECT(peer.active && peer.logical_peer_id == kPeerId);
+        EXPECT(peer.secure_key_handle == kKeyHandle);
+        return CriticalAlertSystemRecoveryKeyValidationError::none;
+    }
+
+    std::size_t calls{0};
+};
+
 PairingCandidate bridge(std::uint32_t request, std::uint32_t peer) {
     return {
         request,
@@ -304,6 +341,17 @@ void start_source(
         true, kPeerId, kKeyHandle, kChannel};
     EXPECT(ingress.receive(
                ack.data(), ack.size(), transport, 1).retry_released);
+}
+
+void start_target(
+    PeerAuthorizationRegistry& registry,
+    CriticalAlertOutbox& outbox,
+    CriticalAlertAckIngress& ingress) {
+    EXPECT(registry.start({1000}) == PeerAuthorizationError::none);
+    EXPECT(outbox.start({50, 100, 25, 10000, 3, 1}) ==
+           CriticalOutboxError::none);
+    EXPECT(ingress.start({kProducerId, 1000}, registry, outbox) ==
+           CriticalAlertAckIngressError::none);
 }
 
 void test_fixed_binding_and_public_arguments() {
@@ -505,6 +553,157 @@ void test_commit_failure_after_erase_remains_visible() {
            CriticalAlertSystemRecoveryStorageError::not_found);
 }
 
+void test_committed_checkpoint_boots_through_restarted_adapter() {
+    FakeKvBackend backend;
+    CriticalAlertSystemRecoveryKvStorage storage(backend);
+    CriticalAlertSystemRecoveryStore store(storage);
+    PeerAuthorizationRegistry live{};
+    CriticalAlertOutbox live_outbox{};
+    CriticalAlertAckIngress live_ingress{};
+    start_source(live, live_outbox, live_ingress);
+    EXPECT(store.save_next(live, live_ingress, live_outbox, 1).saved());
+
+    CriticalAlertSystemRecoveryKvStorage restarted_storage(backend);
+    CriticalAlertSystemRecoveryStore restarted_store(restarted_storage);
+    FakeTrustedGeneration trusted{};
+    AcceptKeys keys{};
+    CriticalAlertSystemRecoveryBootCoordinator boot{
+        restarted_store, trusted, keys};
+    PeerAuthorizationRegistry restored{};
+    CriticalAlertOutbox restored_outbox{};
+    CriticalAlertAckIngress restored_ingress{};
+    start_target(restored, restored_outbox, restored_ingress);
+
+    const auto result = boot.boot(
+        CriticalAlertSystemProvisioningState::provisioned,
+        restored, restored_ingress, restored_outbox, 10);
+    EXPECT(result.state == CriticalAlertSystemBootState::restored_degraded);
+    EXPECT(result.operational() && result.repair_required);
+    EXPECT(result.active_generation == 1 && result.trusted_generation == 1);
+    EXPECT(trusted.advances == 0 && keys.calls == 1);
+    EXPECT(restored.status().peer_count == 1);
+    EXPECT(restored_outbox.status().queued_count == 1);
+    EXPECT(restored_ingress.status().binding_count == 1);
+}
+
+void test_verified_save_and_restart_use_both_kv_slots() {
+    FakeKvBackend backend;
+    CriticalAlertSystemRecoveryKvStorage storage(backend);
+    CriticalAlertSystemRecoveryStore store(storage);
+    PeerAuthorizationRegistry live{};
+    CriticalAlertOutbox live_outbox{};
+    CriticalAlertAckIngress live_ingress{};
+    start_source(live, live_outbox, live_ingress);
+    EXPECT(store.save_next(live, live_ingress, live_outbox, 1).saved());
+
+    FakeTrustedGeneration trusted{};
+    CriticalAlertSystemRecoverySaveCoordinator save{store, trusted};
+    const auto persisted = save.save(
+        live, live_ingress, live_outbox, 2);
+    EXPECT(persisted.committed());
+    EXPECT(persisted.committed_generation == 2);
+    EXPECT(trusted.generation == 2 && trusted.advances == 1);
+    EXPECT(backend.present[0] && backend.present[1]);
+
+    CriticalAlertSystemRecoveryKvStorage restarted_storage(backend);
+    CriticalAlertSystemRecoveryStore restarted_store(restarted_storage);
+    AcceptKeys keys{};
+    CriticalAlertSystemRecoveryBootCoordinator boot{
+        restarted_store, trusted, keys};
+    PeerAuthorizationRegistry restored{};
+    CriticalAlertOutbox restored_outbox{};
+    CriticalAlertAckIngress restored_ingress{};
+    start_target(restored, restored_outbox, restored_ingress);
+    const auto result = boot.boot(
+        CriticalAlertSystemProvisioningState::provisioned,
+        restored, restored_ingress, restored_outbox, 10);
+    EXPECT(result.state == CriticalAlertSystemBootState::restored);
+    EXPECT(result.operational() && !result.repair_required);
+    EXPECT(result.active_generation == 2 && result.trusted_generation == 2);
+    EXPECT(trusted.advances == 1 && keys.calls == 1);
+}
+
+void test_applied_uncertain_save_reconciles_trust_after_restart() {
+    FakeKvBackend backend;
+    CriticalAlertSystemRecoveryKvStorage storage(backend);
+    CriticalAlertSystemRecoveryStore store(storage);
+    PeerAuthorizationRegistry live{};
+    CriticalAlertOutbox live_outbox{};
+    CriticalAlertAckIngress live_ingress{};
+    start_source(live, live_outbox, live_ingress);
+    EXPECT(store.save_next(live, live_ingress, live_outbox, 1).saved());
+
+    backend.fail_commit(1, true);
+    FakeTrustedGeneration trusted{};
+    CriticalAlertSystemRecoverySaveCoordinator save{store, trusted};
+    const auto uncertain = save.save(
+        live, live_ingress, live_outbox, 2);
+    EXPECT(uncertain.state ==
+           CriticalAlertSystemPersistenceState::reboot_reconcile_required);
+    EXPECT(uncertain.reason ==
+           CriticalAlertSystemPersistenceReason::commit_uncertain);
+    EXPECT(trusted.generation == 1 && trusted.advances == 0);
+    EXPECT(backend.present[1]);
+
+    backend.clear_failure();
+    CriticalAlertSystemRecoveryKvStorage restarted_storage(backend);
+    CriticalAlertSystemRecoveryStore restarted_store(restarted_storage);
+    AcceptKeys keys{};
+    CriticalAlertSystemRecoveryBootCoordinator boot{
+        restarted_store, trusted, keys};
+    PeerAuthorizationRegistry restored{};
+    CriticalAlertOutbox restored_outbox{};
+    CriticalAlertAckIngress restored_ingress{};
+    start_target(restored, restored_outbox, restored_ingress);
+    const auto result = boot.boot(
+        CriticalAlertSystemProvisioningState::provisioned,
+        restored, restored_ingress, restored_outbox, 10);
+    EXPECT(result.state == CriticalAlertSystemBootState::restored);
+    EXPECT(result.operational() && result.active_generation == 2);
+    EXPECT(trusted.generation == 2 && trusted.advances == 1);
+    EXPECT(trusted.requested_generation == 2);
+}
+
+void test_unapplied_uncertain_save_preserves_last_trusted_boot() {
+    FakeKvBackend backend;
+    CriticalAlertSystemRecoveryKvStorage storage(backend);
+    CriticalAlertSystemRecoveryStore store(storage);
+    PeerAuthorizationRegistry live{};
+    CriticalAlertOutbox live_outbox{};
+    CriticalAlertAckIngress live_ingress{};
+    start_source(live, live_outbox, live_ingress);
+    EXPECT(store.save_next(live, live_ingress, live_outbox, 1).saved());
+
+    backend.fail_commit(1, false);
+    FakeTrustedGeneration trusted{};
+    CriticalAlertSystemRecoverySaveCoordinator save{store, trusted};
+    const auto uncertain = save.save(
+        live, live_ingress, live_outbox, 2);
+    EXPECT(uncertain.state ==
+           CriticalAlertSystemPersistenceState::reboot_reconcile_required);
+    EXPECT(uncertain.reason ==
+           CriticalAlertSystemPersistenceReason::commit_uncertain);
+    EXPECT(trusted.generation == 1 && trusted.advances == 0);
+    EXPECT(!backend.present[1]);
+
+    backend.clear_failure();
+    CriticalAlertSystemRecoveryKvStorage restarted_storage(backend);
+    CriticalAlertSystemRecoveryStore restarted_store(restarted_storage);
+    AcceptKeys keys{};
+    CriticalAlertSystemRecoveryBootCoordinator boot{
+        restarted_store, trusted, keys};
+    PeerAuthorizationRegistry restored{};
+    CriticalAlertOutbox restored_outbox{};
+    CriticalAlertAckIngress restored_ingress{};
+    start_target(restored, restored_outbox, restored_ingress);
+    const auto result = boot.boot(
+        CriticalAlertSystemProvisioningState::provisioned,
+        restored, restored_ingress, restored_outbox, 10);
+    EXPECT(result.state == CriticalAlertSystemBootState::restored_degraded);
+    EXPECT(result.operational() && result.active_generation == 1);
+    EXPECT(trusted.generation == 1 && trusted.advances == 0);
+}
+
 }  // namespace
 
 int main() {
@@ -517,11 +716,15 @@ int main() {
     test_unapplied_failed_commit_remains_empty_after_restart();
     test_real_store_reset_erases_both_keys();
     test_commit_failure_after_erase_remains_visible();
+    test_committed_checkpoint_boots_through_restarted_adapter();
+    test_verified_save_and_restart_use_both_kv_slots();
+    test_applied_uncertain_save_reconciles_trust_after_restart();
+    test_unapplied_uncertain_save_preserves_last_trusted_boot();
 
     if (failures != 0) {
         std::cerr << failures << " assertion(s) failed\n";
         return EXIT_FAILURE;
     }
-    std::cout << "PASS: 9 system recovery key/value storage groups\n";
+    std::cout << "PASS: 13 system recovery key/value storage groups\n";
     return EXIT_SUCCESS;
 }

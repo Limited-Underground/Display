@@ -225,6 +225,8 @@ Invoke-HostTest `
         (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_system_recovery.cpp'),
         (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_system_recovery_store.cpp'),
         (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_system_recovery_kv_storage.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_system_recovery_boot.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_system_recovery_save.cpp'),
         (Join-Path $projectRoot 'tests\host\critical_alert_system_recovery_kv_storage_tests.cpp')
     )
 
