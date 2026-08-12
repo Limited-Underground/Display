@@ -131,6 +131,29 @@ struct GaugeLayoutSaveResult {
     }
 };
 
+enum class GaugeLayoutExportError : std::uint8_t {
+    none = 0,
+    invalid_argument,
+    invalid_safe_default,
+    storage_failure,
+    generation_conflict,
+    codec_failure,
+};
+
+struct GaugeLayoutExportResult {
+    GaugeLayoutExportError error{GaugeLayoutExportError::invalid_argument};
+    GaugeLayoutLoadResult load{};
+    GaugeLayoutCodecError codec_error{
+        GaugeLayoutCodecError::invalid_argument};
+    std::size_t bytes{0};
+
+    [[nodiscard]] constexpr bool exported() const {
+        return error == GaugeLayoutExportError::none &&
+               codec_error == GaugeLayoutCodecError::none &&
+               bytes == kGaugeLayoutRecordBytes;
+    }
+};
+
 enum class GaugeLayoutUpdateState : std::uint8_t {
     unchanged = 0,
     updated,
@@ -158,6 +181,14 @@ public:
     [[nodiscard]] GaugeLayoutLoadResult load(
         const GaugeLayout& safe_default,
         GaugeLayout& output);
+    // Exports the same active layout selected by load(). Invalid arguments,
+    // ambiguous generations, and any I/O degradation fail without changing
+    // caller output. Empty/corrupt known storage may export the safe default or
+    // surviving valid slot with recovery_required retained in load evidence.
+    [[nodiscard]] GaugeLayoutExportResult export_current(
+        const GaugeLayout& safe_default,
+        std::uint8_t* output,
+        std::size_t output_capacity);
     [[nodiscard]] GaugeLayoutSaveResult save(const GaugeLayout& layout);
     // Treats desired.generation as non-authoritative. Under exclusive store
     // ownership, assigns highest-valid + 1 only when canonical layout content

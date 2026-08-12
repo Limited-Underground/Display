@@ -167,6 +167,14 @@ shown prompt, and must flush obsolete input across restart. Schema migration,
 ESP-IDF binding, security, and physical power-cut/endurance evidence remain
 unresolved.
 
+The [canonical export boundary](configuration/GAUGE_LAYOUT_EXPORT_V0.md)
+reuses this same boot selection. It emits one exact `OGL0` record for a known
+safe fallback or selected valid slot and returns the load source, both slot
+states, and recovery requirement. Invalid arguments, invalid safe default,
+equal-generation ambiguity, and any unreadable-slot uncertainty fail without
+changing caller output. File/download transport, access/confidentiality policy,
+and target behavior remain outside this boundary.
+
 Reset attempts both slot erases. If either backend commit is uncertain, that
 typed result takes precedence over ordinary failure and the caller must restart
 and inspect both slots before retrying. Safe default is selected only when both

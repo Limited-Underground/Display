@@ -92,9 +92,23 @@ Normal “restore default layout” does not use this reset primitive. It stages
 validated compiled default through the regular confirmed save path, persists a
 new generation only when content changed, and retains two-slot recovery.
 
+## Canonical export
+
+`GaugeLayoutStore::export_current` reuses the exact `load` selection and returns
+its source, both slot states, and recovery flag alongside one exact canonical
+record. Known empty/corrupt media may export the separately validated safe
+default. One surviving valid slot may be exported with recovery required when
+the peer is known empty/invalid.
+
+Export fails without changing caller output for invalid arguments, invalid safe
+default, equal-generation conflict, or any unreadable slot. A valid older slot
+beside an unreadable peer is not enough because the peer could hide a newer
+committed generation. The boundary writes no file and provides no access,
+confidentiality, or authenticity policy.
+
 ## Host evidence
 
-`tests/host/gauge_layout_tests.cpp` covers twelve groups:
+`tests/host/gauge_layout_tests.cpp` covers thirteen groups:
 
 1. explicit wire offsets plus signed-range and two-widget round trip;
 2. layout/range/duplicate validation and output arguments;
@@ -109,6 +123,8 @@ new generation only when content changed, and retains two-slot recovery.
 11. invalid input, equal-generation conflict, and generation exhaustion before
     write; and
 12. read/write failures remaining explicit in the automatic update path.
+13. atomic canonical export of safe default/surviving valid state plus
+    fail-closed argument, invalid-default, conflict, and I/O behavior.
 
 The suite also repeated 100 times with zero failures.
 
@@ -119,8 +135,8 @@ allocation, and no imported content is persisted before local confirmation.
 ## Remaining persistence gates
 
 - implement and host-test version migration before introducing schema 2;
-- define canonical export, reset service confirmation, and target UI recovery
-  workflows;
+- bind canonical export to an access-controlled file/download adapter; define
+  reset service confirmation and target UI recovery workflows;
 - bind the key/value backend to the exact board storage API with task ownership,
   synchronization, size/alignment, erase-block, and commit semantics;
 - measure normal-save wear, unchanged-save suppression, rapid user edits,

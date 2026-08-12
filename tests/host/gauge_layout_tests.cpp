@@ -374,6 +374,95 @@ void test_automatic_update_keeps_storage_failures_visible() {
     EXPECT(write_storage.writes(0) == 1 && !write_storage.present(0));
 }
 
+void test_canonical_export_is_atomic_and_preserves_recovery_evidence() {
+    FakeGaugeLayoutStorage empty_storage{};
+    configuration::GaugeLayoutStore empty_store{empty_storage};
+    const auto safe_default = layout(1);
+    std::array<std::uint8_t, configuration::kGaugeLayoutRecordBytes> output{};
+    output.fill(0xA5U);
+
+    auto result = empty_store.export_current(
+        safe_default, output.data(), output.size() - 1);
+    EXPECT(result.error ==
+           configuration::GaugeLayoutExportError::invalid_argument);
+    EXPECT(!result.exported());
+    EXPECT(output.front() == 0xA5U && output.back() == 0xA5U);
+
+    result = empty_store.export_current(
+        safe_default, output.data(), output.size());
+    EXPECT(result.exported());
+    EXPECT(result.load.source == configuration::GaugeLayoutSource::safe_default);
+    EXPECT(result.load.recovery_required);
+    configuration::GaugeLayout decoded{};
+    EXPECT(configuration::decode_gauge_layout(
+               output.data(), output.size(), decoded).succeeded());
+    EXPECT(decoded.generation == 1);
+
+    FakeGaugeLayoutStorage recovery_storage{};
+    configuration::GaugeLayoutStore recovery_store{recovery_storage};
+    EXPECT(recovery_store.save(layout(1)).saved());
+    auto newer = layout(2);
+    newer.brightness_percent = 72;
+    EXPECT(recovery_store.save(newer).saved());
+    recovery_storage.corrupt(1, 100, 0x20U);
+    output.fill(0xA5U);
+    result = recovery_store.export_current(
+        safe_default, output.data(), output.size());
+    EXPECT(result.exported());
+    EXPECT(result.load.source == configuration::GaugeLayoutSource::slot_a);
+    EXPECT(result.load.recovery_required);
+    EXPECT(configuration::decode_gauge_layout(
+               output.data(), output.size(), decoded).succeeded());
+    EXPECT(decoded.generation == 1);
+    EXPECT(decoded.brightness_percent == 65);
+
+    recovery_storage.fail_next_read(1);
+    output.fill(0xA5U);
+    result = recovery_store.export_current(
+        safe_default, output.data(), output.size());
+    EXPECT(result.error ==
+           configuration::GaugeLayoutExportError::storage_failure);
+    EXPECT(!result.exported());
+    EXPECT(result.load.source == configuration::GaugeLayoutSource::slot_a);
+    EXPECT(result.load.recovery_required);
+    EXPECT(output.front() == 0xA5U && output.back() == 0xA5U);
+
+    FakeGaugeLayoutStorage conflict_storage{};
+    auto first = layout(5);
+    auto second = layout(5);
+    second.brightness_percent = 80;
+    std::array<std::uint8_t, configuration::kGaugeLayoutRecordBytes> first_bytes{};
+    std::array<std::uint8_t, configuration::kGaugeLayoutRecordBytes> second_bytes{};
+    EXPECT(configuration::encode_gauge_layout(
+               first, first_bytes.data(), first_bytes.size()).succeeded());
+    EXPECT(configuration::encode_gauge_layout(
+               second, second_bytes.data(), second_bytes.size()).succeeded());
+    EXPECT(conflict_storage.write_slot(
+               0, first_bytes.data(), first_bytes.size()) ==
+           configuration::LayoutStorageError::none);
+    EXPECT(conflict_storage.write_slot(
+               1, second_bytes.data(), second_bytes.size()) ==
+           configuration::LayoutStorageError::none);
+    configuration::GaugeLayoutStore conflict_store{conflict_storage};
+    output.fill(0xA5U);
+    result = conflict_store.export_current(
+        safe_default, output.data(), output.size());
+    EXPECT(result.error ==
+           configuration::GaugeLayoutExportError::generation_conflict);
+    EXPECT(!result.exported());
+    EXPECT(output.front() == 0xA5U && output.back() == 0xA5U);
+
+    auto invalid_default = safe_default;
+    invalid_default.layout_id = 0;
+    output.fill(0xA5U);
+    result = empty_store.export_current(
+        invalid_default, output.data(), output.size());
+    EXPECT(result.error ==
+           configuration::GaugeLayoutExportError::invalid_safe_default);
+    EXPECT(!result.exported());
+    EXPECT(output.front() == 0xA5U && output.back() == 0xA5U);
+}
+
 }  // namespace
 
 int main() {
@@ -389,11 +478,12 @@ int main() {
     test_store_allocates_generations_and_suppresses_unchanged_writes();
     test_automatic_update_rejects_invalid_conflict_and_exhaustion();
     test_automatic_update_keeps_storage_failures_visible();
+    test_canonical_export_is_atomic_and_preserves_recovery_evidence();
 
     if (failures != 0) {
         std::cerr << failures << " gauge layout assertion(s) failed\n";
         return EXIT_FAILURE;
     }
-    std::cout << "PASS: 12 gauge layout scenario groups\n";
+    std::cout << "PASS: 13 gauge layout scenario groups\n";
     return EXIT_SUCCESS;
 }

@@ -6,6 +6,22 @@ public chronology.
 
 ## 2026-08-12
 
+### Fail-closed canonical layout export
+
+- Added `GaugeLayoutStore::export_current`, which reuses normal boot selection
+  and returns the exact load source, both slot states, and recovery requirement
+  with one canonical 576-byte `OGL0` record.
+- Known empty/corrupt storage can export the separately validated safe default;
+  one known valid slot can be exported with recovery visibly required. A valid
+  older slot is not exported when the other slot is unreadable because it may
+  hide a newer committed generation.
+- Invalid output capacity, invalid safe default, equal-generation conflict, and
+  I/O degradation fail without changing the caller's sentinel-filled buffer.
+- Thirteen cumulative layout groups pass 100/100 focused repeats plus the
+  complete 47-executable host matrix including publication safety.
+  File/download adapters, access/confidentiality policy, and physical behavior
+  remain open.
+
 ### Strict confirmed local layout import
 
 - Added `stage_import_record` to the layout-change workflow. It accepts only

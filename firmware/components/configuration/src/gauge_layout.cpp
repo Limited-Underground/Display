@@ -323,6 +323,42 @@ GaugeLayoutLoadResult GaugeLayoutStore::load(
     return result;
 }
 
+GaugeLayoutExportResult GaugeLayoutStore::export_current(
+    const GaugeLayout& safe_default,
+    std::uint8_t* output,
+    std::size_t output_capacity) {
+    GaugeLayoutExportResult result{};
+    if (output == nullptr || output_capacity < kGaugeLayoutRecordBytes) {
+        return result;
+    }
+
+    GaugeLayout active{};
+    result.load = load(safe_default, active);
+    if (result.load.error != GaugeLayoutStoreError::none) {
+        switch (result.load.error) {
+            case GaugeLayoutStoreError::invalid_layout:
+                result.error = GaugeLayoutExportError::invalid_safe_default;
+                break;
+            case GaugeLayoutStoreError::generation_conflict:
+                result.error = GaugeLayoutExportError::generation_conflict;
+                break;
+            default:
+                result.error = GaugeLayoutExportError::storage_failure;
+                break;
+        }
+        return result;
+    }
+
+    const auto encoded = encode_gauge_layout(
+        active, output, output_capacity);
+    result.codec_error = encoded.error;
+    result.bytes = encoded.bytes;
+    result.error = encoded.succeeded()
+                       ? GaugeLayoutExportError::none
+                       : GaugeLayoutExportError::codec_failure;
+    return result;
+}
+
 GaugeLayoutSaveResult GaugeLayoutStore::save(const GaugeLayout& layout) {
     std::array<std::uint8_t, kGaugeLayoutRecordBytes> encoded{};
     if (!encode_gauge_layout(layout, encoded.data(), encoded.size()).succeeded()) {
