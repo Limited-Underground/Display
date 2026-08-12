@@ -1,8 +1,9 @@
 # Target System-Recovery Adapter Plan
 
-Status: design and acceptance boundary, 2026-08-09. No OpenGauge ESP-IDF target,
-NVS adapter, protected monotonic source, or on-device boot composition currently
-implements this plan.
+Status: design and acceptance boundary, updated 2026-08-12. A backend-neutral
+key/value adapter now implements the exact two-slot byte boundary under host
+tests. No OpenGauge ESP-IDF target/backend, protected monotonic source, or
+on-device boot composition currently implements the complete plan.
 
 ## Why this is separate
 
@@ -40,6 +41,13 @@ contract:
 The core performs byte-for-byte readback and decode after every reported write.
 The target must still document backend atomicity, erase/write granularity,
 wear behavior, and what an interrupted API call can leave behind.
+
+The current [target-shaped adapter](CRITICAL_ALERT_SYSTEM_RECOVERY_KV_TARGET_ADAPTER_V0.md)
+fixes partition `og_state`, namespace `og_recovery`, keys `ors0_a|b`, and exact
+1280-byte values. It requires backend commit after write or present-key erase
+and preserves missing versus I/O failure. This closes the common key/value
+mapping only; it supplies no ESP-IDF handles, locking, security configuration,
+authenticated integrity, or physical durability.
 
 ### Protected key resolution
 

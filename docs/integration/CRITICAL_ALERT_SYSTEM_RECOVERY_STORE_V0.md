@@ -81,12 +81,17 @@ policy.
 11. protected-key rejection with zero live mutation followed by successful
     validated restore.
 
-The complete 36-executable host matrix passes, and the focused store suite
-passes 100 consecutive repeats.
+The current complete 42-executable host matrix passes, and the focused store
+suite passes 100 consecutive repeats. A separate
+[key/value target-adapter suite](CRITICAL_ALERT_SYSTEM_RECOVERY_KV_TARGET_ADAPTER_V0.md)
+exercises this real store through exact 1280-byte blobs, including save,
+rotation, reset, and applied/unapplied failed-commit restart discovery across
+nine groups and 100/100 repeats.
 
 ## Remaining gates
 
-- bind both slots to a selected ESP-IDF protected-storage backend;
+- bind the target-shaped key/value boundary to a selected ESP-IDF
+  protected-storage backend;
 - define and persist the authenticated trusted monotonic/rollback authority that
   supplies these floor values;
 - coordinate logical record reset with protected key erasure and replacement;

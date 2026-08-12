@@ -209,6 +209,16 @@ ESP-IDF/NVS binding, coordinated authorization/outbox persistence, secure
 rollback resistance, real cryptographic transport, operator presentation, and
 authenticated on-device delivery remain unresolved.
 
+Coordinated restart state is now carried by one exact 1280-byte `ORS0`
+generation containing authorization plus ACK/outbox recovery. Its two-slot
+store owns generation allocation, exact readback, degraded recovery, and
+trusted-floor enforcement. A backend-neutral
+[key/value adapter](integration/CRITICAL_ALERT_SYSTEM_RECOVERY_KV_TARGET_ADAPTER_V0.md)
+fixes `og_state` / `og_recovery` / `ors0_a|b`, commits complete writes and
+present-key erases, and leaves failed commits for restart inspection. This is
+target-shaped storage plumbing, not protected integrity, rollback-resistant
+trust, ESP-IDF task composition, or physical durability evidence.
+
 External OT-017D evidence carried the public normative `OGA0` fixture through
 two role-reversed Heltec/SenseCAP cycles and returned correlated responder-made
 `OGK0` bytes with zero loss, duplicates, or new errors. This closes a bounded

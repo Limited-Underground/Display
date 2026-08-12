@@ -206,6 +206,29 @@ Invoke-HostTest `
     )
 
 Invoke-HostTest `
+    -Name 'critical_alert_system_recovery_kv_storage_tests' `
+    -Description 'Target-shaped alert-system recovery key/value adapter' `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\identity\include'),
+        (Join-Path $projectRoot 'firmware\components\integration\include')
+    ) `
+    -Sources @(
+        (Join-Path $projectRoot 'firmware\components\identity\src\peer_authorization.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_ack.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_outbox_checkpoint.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_outbox.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_ack_ingress.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_recovery_checkpoint.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_recovery.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_system_recovery_checkpoint.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_system_recovery.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_system_recovery_store.cpp'),
+        (Join-Path $projectRoot 'firmware\components\integration\src\critical_alert_system_recovery_kv_storage.cpp'),
+        (Join-Path $projectRoot 'tests\host\critical_alert_system_recovery_kv_storage_tests.cpp')
+    )
+
+Invoke-HostTest `
     -Name 'critical_alert_system_recovery_boot_tests' `
     -Description 'Typed alert-system boot recovery coordinator' `
     -IncludeDirectories @(

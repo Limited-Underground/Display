@@ -4,6 +4,22 @@ Progress is grouped by calendar day, newest first. Detailed acceptance criteria
 remain in [the engineering backlog](../tasks/BACKLOG.md); this log is the concise
 public chronology.
 
+## 2026-08-12
+
+### Target-shaped `ORS0` key/value storage
+
+- Added a backend-neutral adapter for the two exact 1280-byte alert-system
+  recovery slots with fixed `og_state` / `og_recovery` / `ors0_a|b` binding.
+- Required backend commit after full-blob write or present-key erase, preserved
+  missing-key erase as idempotent, and kept failed commits uncertain for
+  restart inspection instead of blind retry or rollback.
+- Nine deterministic groups exercise exact reads, failure mapping, real
+  `ORS0` save/rotation/reset, and both applied and unapplied failed commits.
+  The focused suite passes 100/100 repeats and the complete 42-executable host
+  matrix passes including publication safety. ESP-IDF binding, protected keys,
+  authenticated integrity, trusted generation, locking, physical interruption,
+  endurance, and on-device boot evidence remain open.
+
 ## 2026-08-10
 
 ### Cross-project field-test planning
