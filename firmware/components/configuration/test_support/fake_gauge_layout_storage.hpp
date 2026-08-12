@@ -12,6 +12,7 @@ enum class FakeWriteBehavior : std::uint8_t {
     normal = 0,
     fail_before_write,
     fail_after_partial_write,
+    fail_after_full_write,
     corrupt_after_success,
 };
 

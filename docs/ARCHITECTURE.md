@@ -156,8 +156,14 @@ A store-owned update path compares canonical content at the active generation,
 suppresses unchanged writes, and allocates the next generation only for a real
 change. Backend commit failure remains typed as uncertain until restart reads
 both slots; an applied generation is then accepted without rewrite, while an
-unapplied generation can be attempted normally. Schema migration, ESP-IDF
-binding, security, and physical power-cut/endurance evidence remain unresolved.
+unapplied generation can be attempted normally. A separate
+[local confirmation coordinator](configuration/GAUGE_LAYOUT_CHANGE_CONFIRMATION_V0.md)
+admits one validated request under an exact ID and deadline, consumes approval
+before persistence, and rejects mismatch, expiry, cancellation, and clock
+rollback. It does not prove who supplied the request or confirmation: target
+composition must bind both to serialized local input and a successfully shown
+prompt. Schema migration, ESP-IDF binding, security, and physical power-cut/
+endurance evidence remain unresolved.
 
 ## GPS and auxiliary modules
 

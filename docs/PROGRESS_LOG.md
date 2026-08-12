@@ -6,6 +6,23 @@ public chronology.
 
 ## 2026-08-12
 
+### Single-use local gauge-layout confirmation
+
+- Added a semantic coordinator that stages at most one validated layout change
+  under an exact nonzero request ID and a caller-supplied monotonic timestamp.
+- Confirmation must repeat that ID before the exact configured boundary.
+  Mismatch, cancellation, expiry, and clock rollback leave storage untouched;
+  clock rollback also consumes any pending request.
+- The request is consumed before persistence. Ordinary failure therefore needs
+  a new local confirmation, while commit uncertainty requires restart
+  inspection rather than replaying an old approval. A newly confirmed request
+  after an applied uncertain commit observes the stored generation and performs
+  no additional write.
+- Nine deterministic groups pass 100/100 focused repeats and the complete
+  44-executable host matrix including publication safety. This does not prove
+  physical-presence input, rendering, target task serialization, authenticated
+  configuration, ESP-IDF storage, or power-cut behavior.
+
 ### Target-shaped `OGL0` gauge-layout key/value storage
 
 - Added one shared backend-neutral key/value blob contract and moved the
@@ -21,9 +38,10 @@ public chronology.
   backend write/commit calls for unchanged content. Backend commit failure now
   returns a distinct uncertain result: restart suppresses a rewrite when the
   new generation exists and performs one normal retry when it does not. Ten
-  adapter and twelve core groups pass 100/100 focused repeats and the complete
-  43-executable host matrix including publication safety. ESP-IDF binding, physical power cuts,
-  wear, migration, and configuration authenticity remain open.
+  adapter and twelve core groups pass 100/100 focused repeats and remain in the
+  complete 44-executable host matrix including publication safety. ESP-IDF
+  binding, physical power cuts, wear, migration, and configuration authenticity
+  remain open.
 
 ### Target-shaped `ORS0` key/value storage
 
@@ -37,8 +55,8 @@ public chronology.
   applied and unapplied uncertain commits. Applied uncertainty is reconciled
   by advancing separate trust after restart; unapplied uncertainty restores the
   prior trusted generation without inventing a newer record.
-  The focused suite passes 100/100 repeats and the complete 43-executable host
-  matrix passes including publication safety. ESP-IDF binding, protected keys,
+  The focused suite passes 100/100 repeats and remains in the complete
+  44-executable host matrix including publication safety. ESP-IDF binding, protected keys,
   authenticated integrity, trusted generation, locking, physical interruption,
   endurance, and on-device boot evidence remain open.
 

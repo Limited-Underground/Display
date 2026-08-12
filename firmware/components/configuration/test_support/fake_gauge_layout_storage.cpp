@@ -48,6 +48,9 @@ LayoutStorageError FakeGaugeLayoutStorage::write_slot(
         return LayoutStorageError::io_failure;
     }
     std::copy(data, data + size, slots_[slot].begin());
+    if (behavior == FakeWriteBehavior::fail_after_full_write) {
+        return LayoutStorageError::commit_uncertain;
+    }
     if (behavior == FakeWriteBehavior::corrupt_after_success) {
         slots_[slot][100] ^= 0x5AU;
     }
