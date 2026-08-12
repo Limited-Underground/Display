@@ -16,6 +16,12 @@ enum class FakeWriteBehavior : std::uint8_t {
     corrupt_after_success,
 };
 
+enum class FakeEraseBehavior : std::uint8_t {
+    normal = 0,
+    fail_before_erase,
+    fail_after_erase,
+};
+
 class FakeGaugeLayoutStorage final : public GaugeLayoutStorage {
 public:
     [[nodiscard]] LayoutStorageError read_slot(
@@ -34,6 +40,9 @@ public:
         std::uint8_t slot,
         FakeWriteBehavior behavior);
     void fail_next_erase(std::uint8_t slot);
+    void set_next_erase_behavior(
+        std::uint8_t slot,
+        FakeEraseBehavior behavior);
     void corrupt(std::uint8_t slot, std::size_t offset, std::uint8_t mask);
 
     [[nodiscard]] bool present(std::uint8_t slot) const;
@@ -45,7 +54,7 @@ private:
     std::array<bool, 2> present_{};
     std::array<bool, 2> fail_read_{};
     std::array<FakeWriteBehavior, 2> next_write_{};
-    std::array<bool, 2> fail_erase_{};
+    std::array<FakeEraseBehavior, 2> next_erase_{};
     std::array<std::uint32_t, 2> writes_{};
     std::array<std::uint32_t, 2> erases_{};
 };

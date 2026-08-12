@@ -6,6 +6,20 @@ public chronology.
 
 ## 2026-08-12
 
+### Typed gauge-layout reset uncertainty
+
+- Changed the two-slot layout reset path to preserve `commit_uncertain` when
+  either erase reaches a failed backend commit; ordinary erase failure remains
+  distinct, and both slot erases are still attempted.
+- Expanded the target-shaped key/value suite across failed commit on slot A or
+  slot B, with the erase applied and unapplied in each position. Restart chooses
+  safe default only when both keys are actually gone; otherwise it selects the
+  surviving prior generation with recovery required.
+- The eleven adapter groups and twelve core groups pass 100/100 focused repeats
+  plus the complete 47-executable matrix including publication safety. Reset
+  confirmation, ESP-IDF behavior, physical interruption, and endurance remain
+  open.
+
 ### Atomic layout-change workflow facade
 
 - Added one facade that owns the coordinator and returns operation error,

@@ -62,13 +62,16 @@ LayoutStorageError FakeGaugeLayoutStorage::erase_slot(std::uint8_t slot) {
         return LayoutStorageError::invalid_argument;
     }
     ++erases_[slot];
-    if (fail_erase_[slot]) {
-        fail_erase_[slot] = false;
+    const auto behavior = next_erase_[slot];
+    next_erase_[slot] = FakeEraseBehavior::normal;
+    if (behavior == FakeEraseBehavior::fail_before_erase) {
         return LayoutStorageError::io_failure;
     }
     slots_[slot] = {};
     present_[slot] = false;
-    return LayoutStorageError::none;
+    return behavior == FakeEraseBehavior::fail_after_erase
+               ? LayoutStorageError::commit_uncertain
+               : LayoutStorageError::none;
 }
 
 void FakeGaugeLayoutStorage::fail_next_read(std::uint8_t slot) {
@@ -86,8 +89,14 @@ void FakeGaugeLayoutStorage::set_next_write_behavior(
 }
 
 void FakeGaugeLayoutStorage::fail_next_erase(std::uint8_t slot) {
+    set_next_erase_behavior(slot, FakeEraseBehavior::fail_before_erase);
+}
+
+void FakeGaugeLayoutStorage::set_next_erase_behavior(
+    std::uint8_t slot,
+    FakeEraseBehavior behavior) {
     if (slot < 2) {
-        fail_erase_[slot] = true;
+        next_erase_[slot] = behavior;
     }
 }
 

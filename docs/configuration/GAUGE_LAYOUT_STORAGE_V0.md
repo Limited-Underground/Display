@@ -72,6 +72,22 @@ It reports a failed commit as uncertain and leaves it for normal two-slot
 selection after restart. This
 closes the common byte-binding boundary, not ESP-IDF or physical durability.
 
+## Reset
+
+Reset attempts erase on both slots even when the first operation fails. If
+either erase reports `commit_uncertain`, the store returns typed uncertainty in
+preference to ordinary storage failure. The caller must restart and inspect
+both slots before deciding whether reset applied; it must not blindly retry.
+
+Target-shaped host evidence covers failed commit on the first and second erase,
+both applied and unapplied. Applied uncertainty selects safe default only after
+restart observes both keys absent. Unapplied uncertainty selects the surviving
+prior slot with recovery required.
+
+This is storage behavior only. Reset still requires a separate local
+confirmation workflow, clear operator presentation, and physical interruption/
+endurance testing on the selected target backend.
+
 ## Host evidence
 
 `tests/host/gauge_layout_tests.cpp` covers twelve groups:

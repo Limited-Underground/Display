@@ -392,6 +392,42 @@ void test_real_store_reset_erases_both_keys() {
     EXPECT(result.recovery_required && loaded.generation == 9);
 }
 
+void test_uncertain_reset_is_selected_only_after_restart() {
+    for (const bool apply_first : {false, true}) {
+        for (const std::uint32_t failed_commit : {1U, 2U}) {
+            FakeKvBackend backend;
+            GaugeLayoutKvStorage storage(backend);
+            GaugeLayoutStore store(storage);
+            EXPECT(store.save(layout(1)).saved());
+            EXPECT(store.save(layout(2)).saved());
+
+            backend.fail_commit(failed_commit, apply_first);
+            EXPECT(store.reset() == GaugeLayoutStoreError::commit_uncertain);
+
+            backend.clear_failure();
+            GaugeLayoutKvStorage restarted_storage(backend);
+            GaugeLayoutStore restarted_store(restarted_storage);
+            GaugeLayout loaded{};
+            const auto result = restarted_store.load(layout(9), loaded);
+            if (apply_first) {
+                EXPECT(result.source == GaugeLayoutSource::safe_default);
+                EXPECT(result.recovery_required && loaded.generation == 9);
+                EXPECT(!backend.present[0] && !backend.present[1]);
+            } else {
+                const auto surviving_slot = failed_commit == 1U ? 0U : 1U;
+                EXPECT(result.source ==
+                       (surviving_slot == 0U
+                            ? GaugeLayoutSource::slot_a
+                            : GaugeLayoutSource::slot_b));
+                EXPECT(result.recovery_required);
+                EXPECT(loaded.generation == surviving_slot + 1U);
+                EXPECT(backend.present[surviving_slot]);
+                EXPECT(!backend.present[1U - surviving_slot]);
+            }
+        }
+    }
+}
+
 void test_store_owned_updates_suppress_unchanged_kv_writes() {
     FakeKvBackend backend;
     GaugeLayoutKvStorage storage(backend);
@@ -472,6 +508,7 @@ int main() {
     test_applied_failed_commit_is_selected_after_restart();
     test_unapplied_failed_commit_preserves_prior_layout();
     test_real_store_reset_erases_both_keys();
+    test_uncertain_reset_is_selected_only_after_restart();
     test_store_owned_updates_suppress_unchanged_kv_writes();
     test_uncertain_updates_reconcile_before_retry();
 
@@ -479,6 +516,6 @@ int main() {
         std::cerr << failures << " layout key/value assertion(s) failed\n";
         return EXIT_FAILURE;
     }
-    std::cout << "PASS: 10 gauge layout key/value storage groups\n";
+    std::cout << "PASS: 11 gauge layout key/value storage groups\n";
     return EXIT_SUCCESS;
 }

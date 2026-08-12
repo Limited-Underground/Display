@@ -444,6 +444,10 @@ GaugeLayoutUpdateResult GaugeLayoutStore::save_next_if_changed(
 GaugeLayoutStoreError GaugeLayoutStore::reset() {
     const auto a = storage_.erase_slot(0);
     const auto b = storage_.erase_slot(1);
+    if (a == LayoutStorageError::commit_uncertain ||
+        b == LayoutStorageError::commit_uncertain) {
+        return GaugeLayoutStoreError::commit_uncertain;
+    }
     return a == LayoutStorageError::none && b == LayoutStorageError::none
                ? GaugeLayoutStoreError::none
                : GaugeLayoutStoreError::storage_failure;

@@ -12,6 +12,7 @@ namespace {
 
 using namespace opengauge;
 using configuration::test_support::FakeGaugeLayoutStorage;
+using configuration::test_support::FakeEraseBehavior;
 using configuration::test_support::FakeWriteBehavior;
 
 int failures = 0;
@@ -274,6 +275,16 @@ void test_io_failure_and_reset_are_explicit() {
            configuration::GaugeLayoutStoreError::storage_failure);
     EXPECT(storage.erases(0) == 1 && storage.erases(1) == 1);
     EXPECT(!storage.present(1));
+
+    FakeGaugeLayoutStorage uncertain_storage{};
+    configuration::GaugeLayoutStore uncertain_store{uncertain_storage};
+    EXPECT(uncertain_store.save(layout(1)).saved());
+    uncertain_storage.set_next_erase_behavior(
+        0, FakeEraseBehavior::fail_after_erase);
+    EXPECT(uncertain_store.reset() ==
+           configuration::GaugeLayoutStoreError::commit_uncertain);
+    EXPECT(!uncertain_storage.present(0) &&
+           !uncertain_storage.present(1));
 }
 
 void test_store_allocates_generations_and_suppresses_unchanged_writes() {

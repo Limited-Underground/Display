@@ -164,6 +164,8 @@ public:
     // changed; otherwise returns the active generation without writing.
     [[nodiscard]] GaugeLayoutUpdateResult save_next_if_changed(
         const GaugeLayout& desired);
+    // Attempts both slot erases. Any commit_uncertain result takes precedence
+    // over ordinary failure and requires restart inspection before retry.
     [[nodiscard]] GaugeLayoutStoreError reset();
 
 private:

@@ -167,6 +167,13 @@ shown prompt, and must flush obsolete input across restart. Schema migration,
 ESP-IDF binding, security, and physical power-cut/endurance evidence remain
 unresolved.
 
+Reset attempts both slot erases. If either backend commit is uncertain, that
+typed result takes precedence over ordinary failure and the caller must restart
+and inspect both slots before retrying. Safe default is selected only when both
+slots are actually absent; one surviving valid slot remains recoverable and
+visible. Local confirmation for reset and physical target durability are not
+yet composed.
+
 A separate [operator-status projection](configuration/GAUGE_LAYOUT_CHANGE_OPERATOR_STATUS_V0.md)
 turns coherent coordinator status and one immediate operation result into a
 fixed semantic state/action record. It carries an opaque request token only
