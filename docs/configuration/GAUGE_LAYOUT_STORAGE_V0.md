@@ -1,9 +1,9 @@
 # Gauge Layout Storage v0
 
-Status: deterministic host-tested codec and recoverable two-slot composition,
-2026-08-09. This is not an ESP-IDF/NVS binding, flash-endurance result,
-filesystem, remote import format, schema migration implementation, or physical
-power-interruption test.
+Status: deterministic host-tested codec, recoverable two-slot composition, and
+backend-neutral key/value binding, updated 2026-08-12. This is not an
+ESP-IDF/NVS binding, flash-endurance result, filesystem, remote import format,
+schema migration implementation, or physical power-interruption test.
 
 ## Layout record
 
@@ -54,6 +54,12 @@ deduplicate semantically unchanged layouts, persist/allocate generation values,
 handle 64-bit generation exhaustion, quantify flash wear, or guarantee backend
 atomicity.
 
+The target-shaped [key/value adapter](GAUGE_LAYOUT_KV_TARGET_ADAPTER_V0.md)
+binds the slots to exact 576-byte `og_config` / `gauge_layout` / `ogl0_a|b`
+blobs and requires explicit backend commit after write or present-key erase.
+It leaves failed commits for normal two-slot selection after restart. This
+closes the common byte-binding boundary, not ESP-IDF or physical durability.
+
 ## Host evidence
 
 `tests/host/gauge_layout_tests.cpp` covers nine groups:
@@ -75,7 +81,7 @@ The suite also repeated 100 times with zero failures.
 - implement and host-test version migration before introducing schema 2;
 - define safe import/export, validation feedback, reset confirmation, and UI
   recovery workflows;
-- bind the two slots to the exact board storage API with task ownership,
+- bind the key/value backend to the exact board storage API with task ownership,
   synchronization, size/alignment, erase-block, and commit semantics;
 - measure normal-save wear, unchanged-save suppression, rapid user edits,
   brownout at each write phase, corrupt sectors, full storage, and recovery;

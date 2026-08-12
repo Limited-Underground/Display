@@ -210,7 +210,8 @@ Invoke-HostTest `
     -Description 'Target-shaped alert-system recovery key/value adapter' `
     -IncludeDirectories @(
         (Join-Path $projectRoot 'firmware\components\identity\include'),
-        (Join-Path $projectRoot 'firmware\components\integration\include')
+        (Join-Path $projectRoot 'firmware\components\integration\include'),
+        (Join-Path $projectRoot 'firmware\components\storage\include')
     ) `
     -Sources @(
         (Join-Path $projectRoot 'firmware\components\identity\src\peer_authorization.cpp'),
@@ -712,6 +713,27 @@ Invoke-HostTest `
         (Join-Path $projectRoot 'firmware\components\wireless\src\telemetry_packet.cpp'),
         (Join-Path $projectRoot 'firmware\components\wireless\src\gauge_telemetry_receiver.cpp'),
         (Join-Path $projectRoot 'tests\host\gauge_layout_tests.cpp')
+    )
+
+Invoke-HostTest `
+    -Name 'gauge_layout_kv_storage_tests' `
+    -Description 'Target-shaped gauge layout key/value adapter' `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\configuration\include'),
+        (Join-Path $projectRoot 'firmware\components\display\include'),
+        (Join-Path $projectRoot 'firmware\components\storage\include'),
+        (Join-Path $projectRoot 'firmware\components\telemetry\include'),
+        (Join-Path $projectRoot 'firmware\components\wireless\include')
+    ) `
+    -Sources @(
+        (Join-Path $projectRoot 'firmware\components\configuration\src\gauge_layout.cpp'),
+        (Join-Path $projectRoot 'firmware\components\configuration\src\gauge_layout_kv_storage.cpp'),
+        (Join-Path $projectRoot 'firmware\components\display\src\gauge_view_model.cpp'),
+        (Join-Path $projectRoot 'firmware\components\telemetry\src\normalized_signal.cpp'),
+        (Join-Path $projectRoot 'firmware\components\wireless\src\esp_now_transport.cpp'),
+        (Join-Path $projectRoot 'firmware\components\wireless\src\telemetry_packet.cpp'),
+        (Join-Path $projectRoot 'firmware\components\wireless\src\gauge_telemetry_receiver.cpp'),
+        (Join-Path $projectRoot 'tests\host\gauge_layout_kv_storage_tests.cpp')
     )
 
 Invoke-HostTest `

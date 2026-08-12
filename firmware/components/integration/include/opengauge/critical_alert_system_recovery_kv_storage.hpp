@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "opengauge/key_value_blob_backend.hpp"
 #include "opengauge/critical_alert_system_recovery_store.hpp"
 
 namespace opengauge::integration {
@@ -17,40 +18,9 @@ static_assert(sizeof(kCriticalAlertSystemRecoveryNamespace) - 1 <= 15);
 static_assert(sizeof(kCriticalAlertSystemRecoverySlotAKey) - 1 <= 15);
 static_assert(sizeof(kCriticalAlertSystemRecoverySlotBKey) - 1 <= 15);
 
-enum class CriticalAlertSystemRecoveryKvBackendError : std::uint8_t {
-    none = 0,
-    not_found,
-    invalid_argument,
-    io_failure,
-};
-
-// Backend writes and erases stage one mutation. commit() makes that mutation
-// durable. One adapter instance must exclusively own its backend transaction.
-class CriticalAlertSystemRecoveryKvBackend {
-public:
-    virtual ~CriticalAlertSystemRecoveryKvBackend() = default;
-
-    [[nodiscard]] virtual CriticalAlertSystemRecoveryKvBackendError read_blob(
-        const char* partition_label,
-        const char* namespace_name,
-        const char* key,
-        std::uint8_t* output,
-        std::size_t capacity,
-        std::size_t& actual_size) = 0;
-    [[nodiscard]] virtual CriticalAlertSystemRecoveryKvBackendError write_blob(
-        const char* partition_label,
-        const char* namespace_name,
-        const char* key,
-        const std::uint8_t* data,
-        std::size_t size) = 0;
-    [[nodiscard]] virtual CriticalAlertSystemRecoveryKvBackendError erase_key(
-        const char* partition_label,
-        const char* namespace_name,
-        const char* key) = 0;
-    [[nodiscard]] virtual CriticalAlertSystemRecoveryKvBackendError commit(
-        const char* partition_label,
-        const char* namespace_name) = 0;
-};
+using CriticalAlertSystemRecoveryKvBackendError =
+    storage::KeyValueBlobBackendError;
+using CriticalAlertSystemRecoveryKvBackend = storage::KeyValueBlobBackend;
 
 // Maps the two exact 1280-byte ORS0 slots onto isolated key/value blobs. This
 // is target-shaped common code, not an ESP-IDF or protected-storage backend.

@@ -65,7 +65,7 @@ diagnostics errors. Encoding failure occurs before the diagnostics ring changes.
 8. fixed, trivially copyable, identifier-free payload shape.
 
 The focused suite passes 100 consecutive repeats, and the complete
-42-executable host matrix passes locally.
+43-executable host matrix passes locally.
 
 ## Remaining gates
 

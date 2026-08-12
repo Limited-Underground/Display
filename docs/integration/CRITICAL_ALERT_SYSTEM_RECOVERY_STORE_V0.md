@@ -81,7 +81,7 @@ policy.
 11. protected-key rejection with zero live mutation followed by successful
     validated restore.
 
-The current complete 42-executable host matrix passes, and the focused store
+The current complete 43-executable host matrix passes, and the focused store
 suite passes 100 consecutive repeats. A separate
 [key/value target-adapter suite](CRITICAL_ALERT_SYSTEM_RECOVERY_KV_TARGET_ADAPTER_V0.md)
 exercises this real store through exact 1280-byte blobs, including save,

@@ -42,7 +42,7 @@ and verified-save coordinators through restarted adapter/store instances. It
 proves normal one-slot and two-slot restart, advances separate trust only after
 discovering an applied uncertain commit, and preserves the prior trusted boot
 after an unapplied uncertain commit. The focused suite passes 100/100 repeats
-and the complete 42-executable host matrix passes under strict C++17
+and the complete 43-executable host matrix passes under strict C++17
 warnings-as-errors including publication safety.
 
 ## Remaining target obligations

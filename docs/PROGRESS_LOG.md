@@ -6,6 +6,20 @@ public chronology.
 
 ## 2026-08-12
 
+### Target-shaped `OGL0` gauge-layout key/value storage
+
+- Added one shared backend-neutral key/value blob contract and moved the
+  existing `ORS0` adapter onto it without changing its public behavior.
+- Added exact 576-byte `og_config` / `gauge_layout` / `ogl0_a|b` layout
+  binding with explicit commit after write/present-key erase, idempotent
+  missing-key erase, strict value size, and distinct missing versus I/O errors.
+- Eight deterministic groups exercise exact operations, backend failures, real
+  layout rotation/reset, and restart selection after both applied and
+  unapplied failed commits. The focused suite passes 100/100 repeats and the
+  complete 43-executable host matrix passes including publication safety.
+  ESP-IDF binding, physical power cuts, wear, migration, unchanged-write
+  suppression, and configuration authenticity remain open.
+
 ### Target-shaped `ORS0` key/value storage
 
 - Added a backend-neutral adapter for the two exact 1280-byte alert-system
@@ -18,7 +32,7 @@ public chronology.
   applied and unapplied uncertain commits. Applied uncertainty is reconciled
   by advancing separate trust after restart; unapplied uncertainty restores the
   prior trusted generation without inventing a newer record.
-  The focused suite passes 100/100 repeats and the complete 42-executable host
+  The focused suite passes 100/100 repeats and the complete 43-executable host
   matrix passes including publication safety. ESP-IDF binding, protected keys,
   authenticated integrity, trusted generation, locking, physical interruption,
   endurance, and on-device boot evidence remain open.

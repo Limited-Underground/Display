@@ -148,9 +148,13 @@ validated widgets into 576 canonical bytes. A two-slot store selects the unique
 highest generation, falls back visibly on corruption/I/O/equal-generation
 conflict, writes only an empty/invalid or older slot, and requires full
 readback, byte comparison, and decode before accepting a save. CRC detects
-accidental corruption only. Schema migration, generation persistence,
-unchanged-write suppression, backend binding, security, and physical
-power-cut/endurance evidence remain unresolved.
+accidental corruption only. A backend-neutral
+[key/value adapter](configuration/GAUGE_LAYOUT_KV_TARGET_ADAPTER_V0.md) now
+fixes exact `og_config` / `gauge_layout` / `ogl0_a|b` binding, commits complete
+writes and present-key erases, and leaves failed commits for restart selection.
+Schema migration, generation persistence, unchanged-write suppression,
+ESP-IDF binding, security, and physical power-cut/endurance evidence remain
+unresolved.
 
 ## GPS and auxiliary modules
 
