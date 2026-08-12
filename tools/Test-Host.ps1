@@ -459,6 +459,22 @@ Invoke-HostTest `
     )
 
 Invoke-HostTest `
+    -Name 'gauge_layout_change_status_diagnostics_tests' `
+    -Description 'Versioned redacted layout-change status diagnostics' `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\configuration\include'),
+        (Join-Path $projectRoot 'firmware\components\diagnostics\include'),
+        (Join-Path $projectRoot 'firmware\components\display\include'),
+        (Join-Path $projectRoot 'firmware\components\telemetry\include'),
+        (Join-Path $projectRoot 'firmware\components\wireless\include')
+    ) `
+    -Sources @(
+        (Join-Path $projectRoot 'firmware\components\diagnostics\src\diagnostics.cpp'),
+        (Join-Path $projectRoot 'firmware\components\diagnostics\src\gauge_layout_change_status_diagnostics.cpp'),
+        (Join-Path $projectRoot 'tests\host\gauge_layout_change_status_diagnostics_tests.cpp')
+    )
+
+Invoke-HostTest `
     -Name 'critical_alarm_exporter_tests' `
     -Description 'Alarm-to-critical-alert exporter' `
     -IncludeDirectories @(

@@ -114,10 +114,12 @@ GaugeLayoutChangeProjectionResult rejected_from_live(
     if (status.state == GaugeLayoutChangeState::stopped) {
         return unavailable();
     }
-    return terminal(
+    auto rejected = terminal(
         OperatorState::rejected,
         OperatorAction::stage_new_request,
         true);
+    rejected.status.last_operation_rejected = true;
+    return rejected;
 }
 
 GaugeLayoutChangeProjectionResult project_snapshot(

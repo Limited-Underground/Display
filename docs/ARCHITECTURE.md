@@ -174,6 +174,12 @@ while confirmation is still allowed and distinguishes ordinary retry from
 restart reconciliation. It formats no text, records no diagnostic, and cannot
 substitute for target task ownership or physical-presence evidence.
 
+The [redacted diagnostic adapter](diagnostics/GAUGE_LAYOUT_CHANGE_STATUS_DIAGNOSTIC_EVENT_V0.md)
+reduces that live record to coarse state/action/flags in one versioned 32-bit
+word. Request tokens, time, generation, layout content, labels, and counters do
+not cross the diagnostic boundary. Persistent audit and target log/export
+policy remain separate design work.
+
 ## GPS and auxiliary modules
 
 The GPS role publishes normalized speed, position, altitude, heading, UTC, fix quality, and age. Consumers must distinguish unavailable/stale values.
