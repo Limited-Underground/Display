@@ -88,6 +88,10 @@ This is storage behavior only. Reset still requires a separate local
 confirmation workflow, clear operator presentation, and physical interruption/
 endurance testing on the selected target backend.
 
+Normal “restore default layout” does not use this reset primitive. It stages the
+validated compiled default through the regular confirmed save path, persists a
+new generation only when content changed, and retains two-slot recovery.
+
 ## Host evidence
 
 `tests/host/gauge_layout_tests.cpp` covers twelve groups:

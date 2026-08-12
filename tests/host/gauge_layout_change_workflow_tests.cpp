@@ -253,6 +253,62 @@ void test_same_boot_request_replay_is_projected_as_rejection() {
            configuration::GaugeLayoutChangeOperatorAction::stage_new_request);
 }
 
+void test_restore_default_uses_confirmed_generation_not_slot_erase() {
+    FakeGaugeLayoutStorage storage{};
+    configuration::GaugeLayoutStore store{storage};
+    auto custom = layout(80);
+    EXPECT(store.save_next_if_changed(custom).changed());
+    configuration::GaugeLayoutChangeWorkflow workflow{store};
+    EXPECT(workflow.start({100}, 0).projected());
+
+    auto compiled_default = layout(65);
+    compiled_default.generation = 999;
+    auto result = workflow.stage_restore_default(90, compiled_default, 1);
+    EXPECT(result.projected());
+    EXPECT(result.status.state ==
+           configuration::GaugeLayoutChangeOperatorState::
+               confirmation_required);
+    EXPECT(storage.writes(0) + storage.writes(1) == 1);
+    EXPECT(storage.erases(0) + storage.erases(1) == 0);
+
+    result = workflow.confirm(90, 2);
+    EXPECT(result.projected());
+    EXPECT(result.persistence.changed());
+    EXPECT(result.status.state ==
+           configuration::GaugeLayoutChangeOperatorState::applied);
+    EXPECT(result.status.generation == 2);
+    EXPECT(storage.writes(0) + storage.writes(1) == 2);
+    EXPECT(storage.erases(0) + storage.erases(1) == 0);
+
+    configuration::GaugeLayoutStore restarted_store{storage};
+    configuration::GaugeLayout loaded{};
+    auto safe_default = layout(65);
+    safe_default.generation = 1;
+    const auto loaded_result = restarted_store.load(safe_default, loaded);
+    EXPECT(loaded_result.source == configuration::GaugeLayoutSource::slot_b);
+    EXPECT(!loaded_result.recovery_required);
+    EXPECT(loaded.generation == 2);
+    EXPECT(loaded.brightness_percent == 65);
+
+    EXPECT(workflow.stage_restore_default(91, compiled_default, 3).projected());
+    result = workflow.confirm(91, 4);
+    EXPECT(result.projected());
+    EXPECT(result.persistence.succeeded() && !result.persistence.changed());
+    EXPECT(result.status.state ==
+           configuration::GaugeLayoutChangeOperatorState::unchanged);
+    EXPECT(storage.writes(0) + storage.writes(1) == 2);
+    EXPECT(storage.erases(0) + storage.erases(1) == 0);
+
+    auto invalid = compiled_default;
+    invalid.layout_id = 0;
+    result = workflow.stage_restore_default(92, invalid, 5);
+    EXPECT(result.operation_error ==
+           configuration::GaugeLayoutChangeError::invalid_layout);
+    EXPECT(result.status.state ==
+           configuration::GaugeLayoutChangeOperatorState::rejected);
+    EXPECT(storage.writes(0) + storage.writes(1) == 2);
+}
+
 }  // namespace
 
 int main() {
@@ -264,12 +320,13 @@ int main() {
     test_storage_failure_and_uncertainty_have_distinct_actions();
     test_clock_regression_consumes_prompt_and_projects_fault();
     test_same_boot_request_replay_is_projected_as_rejection();
+    test_restore_default_uses_confirmed_generation_not_slot_erase();
 
     if (failures != 0) {
         std::cerr << failures
                   << " layout-change workflow assertion(s) failed\n";
         return EXIT_FAILURE;
     }
-    std::cout << "PASS: 8 layout-change workflow groups\n";
+    std::cout << "PASS: 9 layout-change workflow groups\n";
     return EXIT_SUCCESS;
 }

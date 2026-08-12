@@ -6,6 +6,22 @@ public chronology.
 
 ## 2026-08-12
 
+### Confirmed restore-default path without erase
+
+- Added `stage_restore_default` to the existing layout-change workflow, sharing
+  its one pending request, exact confirmation window, same-boot replay rules,
+  generation allocation, uncertainty handling, and operator projection.
+- A confirmed compiled default is stored as an ordinary next generation. Host
+  restart selects it as newest; a repeated restore is unchanged and causes no
+  write; invalid default content fails before persistence.
+- The workflow test explicitly proves zero slot erases during stage, confirm,
+  restart, unchanged repeat, and invalid request. Low-level two-slot erase
+  remains a separate service/replacement primitive rather than a casual UI
+  reset.
+- Nine cumulative workflow groups pass 100/100 focused repeats plus the complete
+  47-executable matrix including publication safety. Renderer text/input,
+  source authorization, target concurrency, and physical behavior remain open.
+
 ### Typed gauge-layout reset uncertainty
 
 - Changed the two-slot layout reset path to preserve `commit_uncertain` when
@@ -28,10 +44,11 @@ public chronology.
 - The projection is derived before the method returns from the coordinator's
   immediate post-operation status. Callers no longer supply or later re-pair
   an operation observation with mutable state.
-- Eight groups cover lifecycle/policy, exact prompt staging, mismatch without
+- Nine groups cover lifecycle/policy, exact prompt staging, mismatch without
   prompt loss, apply/unchanged persistence, cancel/expiry, ordinary failure
-  versus uncertainty, clock rollback, and same-boot request replay. Both
-  underlying error and projected next action remain available.
+  versus uncertainty, clock rollback, same-boot request replay, and confirmed
+  default restoration without slot erase. Both underlying error and projected
+  next action remain available.
 - The suite passes 100/100 focused repeats and the complete 47-executable host
   matrix including publication safety. The facade owns no lock, RTOS task,
   renderer, local-input proof, source authority, diagnostic policy, or target

@@ -33,6 +33,13 @@ public:
         std::uint32_t request_id,
         const GaugeLayout& desired,
         std::uint64_t now_ms);
+    // Uses the same pending request and confirmation path as stage(). It
+    // persists a validated default as a normal next generation and never
+    // calls the low-level two-slot erase operation.
+    [[nodiscard]] GaugeLayoutChangeWorkflowResult stage_restore_default(
+        std::uint32_t request_id,
+        const GaugeLayout& compiled_default,
+        std::uint64_t now_ms);
     [[nodiscard]] GaugeLayoutChangeWorkflowResult confirm(
         std::uint32_t request_id,
         std::uint64_t now_ms);

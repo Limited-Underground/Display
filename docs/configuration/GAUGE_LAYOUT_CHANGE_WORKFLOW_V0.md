@@ -19,7 +19,9 @@ Every method returns:
 - the projected operator status.
 
 The methods cover start, stop, read-only snapshot, stage, confirm, cancel, and
-expiry service. Start policy errors still return a coherent unavailable
+expiry service. `stage_restore_default` is an explicit semantic entrypoint that
+passes the validated compiled default through the same stage/confirm path; it
+does not call storage reset or erase. Start policy errors still return a coherent unavailable
 projection; a repeated start reports the operation error while preserving the
 current live projection.
 
@@ -37,6 +39,17 @@ The facade does not reinterpret or hide underlying results:
 - clock rollback consumes the prompt and projects a clock fault; and
 - same-boot request reuse is a terminal rejected proposal.
 
+## Restore default versus storage reset
+
+First-release “restore default layout” is a normal confirmed configuration
+change. The compiled default is validated, caller generation is ignored, and
+the store either writes it at highest-valid plus one or reports unchanged with
+no write. The prior slot remains available for recovery until later rotation.
+
+The restore-default path never calls `GaugeLayoutStore::reset`. Destructive
+two-slot erase remains a service/replacement primitive with separate uncertain-
+commit restart semantics and is not an ordinary user action.
+
 ## Ownership boundary
 
 The facade does not contain a mutex, RTOS task, queue, ISR bridge, renderer,
@@ -47,9 +60,10 @@ successfully displayed frame and local action.
 
 ## Evidence
 
-Eight deterministic groups cover lifecycle/policy, exact prompt stage,
+Nine deterministic groups cover lifecycle/policy, exact prompt stage,
 mismatched confirmation, changed/unchanged persistence, cancellation/expiry,
-ordinary failure versus uncertain commit, clock rollback, and request replay.
+ordinary failure versus uncertain commit, clock rollback, request replay, and
+confirmed default restoration across restart with zero erases.
 The focused suite passes 100/100 repeats and the complete 47-executable strict
 host matrix.
 

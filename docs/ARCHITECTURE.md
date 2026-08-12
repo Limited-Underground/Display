@@ -185,6 +185,9 @@ The [workflow facade](configuration/GAUGE_LAYOUT_CHANGE_WORKFLOW_V0.md) owns the
 coordinator and derives that projection immediately after each operation before
 returning one combined result. This removes caller-controlled result/status
 re-pairing but does not add a mutex, RTOS task, or source/UI authority.
+Its explicit restore-default entrypoint uses the same confirmed save path and
+stores the validated compiled default as a normal next generation; it never
+invokes destructive two-slot erase.
 
 The [redacted diagnostic adapter](diagnostics/GAUGE_LAYOUT_CHANGE_STATUS_DIAGNOSTIC_EVENT_V0.md)
 reduces that live record to coarse state/action/flags in one versioned 32-bit

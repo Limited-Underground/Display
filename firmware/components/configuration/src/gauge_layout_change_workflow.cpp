@@ -37,6 +37,14 @@ GaugeLayoutChangeWorkflowResult GaugeLayoutChangeWorkflow::stage(
     return project(observation, now_ms);
 }
 
+GaugeLayoutChangeWorkflowResult
+GaugeLayoutChangeWorkflow::stage_restore_default(
+    std::uint32_t request_id,
+    const GaugeLayout& compiled_default,
+    std::uint64_t now_ms) {
+    return stage(request_id, compiled_default, now_ms);
+}
+
 GaugeLayoutChangeWorkflowResult GaugeLayoutChangeWorkflow::confirm(
     std::uint32_t request_id,
     std::uint64_t now_ms) {
