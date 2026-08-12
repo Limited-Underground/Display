@@ -220,6 +220,22 @@ The latest checkpoint proves deterministic outbox reconstruction in a new host o
 
 Two Waveshare ESP32-S3-Touch-AMOLED-1.75-B units (SKU 31262) are reported ordered for evaluation. They remain candidate hardware until received, identified, built, benchmarked, and recovery-tested. Other candidate and missing hardware is tracked in [the evidence inventory](hardware/INVENTORY.md).
 
+## Product roles and display choices
+
+- **Vehicle gateway:** the required acquisition role is a separately powered,
+  protected, initially listen-only CAN/J1939 gateway. No production gateway
+  hardware has been selected.
+- **Gauge endpoint:** a compact 1.75-inch round touch unit can be a complete
+  gauge endpoint; a larger touchscreen is an alternative richer renderer, not
+  a requirement. Both consume the same normalized telemetry/state contracts,
+  while geometry, readability, touch, power, and performance remain
+  target-specific acceptance gates.
+- **Optional roles:** GNSS, additional displays, OpenTrail normalized-alert
+  bridging, and future auxiliary modules must fail independently. OpenTrail
+  never receives raw CAN/J1939, and auxiliary control remains outside the core.
+- The [product role and display map](docs/PRODUCT_BOUNDARIES_V0.md) explains
+  required versus optional hardware, allowed data, and degraded behavior.
+
 ## Intended capabilities
 
 - A gateway that receives CAN/J1939, decodes selected PGNs/SPNs, validates them, and publishes normalized telemetry

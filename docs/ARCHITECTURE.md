@@ -27,6 +27,13 @@ Vehicle CAN/J1939
 
 Roles are separately deployable target applications assembled from bounded components. A failure or restart in one display cannot block the gateway or other displays.
 
+The [product boundary map](PRODUCT_BOUNDARIES_V0.md) makes the display choice
+explicit: a compact round gauge and a larger touchscreen are alternative gauge
+targets over the same display-neutral telemetry/state contracts. Neither is a
+gateway, and the larger screen is not required for base instrumentation.
+GNSS, OpenTrail bridging, extra displays, and auxiliary functions remain
+optional fail-independent roles.
+
 ## Layer boundaries
 
 ### Hardware adapters

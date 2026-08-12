@@ -6,6 +6,21 @@ public chronology.
 
 ## 2026-08-12
 
+### Product roles and display alternatives
+
+- Added one public role/dependency map separating the vehicle gateway from
+  gauge endpoints and optional GNSS, additional display, OpenTrail bridge, and
+  auxiliary roles.
+- Clarified that the ordered 1.75-inch round touch unit can serve as a complete
+  compact gauge endpoint. A larger touchscreen is an alternative renderer for
+  more simultaneous content and navigation, not a base requirement.
+- Required both display shapes to consume the same normalized telemetry,
+  explicit stale/error state, alarms, and semantic configuration boundaries;
+  each still needs its own readability/touch/resource/power acceptance.
+- Preserved independent failure: display loss cannot stop gateway acquisition;
+  GNSS/OpenTrail/auxiliary absence cannot stop core instrumentation; and raw
+  CAN/J1939 never crosses into OpenTrail.
+
 ### Cross-store canonical layout transfer proof
 
 - Composed the existing canonical exporter and confirmed importer across two

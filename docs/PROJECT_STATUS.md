@@ -9,6 +9,15 @@ Status date: 2026-08-10
 - Configurable gauges, warnings, local persistence, and stale-data behavior
 - Optional GPS, APU/auxiliary, OpenTrail event, and recoverable OTA modules
 
+The product role map now treats the compact 1.75-inch round touch display and a
+larger touchscreen as alternative gauge endpoints over the same display-neutral
+contracts. The round unit can provide a full compact gauge experience; the
+larger display may show more simultaneous widgets and richer navigation but is
+not required. Both remain candidate shapes pending separate physical
+readability, touch, timing, memory, power, heat, recovery, and independent-
+failure acceptance. The vehicle gateway remains a separate required role, while
+GNSS, extra displays, OpenTrail bridging, and auxiliary functions are optional.
+
 The critical-alert semantic interface has bounded host validation in this and
 the OpenTrail repository. Two strengthened role-reversed Heltec/SenseCAP cycles
 also carried 2/2 exact normative `OGA0` frames and 2/2 correlated `OGK0`
