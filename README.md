@@ -2,287 +2,86 @@
 
 [![Host validation](https://github.com/nbjelanovic/OpenGauge/actions/workflows/host-validation.yml/badge.svg)](https://github.com/nbjelanovic/OpenGauge/actions/workflows/host-validation.yml)
 
-OpenGauge is a proposed free/open-source ESP32 vehicle instrumentation and telemetry platform. Its baseline architecture separates a listen-only CAN/J1939 gateway from independently operating wireless gauge displays.
+OpenGauge is a free and open-source ESP32 platform for modular vehicle gauges and telemetry. A separate, initially listen-only gateway reads vehicle data, converts it into validated signals, and sends only the information each gauge needs.
 
-## Current snapshot — 2026-08-12
-
-### Hardware and integration
-
-- **Phase:** architecture plus host-tested components and bounded three-radio
-  bench integration; no production firmware or supported vehicle yet.
-- **Bench hardware used by the shared OpenTrail link:** two Heltec V4 OLED USB
-  companions and one Seeed SenseCAP Solar repeater.
-- **Latest physical result:** accepted, terminal-rejection, retryable-rejection,
-  retry-to-accept, and live-state alert/ACK cycles completed with zero observed
-  message loss, duplicates, or new radio errors.
-- **Separate first radio pilot:** OpenTrail now defines a four-person,
-  four-standalone-client test with no required repeater, phone, server, laptop,
-  internet, vehicle connection, or OpenGauge hardware during the session. Its
-  [plan](https://github.com/nbjelanovic/OpenTrail/blob/main/docs/testing/FOUR_PERSON_PILOT_V0.md)
-  and [result evaluator](https://github.com/nbjelanovic/OpenTrail/blob/main/docs/testing/FOUR_PERSON_PILOT_RESULT_V0.md)
-  are public but remain blocked on the exact four-unit hardware/firmware freeze.
-- **Separate OpenTrail security sizing:** OpenTrail's
-  [benchmark evidence boundary](https://github.com/nbjelanovic/OpenTrail/blob/main/docs/security/CRYPTO_BENCHMARK_EVIDENCE_V0.md)
-  and [protected-packet budget](https://github.com/nbjelanovic/OpenTrail/blob/main/docs/protocol/PROTECTED_PACKET_BUDGET_V0.md)
-  expose target/lock/test gates and the candidate LoRa header/tag/airtime cost.
-  Its [immutable-forwarding decision](https://github.com/nbjelanovic/OpenTrail/blob/main/docs/decisions/0004-immutable-first-release-forwarding.md)
-  limits the first release to one exact-byte repeater and shows that individual
-  broadcast-source authentication adds a 64-byte signature candidate. The
-  separate [replay coordinator](https://github.com/nbjelanovic/OpenTrail/blob/main/docs/protocol/SINGLE_REPEATER_REPLAY_COORDINATOR_V0.md)
-  now saves each eligible replay observation before permitting repeater queue
-  release and restores/repairs it across host restart. Its fixed-size
-  [`ODS0/v1` store](https://github.com/nbjelanovic/OpenTrail/blob/main/docs/persistence/DUPLICATE_CHECKPOINT_STORE_V1.md)
-  now embeds the exact group context and epoch, refusing mismatched and legacy
-  unbound media without overwrite. These do not validate OpenGauge ESP-NOW,
-  storage, keys, or target firmware.
-- **Separate OpenTrail entropy prerequisite:** its host-tested
-  [secure-random source boundary](https://github.com/nbjelanovic/OpenTrail/blob/main/docs/security/SECURE_RANDOM_SOURCE_V0.md)
-  exposes typed readiness, bounds each request to 1-64 bytes, and requires full
-  output or no buffer change. Eight groups plus 100 focused repeats pass. No
-  ESP-IDF entropy/DRBG adapter, production key generation, cold-start/brownout,
-  or RF/ADC concurrency evidence is claimed, and this is not OpenGauge target
-  security evidence.
-- **Separate OpenTrail time prerequisite:** its host-tested
-  [checked monotonic-clock boundary](https://github.com/nbjelanovic/OpenTrail/blob/main/docs/platform/MONOTONIC_CLOCK_V0.md)
-  keeps boot-local elapsed milliseconds separate from UTC, permits equal ticks
-  and temporary not-ready recovery, and latches rollback/source failure for the
-  current boot composition. Eight groups plus 100 focused repeats pass. No
-  ESP-IDF timer/task/deep-sleep/brownout or physical timing evidence is claimed,
-  and this is not OpenGauge target evidence.
-- **Separate OpenTrail power prerequisite:** its host-tested
-  [power-state boundary](https://github.com/nbjelanovic/OpenTrail/blob/main/docs/platform/POWER_STATE_V0.md)
-  keeps source health, external power, battery presence, charge state, optional
-  percentage/voltage, and sample age separate. Eleven groups plus 100 focused
-  repeats cover exact battery bands, charging, missing/stale/fault/invalid state,
-  and a bounded fake. It does not estimate percentage from voltage or prove an
-  ESP-IDF adapter, charger behavior, battery life, physical thresholds, or any
-  OpenGauge target property.
-- **Separate OpenTrail local-interface prerequisite:** its
-  [semantic display/input boundary](https://github.com/nbjelanovic/OpenTrail/blob/main/docs/platform/LOCAL_INTERFACE_V0.md)
-  binds normalized action slots to the exact semantic frame successfully shown,
-  independent of OLED/button or touch rendering. Twelve groups plus 100 focused
-  repeats cover atomic presentation, stale/invalid input, and hold-only critical
-  confirmation. It proves no OpenGauge renderer, display/input adapter,
-  accessibility/readability, critical-alert delivery, or physical target
-  behavior.
-
-### Software and safety
-
-- **Latest software result:** a host transfer proof now composes canonical
-  export and confirmed import across two independent stores. Source generation
-  2 is previewed but cannot control a destination already at generation 10;
-  exact confirmation creates destination generation 11, restart selects it,
-  identical re-import causes no write, and re-export preserves generation 11.
-  Eleven workflow groups pass 100/100 focused repeats plus the complete
-  47-executable host matrix. File transport, source/destination authorization,
-  and hardware remain.
-- **Canonical export result:** canonical layout export uses the same normal
-  two-slot selection as boot and returns its source/slot/recovery evidence. It
-  emits one exact `OGL0` record for a known safe fallback or valid selected
-  slot, but fails closed with no caller-buffer change on bad capacity, invalid
-  safe default, equal-generation conflict, or any unreadable-slot uncertainty.
-  Thirteen layout groups pass 100/100 focused repeats plus the complete
-  47-executable host matrix. File/download adapters, confidentiality policy,
-  and physical evidence remain.
-- **Confirmed import result:** local layout import accepts only one exact,
-  canonical 576-byte `OGL0` record through the confirmed
-  [layout-change workflow](docs/configuration/GAUGE_LAYOUT_IMPORT_V0.md).
-  Decode errors remain typed, invalid/corrupt input cannot consume a request
-  ID or disturb a live prompt, and the source generation is preview metadata—not
-  storage authority. Exact confirmation writes the normal next local generation;
-  no import bytes reach storage during preview/stage. Ten workflow groups pass
-  100/100 focused repeats plus the complete 47-executable host matrix. Source
-  authorization, file/UI adapters, and physical target evidence remain.
-- **Restore-default result:** “restore default layout” has an explicit
-  `stage_restore_default` entrypoint on the existing confirmed workflow. It
-  validates the compiled default, uses the same single pending request and
-  replay rules, persists it as a normal next generation, survives restart, and
-  suppresses repeated unchanged writes without ever erasing either slot. Nine
-  workflow groups pass 100/100 focused repeats plus the complete 47-executable
-  host matrix. Low-level erase remains service-only; renderer/input binding and
-  physical target evidence remain.
-- **Reset-storage groundwork:** layout reset preserves typed commit
-  uncertainty through `GaugeLayoutStore::reset` instead of collapsing it into
-  ordinary failure. The target-shaped key/value suite covers failed commit on
-  either slot erase, both applied and unapplied: restart selects safe default
-  only when both keys are actually absent and otherwise preserves the surviving
-  prior layout. Eleven adapter groups and thirteen cumulative core groups pass 100/100
-  focused repeats plus the complete 47-executable host matrix. A reset workflow,
-  physical presence, ESP-IDF backend, and power-cut/endurance evidence remain.
-- **Workflow groundwork:** a host-tested
-  [layout-change workflow facade](docs/configuration/GAUGE_LAYOUT_CHANGE_WORKFLOW_V0.md)
-  owns the coordinator and returns each stage/confirm/cancel/service operation
-  with the operator projection derived from the immediate post-operation state.
-  This removes a caller-controlled gap where stale status could be paired with
-  an older result. Eleven cumulative groups pass 100/100 focused repeats plus
-  the complete 47-executable host matrix. It still requires one serialized
-  target owner and
-  proves no renderer, input device, source authority, or hardware path.
-- **Diagnostic groundwork:** a host-tested
-  [redacted layout-change diagnostic event](docs/diagnostics/GAUGE_LAYOUT_CHANGE_STATUS_DIAGNOSTIC_EVENT_V0.md)
-  encodes coarse operator state/action/attention/rejection into one versioned
-  32-bit word for the existing bounded diagnostic ring. It structurally omits
-  request IDs, confirmation time, generations, layout content, labels, and
-  counters; malformed and incoherent words fail closed. Eight groups pass
-  100/100 focused repeats and remain in the complete 47-executable host matrix. Target
-  log binding, persistent retention/export, and physical failure capture remain
-  unproved.
-- **Operator-state groundwork:** a host-tested
-  [layout-change operator projection](docs/configuration/GAUGE_LAYOUT_CHANGE_OPERATOR_STATUS_V0.md)
-  converts coherent coordinator state and operation evidence into fixed-shape
-  ready, confirm, applied, unchanged, cancelled, expired, rejected,
-  persistence-failed, restart-required, or clock-fault state. The live prompt
-  exposes its opaque request token only while exact-time confirmation is valid;
-  incoherent state/result combinations fail closed. Eight groups pass 100/100
-  focused repeats and remain in the complete 47-executable host matrix. It
-  does not render text, authorize a source, or prove physical input.
-- **Confirmation groundwork:** gauge-layout changes have a host-tested
-  [local confirmation coordinator](docs/configuration/GAUGE_LAYOUT_CHANGE_CONFIRMATION_V0.md).
-  It stages one validated change under an exact nonzero request ID, accepts
-  only that ID before the configured deadline, consumes the request before
-  persistence, rejects same-boot ID reuse and clock rollback, and distinguishes
-  ordinary failure from uncertain commit. An unchanged confirmed layout
-  performs no new write. Ten
-  coordinator groups pass 100/100 focused repeats and remain in the complete
-  47-executable host matrix. This is a semantic boundary only: physical-presence
-  input, rendering, ESP-IDF task ownership, authenticated configuration, and
-  power-cut behavior remain target work.
-- **Layout durability groundwork:** the exact 576-byte `OGL0` slots have a
-  backend-neutral [key/value adapter](docs/configuration/GAUGE_LAYOUT_KV_TARGET_ADAPTER_V0.md)
-  with isolated `og_config` / `gauge_layout` / `ogl0_a|b` binding, explicit
-  commit after write/erase, strict value size, unchanged-write suppression, and
-  restart-visible uncertainty. Ten adapter groups and thirteen core groups pass
-  100/100 focused repeats. This is not an ESP-IDF or physical result.
-
-### Validation and operations
-
-- **Public validation:** GitHub Actions runs the complete Windows host matrix on
-  every `main` push and pull request. The current local warning-free result
-  passes all 47 executables; the matching public run is verified after each
-  push. OpenTrail has a
-  [separate public host workflow](https://github.com/nbjelanovic/OpenTrail/actions/workflows/host-validation.yml)
-  for its own transport, routing, GPS, persistence, field-load planning, and
-  field evidence. OpenTrail run `31570072110` passed its complete 90-executable
-  host matrix publicly at commit `9463975`. That evidence belongs to OpenTrail
-  and is not proof of OpenGauge ESP-NOW, display, storage, CAN, or vehicle
-  behavior.
-
-### Remaining gates
-
-- **Still unproved:** ESP-IDF target adapters, protected on-device keys/storage,
-  physical power-cut behavior, real CAN/J1939 vehicle input, displays, and field
-  radio performance.
-
-Progress is organized by date in the [public progress log](docs/PROGRESS_LOG.md).
+The goal is a dependable base system that can operate with compact round gauges or larger displays while keeping GPS, remote alerts, and future auxiliary functions optional.
 
 ## Project status
 
-Architecture/bootstrap phase. The transport-neutral OpenGauge-to-OpenTrail critical-alert v0 codec, application-acknowledged delivery outbox, mirrored `OGK0` ACK codec, authenticated-metadata/replay/outbox ACK ingress, authorization-epoch-bound replay checkpoint with a recoverable two-slot host store, and bounded negative-ACK retry/terminal policy have deterministic host evidence. Two strengthened role-reversed Heltec/SenseCAP cycles carried 2/2 exact normative `OGA0` frames and 2/2 correlated `OGK0` responses with zero loss, duplicates, or errors; each returned ACK independently passed the real OpenGauge authorization/replay/correlation ingress and completed the exact reconstructed outbox entry. The host still supplied trust and reconstructed state rather than running a persistent on-device pipeline. A passive Classical CAN receive abstraction/fake, bounded Classical J1939 identifier parser, fixed decoder registry with one EEC1 engine-speed fixture, normalized signal model, thread-safe fixed-capacity telemetry cache, fixed 16-rule alarm engine, cache-to-alarm evaluator, allowlisted alarm-to-critical-alert exporter, fake encrypted-unicast ESP-NOW transport contract, explicit 96-byte gateway-to-gauge telemetry codec, per-gauge subscription/deadband/rate scheduler, cache-to-radio publisher, bounded CAN-to-radio gateway loop, authenticated-metadata gauge receiver/store, fail-visible eight-widget view model and four-series trend buffer, fixed-memory typed diagnostics core, versioned recoverable two-slot gauge layout store, transport-neutral GPS fix/quality/age tracker, OTA trial-confirmation/rollback guard, and opaque-handle peer approval/authorization registry are also host-tested. There is still no production firmware, ESP-IDF CAN/radio/storage/GNSS/boot binding, physical key provisioning, validated CAN hardware, supported display or GPS source, frozen production protocol, supported-vehicle list, authenticated on-device alert/ACK transport, or validated OTA flow.
+| Area | Current state |
+| --- | --- |
+| Phase | Architecture, host-tested components, and bounded bench integration |
+| Proven so far | A 47-executable Windows host-test matrix and limited three-radio alert/acknowledgement evidence |
+| Not yet proven | Vehicle CAN/J1939 hardware, ESP32 target adapters, production security, physical gauge displays, power interruption, or field use |
+| Next focus | Select exact gateway hardware and bind the existing CAN-to-radio path to target adapters; evaluate arriving display candidates separately |
 
-## Latest verified checkpoint — 2026-08-12
+OpenGauge is not production-ready and does not yet support a specific vehicle. See the [dated progress log](docs/PROGRESS_LOG.md) for recent work and the [engineering backlog](tasks/BACKLOG.md) for exact acceptance evidence and remaining gates.
 
-- Two role-reversed accepted-ACK cycles completed the exact reconstructed outbox through real peer authorization, session, replay, and correlation checks.
-- Two additional role-reversed stale-rejection cycles were processed as explicit terminal failures with zero delivery acknowledgements and `outbox_completed=false`.
-- Two role-reversed rate-limit rejection cycles released exactly one queued retry with zero acknowledgements/completions and no terminal failure.
-- Two four-leg role-reversed sequences then enforced exact backoff, prepared the same frame, retransmitted it, and completed only after a second physical accepted ACK.
-- The latest two sequences started one OpenGauge process before the first alert and kept its real authorization, replay, and outbox state live through all four physical legs.
-- Restart recovery now reaches the live outbox: boot-only atomic `OOC0` import/export reconstructs queued retry readiness, in-flight ACK timeout, maximum lifetime, exact frame, state, and attempts across a new monotonic-clock session. Its nonzero compatibility fingerprint is derived canonically from all timers, attempt limit, and emergency reserve instead of trusted caller input. Prepared sends, corrupt records, policy mismatch, and unrepresentable timers fail closed; durable storage is not yet connected.
-- Coordinated restart now has host-tested [live `OCR0` export/import](docs/integration/CRITICAL_ALERT_RECOVERY_CHECKPOINT_V0.md): one generation contains the exact ACK replay/authorization and outbox checkpoints, both boot imports preflight on private copies before either live owner changes, and exact retry readiness plus replay state are restored together. A recoverable two-slot store remains next; this is not yet target durability.
-- A host-tested [two-slot `OCR0` recovery store](docs/integration/CRITICAL_ALERT_RECOVERY_STORE_V0.md) now writes one coordinated generation with full readback/byte/decode verification, restores the newest unique valid slot, preserves the prior good generation after partial/corrupt writes, and reports degraded I/O even when restore succeeds. ESP-IDF/NVS binding and physical power-cut/wear evidence remain.
-- The store now owns next-generation allocation: empty storage starts at 1, successful saves rotate monotonically across slots, conflicted/unreadable baselines fail closed, and 64-bit exhaustion is reported before a write. Callers no longer choose recovery generations.
-- Write errors now report `commit_uncertain` with the intended slot/generation. Sixteen interrupted-overwrite boundaries preserve the prior good generation, while a full write followed by an I/O error is reconciled on boot as committed state instead of being blindly retried.
-- Peer authorization now has a host-tested [canonical `OPA0` restart checkpoint](docs/security/PEER_AUTHORIZATION_CHECKPOINT_V0.md). It persists only logical policy metadata and opaque key handles, preserves revoked peers and authorization epochs, refuses pending approvals, and imports atomically only into a clean boot registry. The full 33-executable matrix and 100 focused repeats pass; protected target storage and coordinated `OPA0`/`OCR0` restore remain.
-- Peer authorization now also has a host-tested [recoverable two-slot `OPS0` store](docs/security/PEER_AUTHORIZATION_CHECKPOINT_STORE_V0.md). Normal saves allocate generations, rotate away from the newest good slot, require byte/decode readback, preserve the prior generation across ten interrupted-write boundaries, and reconcile a full write followed by an I/O error at boot. The full 34-executable matrix and 100 focused repeats pass; this is not yet protected ESP32 storage.
-- Coordinated recovery now has a host-tested [`ORS0` system envelope](docs/integration/CRITICAL_ALERT_SYSTEM_RECOVERY_V0.md). One generation binds exact `OPA0` peer authorization to exact `OCR0` ACK/outbox state. A temporary ACK ingress is constructed against private restored registry/outbox candidates so epoch and pointer dependencies are validated before any of the three live owners changes. The full 35-executable matrix and 100 focused repeats pass; recoverable `ORS0` storage remains next.
-- Exact `ORS0` generations now have a host-tested [recoverable two-slot system store](docs/integration/CRITICAL_ALERT_SYSTEM_RECOVERY_STORE_V0.md). The store owns normal generations, preserves the newest good slot across eleven interrupted-write boundaries, verifies exact readback/decode, exposes degraded reads, fails closed on conflict/exhaustion, and reconciles a full write followed by I/O error as committed at boot. The full 36-executable matrix and 100 focused repeats pass; target durability is still unproved.
-- The same store now runs through a target-shaped [`ORS0` key/value adapter](docs/integration/CRITICAL_ALERT_SYSTEM_RECOVERY_KV_TARGET_ADAPTER_V0.md) with exact 1280-byte `og_state` / `og_recovery` / `ors0_a|b` binding. Thirteen groups and 100/100 repeats prove real save/rotation/reset, boot and verified-save composition after restart, trusted-floor catch-up after an applied uncertain commit, and preservation of the prior trusted boot after an unapplied commit. Protected ESP-IDF storage, independent trusted generation, physical interruption, and endurance remain unproved.
-- The recoverable `OGL0` store now runs through a target-shaped [gauge-layout key/value adapter](docs/configuration/GAUGE_LAYOUT_KV_TARGET_ADAPTER_V0.md) with exact 576-byte `og_config` / `gauge_layout` / `ogl0_a|b` binding. Ten adapter groups and 100/100 repeats prove real store rotation/reset, typed commit uncertainty, restart reconciliation after both applied and unapplied failed commits, store-owned next-generation allocation, and zero backend writes/commits for unchanged canonical content. It shares one backend contract with the `ORS0` adapter but keeps configuration and recovery namespaces isolated. ESP-IDF binding, physical interruption, wear, and configuration authenticity remain unproved.
-- A fail-closed [canonical layout export](docs/configuration/GAUGE_LAYOUT_EXPORT_V0.md) reuses normal boot selection and emits exactly one canonical `OGL0` record while preserving slot/source/recovery evidence. Known empty/corrupt media can export the validated safe default or surviving valid slot; conflict or any unreadable-slot uncertainty changes no caller output. Thirteen cumulative layout groups pass 100/100 focused repeats plus the complete 47-executable matrix. File/download binding, confidentiality/access policy, and physical behavior remain unproved.
-- Reset now preserves `commit_uncertain` when either slot erase reaches an uncertain backend commit while still attempting both erases. Four adapter restart cases cover failure at the first or second commit, each applied or unapplied. Applied uncertainty yields safe default only after restart observes both keys absent; unapplied uncertainty restores the surviving slot with recovery required. Eleven adapter groups and thirteen cumulative core groups pass 100/100 repeats. No reset confirmation workflow, physical interruption, or target atomicity is claimed.
-- Gauge-layout changes now run through a host-tested [single-use local confirmation coordinator](docs/configuration/GAUGE_LAYOUT_CHANGE_CONFIRMATION_V0.md). One validated request may be pending; confirmation must repeat its exact nonzero ID before the exact timeout boundary, and a successfully staged ID can never be reused in the same coordinator start cycle. Mismatch, cancel, expiry, replay, and clock rollback cannot write. The request is consumed before persistence, so ordinary failure and commit uncertainty cannot replay an old approval. Restart inspection plus a newly confirmed request suppresses a rewrite after an applied uncertain commit. Ten groups pass 100/100 focused repeats and remain in the complete 47-executable matrix. Physical-presence proof, renderer/input binding, cross-boot input flushing, ESP-IDF serialization, authenticated configuration, and physical interruption remain unproved.
-- A host-tested [operator projection](docs/configuration/GAUGE_LAYOUT_CHANGE_OPERATOR_STATUS_V0.md) derives one fixed semantic state/action record from coordinator status, the immediately observed operation result, and boot-local time. It preserves the pending request token and exact remaining time only while confirmation is allowed, distinguishes normal retry from restart reconciliation, and rejects incoherent evidence. Eight groups pass 100/100 repeats and remain in the complete 47-executable matrix. Text, localization, target concurrency, and physical UI behavior remain unproved.
-- A host-tested [workflow facade](docs/configuration/GAUGE_LAYOUT_CHANGE_WORKFLOW_V0.md) pairs every operation with that immediate projection under one API. Eleven cumulative groups pass 100/100 focused repeats plus the complete 47-executable matrix. It owns no lock/task and is not target concurrency evidence.
-- The same workflow now exposes explicit default restoration through the normal confirmed save path. A custom generation becomes the compiled default at the next generation, restarts from that persisted slot, suppresses an identical repeat without a write, rejects an invalid default, and performs zero erases. Nine cumulative workflow groups pass 100/100 repeats in the 47-executable matrix. Destructive storage erase remains outside this user path.
-- A strict [local layout-import boundary](docs/configuration/GAUGE_LAYOUT_IMPORT_V0.md) decodes one exact canonical `OGL0` record before staging it under the same confirmation workflow. It reports a bounded preview summary, preserves exact codec errors, ignores source generation for local allocation, performs no stage-time write, and leaves an existing prompt unchanged when another record is corrupt. Ten cumulative workflow groups pass 100/100 focused repeats plus the complete 47-executable matrix. File selection, source authorization/authenticity, renderer/input binding, and physical storage remain unproved.
-- A host-tested [layout transfer composition](docs/configuration/GAUGE_LAYOUT_TRANSFER_V0.md) exports source generation 2, previews it against independent destination generation 10 without writing, confirms it as destination generation 11, restarts and re-exports it, and suppresses an identical repeat import. Eleven cumulative workflow groups pass 100/100 focused repeats plus the complete 47-executable matrix. File transport, source/destination authorization, and physical evidence remain unproved.
-- A host-tested [layout-change diagnostic event](docs/diagnostics/GAUGE_LAYOUT_CHANGE_STATUS_DIAGNOSTIC_EVENT_V0.md) reduces the operator projection to a canonical redacted word for the fixed diagnostics ring. Eight groups pass 100/100 repeats and remain in the complete 47-executable matrix. It is not persistent audit storage or target log evidence.
-- The system store now accepts an external trusted generation boundary: `restore_at_or_above` rejects a selected valid record below the minimum without importing any owner, while `save_next_after` advances beyond both the trusted value and every valid local slot. Ten focused groups, the unchanged 36-executable matrix, and 100 repeats pass. The hardware-backed trusted source itself is intentionally not invented by this host layer.
-- Target-style restore now accepts a protected-key validator. Only active peers are presented as logical metadata plus opaque handle; revoked entries are skipped. Unavailable, wrong-purpose, and backend-failed handles produce typed peer-specific evidence before outbox/ACK preflight or any live import. Eight system and eleven store groups, the unchanged 36-executable matrix, and 100 focused repeats each pass; no raw key or concrete protected backend is claimed.
-- A host-tested [system-recovery boot coordinator](docs/integration/CRITICAL_ALERT_SYSTEM_RECOVERY_BOOT_V0.md) now combines provisioning state, trusted-generation state, two-slot inspection, protected-key validation, and `ORS0` restore. Exactly empty slots plus independently unprovisioned trust are required for first boot; rollback/conflict enter safe mode, missing keys/storage/trust require service, degraded restore remains visible, and interrupted trusted-floor advancement is read back exactly before transport is enabled. Ten focused groups, the full 38-executable matrix, and 100 repeats pass; no target task or protected backend is claimed.
-- Boot degradation now distinguishes known media state from uncertainty. A surviving checkpoint beside an empty or checksum-invalid slot may be operational with repair required; a surviving checkpoint beside an unreadable slot remains service-only, does not advance trust, and cannot enable transport because the unreadable slot may hide a newer committed generation. Ten boot groups, the full 38-executable matrix, and 100 repeats pass.
-- A host-tested [known-degraded repair coordinator](docs/integration/CRITICAL_ALERT_SYSTEM_RECOVERY_REPAIR_V0.md) accepts only an exact operational `restored_degraded` boot result whose current store still has one matching valid generation and one known empty/invalid peer slot. It commits the next `ORS0`, advances and reads back trust, then proves both slots valid before reporting repaired. Healthy, unreadable, service, and stale evidence cannot write; uncertain commit/trust update requires reboot reconciliation. Five groups, the full 39-executable matrix, and 100 repeats pass.
-- A host-tested [redacted recovery status boundary](docs/integration/CRITICAL_ALERT_SYSTEM_RECOVERY_STATUS_V0.md) converts boot, save, and repair results into one fixed-shape operator record. It preserves actionable state/reason/action, slot health, generations, protected-key error category, and transport/repair flags while omitting peer IDs, key handles, addresses, credentials, and raw checkpoint data. Unknown or incoherent results fail closed. Seven groups, the full 40-executable matrix, and 100 repeats pass locally; target logging/rendering and persistent audit remain unproved.
-- A host-tested [recovery-status diagnostic event](docs/diagnostics/RECOVERY_STATUS_DIAGNOSTIC_EVENT_V0.md) packs the redacted status into one magic/versioned 32-bit event for the existing bounded ring. Encode/decode preserve coarse outcome and severity while omitting generations and every identifier-bearing field; malformed words fail closed. Eight groups and 100 repeats pass locally; it remains part of the current 47-executable matrix. Target log binding, persistent retention/export, and physical failure capture remain unproved.
-- A host-tested [system-recovery save coordinator](docs/integration/CRITICAL_ALERT_SYSTEM_RECOVERY_SAVE_V0.md) now enforces the complementary ordering. It requires exact local/trusted generation agreement, writes and verifies the next `ORS0`, advances trust only afterward, and verifies exact trust readback. Local-ahead and uncertain commits require reboot reconciliation; local-behind is rollback; missing recovery and failed trust/storage stay service-visible. Eight groups, the full 38-executable matrix, and 100 repeats pass; no physical durability is claimed.
-- Across each two-cycle set, radio loss/duplicates/errors were zero, SenseCAP recorded exact aggregate +4 flood RX/TX, repeat stayed enabled, and cleanup passed 4/4.
+## How it fits together
 
-The latest checkpoint proves deterministic outbox reconstruction in a new host object, while the physical test still used host-supplied trust. It is not yet a coordinated durable or authenticated on-device restart. See [the live-state physical evidence](tests/hardware/OG-018M-2026-08-09.md) and [the outbox checkpoint integration](docs/integration/CRITICAL_ALERT_OUTBOX_CHECKPOINT_V0.md).
+```text
+Vehicle CAN/J1939
+        |
+  listen-only gateway
+        |
+  normalized telemetry
+        |
+  +-----+-------------------+
+  |                         |
+round gauge          larger display(s)
 
-Two Waveshare ESP32-S3-Touch-AMOLED-1.75-B units (SKU 31262) are reported ordered for evaluation. They remain candidate hardware until received, identified, built, benchmarked, and recovery-tested. Other candidate and missing hardware is tracked in [the evidence inventory](hardware/INVENTORY.md).
+Optional: GNSS, OpenTrail critical-event bridge, auxiliary modules
+```
 
-## Product roles and display choices
+- The **gateway** owns vehicle acquisition, decoding, validation, alarms, and wireless publication.
+- A **gauge endpoint** owns its local display, layout, stale-data behavior, and recovery. A 1.75-inch round touch unit can be a complete compact gauge; a larger screen is an alternative, not a requirement.
+- **Optional modules** must fail independently. OpenTrail receives only documented normalized events—not raw CAN/J1939 frames.
 
-- **Vehicle gateway:** the required acquisition role is a separately powered,
-  protected, initially listen-only CAN/J1939 gateway. No production gateway
-  hardware has been selected.
-- **Gauge endpoint:** a compact 1.75-inch round touch unit can be a complete
-  gauge endpoint; a larger touchscreen is an alternative richer renderer, not
-  a requirement. Both consume the same normalized telemetry/state contracts,
-  while geometry, readability, touch, power, and performance remain
-  target-specific acceptance gates.
-- **Optional roles:** GNSS, additional displays, OpenTrail normalized-alert
-  bridging, and future auxiliary modules must fail independently. OpenTrail
-  never receives raw CAN/J1939, and auxiliary control remains outside the core.
-- The [product role and display map](docs/PRODUCT_BOUNDARIES_V0.md) explains
-  required versus optional hardware, allowed data, and degraded behavior.
+Read the [product role and display map](docs/PRODUCT_BOUNDARIES_V0.md) for required versus optional hardware and degraded behavior.
 
 ## Intended capabilities
 
-- A gateway that receives CAN/J1939, decodes selected PGNs/SPNs, validates them, and publishes normalized telemetry
-- ESP-NOW distribution of selected signals rather than broadcasting every raw CAN frame
-- Configurable analog, numeric, bar, multi-value, warning, trend, and status gauge layouts
-- Local configuration, stale-data detection, alarms, and recovery after gateway loss
-- Optional GPS and APU/auxiliary roles with explicit module boundaries
-- Recoverable, version-aware wireless updates
-- Normalized critical events that OpenTrail can consume without understanding J1939
+- Passive CAN/J1939 acquisition through a protected vehicle gateway
+- Validated, normalized signals with explicit missing, stale, unavailable, and error states
+- Selected telemetry distributed over ESP-NOW instead of broadcasting raw CAN traffic
+- Configurable numeric, needle, bar, warning, trend, and status displays
+- Local alarms, configuration recovery, diagnostics, and version-aware updates
+- Optional GNSS and normalized critical-event integration with OpenTrail
 
-These are design goals, not verified capabilities.
+These are design goals unless the linked evidence explicitly says otherwise.
 
-The bounded critical-alert semantic interface, passive CAN receiver contract,
-Classical J1939 identifier
-rules, one narrow EEC1 engine-speed fixture, normalized signal invariants,
-cache state/staleness/concurrency rules, an opaque wireless transport fake,
-the telemetry packet's serialization/sequence/age rules, and bounded publication
-selection have host evidence.
-These contracts do not validate vehicle acquisition,
-captured vehicle data, a decoder catalog, on-device cache/radio performance,
-display hardware, encryption keys, or physical delivery.
+## Start here
+
+- [Documentation guide](docs/README.md) — organized entry point for every technical area
+- [Architecture](docs/ARCHITECTURE.md) — system roles, interfaces, and failure boundaries
+- [Project status and open decisions](docs/PROJECT_STATUS.md) — current assumptions and unresolved choices
+- [Dated progress log](docs/PROGRESS_LOG.md) — concise chronology, newest day first
+- [Engineering backlog](tasks/BACKLOG.md) — task status and acceptance evidence
+- [Hardware evidence inventory](hardware/INVENTORY.md) — candidate, missing, and tested equipment
+- [Contributing](CONTRIBUTING.md) and [security reporting](SECURITY.md)
+
+## Hardware status
+
+No hardware is supported yet. Candidate equipment includes two reported-ordered Waveshare ESP32-S3 1.75-inch round touch displays, an ESP32-S3 development board, a Wio Tracker L1 Pro GNSS/LoRa unit, and an on-hand consumer OBD-II adapter. Each item remains unverified until its exact revision, recovery path, interfaces, performance, power behavior, and failure handling are recorded.
+
+See the [hardware inventory](hardware/INVENTORY.md) and prepared bring-up procedures before testing or making compatibility claims.
 
 ## Repository layout
 
 | Path | Purpose |
 | --- | --- |
-| `docs/` | Architecture, assumptions, decisions, and specifications |
-| `firmware/components/` | Reusable drivers, protocol, telemetry, alarm, and UI components |
-| `firmware/targets/` | Gateway, gauge, GPS, or auxiliary deployable applications |
-| `hardware/` | Board inventory, CAN interface, wiring, power, display, and compatibility evidence |
-| `tests/` | Host, integration, protocol, captured-frame, and hardware tests |
-| `tools/` | Capture, decode, provisioning, packaging, and diagnostic utilities |
-| `prototypes/` | Time-bounded feasibility experiments |
+| `docs/` | Architecture, decisions, specifications, and dated project records |
+| `firmware/components/` | Host-testable protocol, telemetry, alarm, storage, and UI components |
+| `firmware/targets/` | Separately composed gateway, gauge, GNSS, and optional target applications |
+| `hardware/` | Candidate inventory, bring-up procedures, wiring, power, and compatibility evidence |
+| `tests/` | Host, fixture, integration, and physical hardware evidence |
+| `tools/` | Validation, diagnostics, provisioning, and support utilities |
 | `tasks/` | Prioritized engineering backlog and acceptance criteria |
 
-## Design boundary
+## Safety boundary
 
-OpenGauge owns vehicle acquisition, decode/normalization, gauge display, vehicle alarms, and its local telemetry network. OpenTrail receives only documented normalized events. An APU/auxiliary controller is an optional module and must not be hard-wired into the telemetry core.
-
-## Start here
-
-Read [the dated progress log](docs/PROGRESS_LOG.md), [the redacted recovery status boundary](docs/integration/CRITICAL_ALERT_SYSTEM_RECOVERY_STATUS_V0.md), [its versioned diagnostics event](docs/diagnostics/RECOVERY_STATUS_DIAGNOSTIC_EVENT_V0.md), [the latest live-state physical evidence](tests/hardware/OG-018M-2026-08-09.md), [the recoverable system store](docs/integration/CRITICAL_ALERT_SYSTEM_RECOVERY_STORE_V0.md), [the target storage/boot plan](docs/integration/TARGET_SYSTEM_RECOVERY_ADAPTER_PLAN.md), [the architecture](docs/ARCHITECTURE.md), [project status and assumptions](docs/PROJECT_STATUS.md), [the hardware evidence inventory](hardware/INVENTORY.md), [the peer authorization model](docs/security/PEER_AUTHORIZATION_V0.md), and [the backlog](tasks/BACKLOG.md). Detailed component specifications and physical evidence remain organized under `docs/` and `tests/`. The next core work is selecting an exact target storage/key/trust mechanism and authenticated on-device transport.
+OpenGauge is supplemental instrumentation. Early CAN work is listen-only, stale or missing data must remain conspicuous, and gateway or display failure must not affect vehicle operation. Any future control function requires a separate fail-safe design, authentication, authorization, interlocks, and safety review.
 
 ## License and contributions
 
-OpenGauge is free/open-source software licensed under the
-[Apache License 2.0](LICENSE). Contributions are welcome through GitHub issues
-and pull requests; read [CONTRIBUTING.md](CONTRIBUTING.md) before submitting
-code or hardware evidence and use [SECURITY.md](SECURITY.md) for sensitive
-security reports.
+OpenGauge is licensed under the [Apache License 2.0](LICENSE). Contributions are welcome through GitHub issues and pull requests; read [CONTRIBUTING.md](CONTRIBUTING.md) first and use [SECURITY.md](SECURITY.md) for sensitive reports.
