@@ -166,6 +166,20 @@ available diagnostically.
 It does not draw pixels or prove fonts, localization, accessibility, input,
 ESP-IDF scheduling/drivers, target allocation, or physical display behavior.
 
+The host-tested
+[round-gauge render plan](display/GAUGE_ROUND_RENDER_PLAN_V0.md) compiles one
+complete dashboard frame into at most 25 fixed-array primitives for a logical
+466 by 466 circular profile. One through eight numeric, needle, or bar widgets
+receive deterministic panel, label, and valid measurement or no-value state
+geometry; an optional recovery badge remains separate from every widget panel.
+Only `valid` input carries a measurement into the plan. Suspect, missing,
+stale, unavailable, error, out-of-range, and unknown input becomes an
+attention-bearing state badge with no plausible value. Status fails closed
+until the signal registry contains a reviewed Boolean signal. The compiler
+preserves the prior complete plan on invalid input, geometry, or capacity
+failure and performs overflow-safe full-range normalization. This is a bounded
+backend contract, not pixel, framework, target, or physical-display evidence.
+
 A host-tested volatile trend core retains up to four fixed series of 2 through
 120 points with independent exact minimum intervals. Valid/suspect points keep
 their value; missing/stale/unavailable/error/out-of-range/unknown points are

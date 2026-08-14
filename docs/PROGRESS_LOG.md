@@ -6,6 +6,31 @@ public chronology.
 
 ## 2026-08-14
 
+### Fixed-capacity round-gauge render-plan compiler
+
+- Added a backend-neutral compiler from one complete dashboard frame to a
+  fixed-array plan for a half-open 466 by 466 logical circular profile. One
+  through eight widgets emit exactly one panel, label, and primary primitive;
+  an optional recovery badge remains nonoverlapping. The maximum is 25
+  primitives, and a caller may enforce a smaller explicit backend budget.
+- Numeric, needle, and bar widgets carry a measurement only for `valid` input.
+  Suspect, missing, stale, unavailable, error, out-of-range, and unknown states
+  become attention-bearing state badges with no value, unit, or normalized
+  position. Status fails closed until the signal registry has a reviewed
+  Boolean signal.
+- Frame, registry, value-shape, geometry, and capacity validation occurs before
+  the caller's prior plan changes. Smaller recompilation clears the inactive
+  tail; needle/bar normalization is overflow-safe across the full signed
+  64-bit range. Semantic equality ignores only diagnostic publication
+  sequence/time and inactive capacity, and receiver-private metadata is absent.
+- Nine strict C++17 scenario groups pass 100/100 independent repeats. The
+  complete host run passes 52 executed test binaries, 53 compiled names, and
+  both publication-safety scans; one compiled physical CLI is intentionally
+  not executed. This does not draw pixels or prove a graphics framework,
+  target driver/task, localized or accessible presentation, touch,
+  timing/memory/power, or physical compatibility. See the [round render-plan
+  contract](display/GAUGE_ROUND_RENDER_PLAN_V0.md).
+
 ### Exact-generation layout presentation completion gate
 
 - Added one facade-owned presentation latch after changed running-layout

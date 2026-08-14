@@ -720,6 +720,22 @@ Invoke-HostTest `
     )
 
 Invoke-HostTest `
+    -Name 'gauge_round_render_plan_tests' `
+    -Description 'Fixed-capacity round gauge render-plan compiler' `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\configuration\include'),
+        (Join-Path $projectRoot 'firmware\components\display\include'),
+        (Join-Path $projectRoot 'firmware\components\telemetry\include'),
+        (Join-Path $projectRoot 'firmware\components\wireless\include')
+    ) `
+    -Sources @(
+        (Join-Path $projectRoot 'firmware\components\display\src\gauge_round_render_plan.cpp'),
+        (Join-Path $projectRoot 'firmware\components\telemetry\src\normalized_signal.cpp'),
+        (Join-Path $projectRoot 'firmware\components\wireless\src\telemetry_packet.cpp'),
+        (Join-Path $projectRoot 'tests\host\gauge_round_render_plan_tests.cpp')
+    )
+
+Invoke-HostTest `
     -Name 'gauge_renderer_runtime_tests' `
     -Description 'Nonblocking gauge renderer runtime binding' `
     -IncludeDirectories @(
