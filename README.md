@@ -11,7 +11,7 @@ The goal is a dependable base system that can operate with compact round gauges 
 | Area | Current state |
 | --- | --- |
 | Phase | Architecture, host-tested components, and bounded bench integration |
-| Proven so far | A 48-executable Windows host-test matrix and limited three-radio alert/acknowledgement evidence |
+| Proven so far | A 49-executable Windows host-test matrix and limited three-radio alert/acknowledgement evidence |
 | Not yet proven | Vehicle CAN/J1939 hardware, ESP32 target adapters, production security, physical gauge displays, power interruption, or field use |
 | Next focus | Select exact gateway hardware and bind the existing CAN-to-radio path to target adapters; evaluate arriving display candidates separately |
 

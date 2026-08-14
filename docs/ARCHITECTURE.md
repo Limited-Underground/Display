@@ -150,6 +150,17 @@ no downstream side effect, and refresh failure preserves the prior complete
 frame. ESP-IDF scheduling, renderer/input binding, concrete-adapter allocation,
 RF, and physical display behavior remain unresolved.
 
+The host-tested [renderer runtime](display/GAUGE_RENDERER_RUNTIME_V0.md) adds a
+nonblocking presentation boundary and one cooperative owner for the dashboard,
+latest complete pending frame, renderer offer, and renderer service. Busy or
+failed offers retain bounded newest work; failed renderer service retains its
+accepted in-flight frame and prior complete front frame while dashboard aging
+continues. The runtime reports the first cycle failure in execution order while
+preserving exact nested errors, and caller-time regression changes no downstream
+state. It does not draw pixels or prove fonts, localization, accessibility,
+input, ESP-IDF scheduling/drivers, target allocation, or physical display
+behavior.
+
 A host-tested volatile trend core retains up to four fixed series of 2 through
 120 points with independent exact minimum intervals. Valid/suspect points keep
 their value; missing/stale/unavailable/error/out-of-range/unknown points are

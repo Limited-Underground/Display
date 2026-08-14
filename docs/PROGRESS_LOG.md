@@ -6,6 +6,29 @@ public chronology.
 
 ## 2026-08-14
 
+### Nonblocking gauge renderer runtime
+
+- Added a display-neutral `GaugeRenderer` boundary and single-owner runtime
+  that services the dashboard exactly once, retains or replaces one newest
+  complete pending frame, attempts at most one nonblocking offer, and services
+  the renderer exactly once for every accepted monotonic cycle.
+- Busy and hard offer failures retain pending work. Accepted work moves to the
+  renderer, whose service failure preserves its in-flight frame and the prior
+  complete front frame while later dashboard cycles continue aging telemetry.
+  Primary failure follows dashboard/copy, offer, then renderer-service order;
+  exact nested errors remain available. Caller-time rollback mutates no
+  downstream state, and equivalent or nonunique publication sequences are not
+  silently suppressed.
+- Eleven focused groups pass with C++17 warnings-as-errors and 100/100 repeats.
+  They cover lifecycle/rollback, fieldwise semantic comparison, exact service
+  order, bounded latest-frame coalescing, offer/service failure retention,
+  exact stale/no-value under busy rendering and rejected traffic, and pending
+  ownership. The complete 49-executable host matrix also passes. Diagnostic
+  counter saturation is implemented but was not forced to maximum in tests.
+  Pixels, text/localization, accessibility, touch/input, ESP-IDF scheduling and
+  drivers, target allocation, and physical display behavior remain separate
+  gates.
+
 ### Bounded gauge dashboard runtime loop
 
 - Added a single-owner display-side loop that selects the validated safe or

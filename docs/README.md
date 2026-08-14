@@ -22,7 +22,7 @@ This is the organized entry point for OpenGauge design, evidence, and engineerin
 | See what is complete or still planned | [Engineering backlog](../tasks/BACKLOG.md) |
 | Work on CAN or J1939 | [CAN receiver](can/CAN_RECEIVER_V0.md), [identifier rules](can/J1939_IDENTIFIER_V0.md), and [decoder registry](can/J1939_DECODER_REGISTRY_V0.md) |
 | Work on wireless gauges | [ESP-NOW transport](wireless/ESP_NOW_TRANSPORT_V0.md) and the wireless documents below |
-| Work on a display | [Gauge dashboard loop](display/GAUGE_DASHBOARD_LOOP_V0.md), [view model](display/GAUGE_VIEW_MODEL_V0.md), [trend buffer](display/GAUGE_TREND_BUFFER_V0.md), and the [display bring-up plan](../hardware/WAVESHARE_31262_BRINGUP.md) |
+| Work on a display | [Gauge dashboard loop](display/GAUGE_DASHBOARD_LOOP_V0.md), [renderer runtime](display/GAUGE_RENDERER_RUNTIME_V0.md), [view model](display/GAUGE_VIEW_MODEL_V0.md), [trend buffer](display/GAUGE_TREND_BUFFER_V0.md), and the [display bring-up plan](../hardware/WAVESHARE_31262_BRINGUP.md) |
 | Understand OpenTrail integration | [Critical-alert format](integration/OPENGAUGE_CRITICAL_ALERT_V0.md) and [acknowledgement format](integration/OPENGAUGE_CRITICAL_ALERT_ACK_V0.md) |
 | Review recovery or persistence | The configuration, recovery, and security sections below |
 
@@ -59,6 +59,7 @@ This is the organized entry point for OpenGauge design, evidence, and engineerin
 
 - [Gauge view model](display/GAUGE_VIEW_MODEL_V0.md)
 - [Gauge dashboard loop](display/GAUGE_DASHBOARD_LOOP_V0.md)
+- [Gauge renderer runtime](display/GAUGE_RENDERER_RUNTIME_V0.md)
 - [Gauge trend buffer](display/GAUGE_TREND_BUFFER_V0.md)
 
 ## Gauge configuration and storage
