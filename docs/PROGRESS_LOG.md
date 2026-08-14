@@ -6,6 +6,28 @@ public chronology.
 
 ## 2026-08-14
 
+### Round-display official-image write and rollback
+
+- The operator assigned the connected battery-free USB candidate public-safe
+  ID `OG-DISP-001`, confirmed its prior demo was visible, and passed the cold
+  BOOT-strap recovery gate. Labeled `OG-DISP-002` remained disconnected and
+  untouched. A passive roster showed exactly one Started Port-class
+  `303A:1001` interface without retaining a port or private identifier.
+- The exact 16,777,216-byte official v1.0.1 HelloWorld combined image matched
+  its recorded SHA-256 and was written at offset `0x0` without erase, force,
+  security override, or eFuse operations. Esptool reported verification, and
+  the operator visually observed `Hello World`.
+- The exact 16,777,216-byte official factory image from pinned source commit
+  `ec7380d2aef4d54816a29d7940ef8f756e4bbd1b` matched its recorded SHA-256 and
+  was written with the same non-erasing/force-free shape. One public interface
+  returned, and the operator confirmed the original demo looked good. The
+  private original backup remains outside Git and was not restore-tested.
+- This passes a bounded recovery-first vendor image/display checkpoint only.
+  OG-012A remains planned and candidate-only; touch, audio, IMU, RTC, PMIC,
+  Micro SD, resources/timing/stability, power/heat, paired independence,
+  OpenGauge firmware, and support remain unproved. See the
+  [dated Phase-C evidence](../tests/hardware/OG-012A-PHASE-C-2026-08-14.md).
+
 ### Nonblocking gauge renderer runtime
 
 - Added a display-neutral `GaugeRenderer` boundary and single-owner runtime

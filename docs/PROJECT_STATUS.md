@@ -34,12 +34,18 @@ remains unknown in the public record.
 The sole privacy-safe USB interface returned after both metadata resets and a
 full 16 MiB read through the ESP ROM loader using `--no-stub`; the capture was
 hashed and retained privately outside Git. A failed default-stub attempt
-retained no partial file. No visual
-post-reset application confirmation, manual BOOT recovery, erase, write,
-peripheral operation, or compatibility test occurred. Both displays therefore
-remain unvalidated candidates. See the
+retained no partial file. The operator later assigned the active battery-free
+USB candidate public-safe ID `OG-DISP-001`, confirmed its powered demo, and
+passed cold BOOT recovery. A non-erasing/force-free write of the exact
+hash-pinned official HelloWorld combined image verified and visibly rendered
+`Hello World`; the exact hash-pinned official factory image then verified and
+returned to a visually good demo. Labeled `OG-DISP-002` remained disconnected
+and untouched. Touch and other peripherals, resources/timing/stability,
+power/heat, paired independence, OpenGauge firmware, and compatibility remain
+unvalidated. Both displays therefore remain candidate-only. See the
 [arrival observation](../tests/hardware/OG-012A-ARRIVAL-2026-08-14.md) and
-[Phase-B evidence](../tests/hardware/OG-012A-PHASE-B-2026-08-14.md).
+[Phase-B](../tests/hardware/OG-012A-PHASE-B-2026-08-14.md) and
+[Phase-C evidence](../tests/hardware/OG-012A-PHASE-C-2026-08-14.md).
 
 The critical-alert semantic interface has bounded host validation in this and
 the OpenTrail repository. Two strengthened role-reversed Heltec/SenseCAP cycles
@@ -151,7 +157,7 @@ hardware remain unvalidated.
 
 | Item | Current status | Required evidence |
 | --- | --- | --- |
-| 2 x Waveshare ESP32-S3-Touch-AMOLED-1.75-B candidates, procurement mapping SKU 31262 | Owner reports two on hand. Public labels and one rendered powered demo are recorded. One unassociated unit has bounded ESP32-S3, 16 MB flash, disabled Secure Boot/flash encryption, repeat USB re-enumeration, and private exact-size backup evidence; the second remained untouched. No visible label establishes SKU 31262 or board revision, and no visual post-reset application, manual recovery, write, peripheral, or compatibility result exists | Associate a public-safe box/unit ID while preserving the untouched unit; visually confirm the previously photographed powered demo, prove cold BOOT-strap recovery, then follow the prepared vendor display/touch/IMU, flash/PSRAM, power, paired-independence, build, and performance tests |
+| 2 x Waveshare ESP32-S3-Touch-AMOLED-1.75-B candidates, procurement mapping SKU 31262 | Owner reports two on hand. Active battery-free USB candidate `OG-DISP-001` has bounded ESP32-S3, 16 MB flash, disabled Secure Boot/flash encryption, repeat USB re-enumeration, private exact-size backup evidence, passed cold BOOT recovery, visible official HelloWorld output, and verified official-factory rollback to a visually good demo. Labeled `OG-DISP-002` remained disconnected and untouched. No visible label establishes SKU 31262 or board revision; touch and other peripherals, resource/timing/stability, power/heat, paired independence, OpenGauge firmware, and compatibility remain untested | Preserve `OG-DISP-002`; complete vendor touch/PMIC/IMU/RTC/LVGL checks and measurements on `OG-DISP-001`, then test synthetic OpenGauge states, paired independence, and repeat recovery |
 | Espressif ESP32-S3-DevKitC-1-N8R8 | Owner reports ordered as a bench mule; not received or tested | Exact revision, USB/serial recovery, synthetic telemetry and interface smoke test |
 | Seeed Studio Wio Tracker L1 Pro MeshCore companion | Owner reports ordered; not received or tested. Shipping MeshCore/GNSS behavior and OpenGauge adapter are unverified | Preserve/record the shipping image, prove USB recovery, baseline MeshCore and GNSS no-fix/fix/reacquisition/rate/power, then test an authenticated normalized adapter without publishing identifiers or coordinates |
 | Veepeak OBDCheck BLE, ASIN B073XKQQQW | Owner reports on hand; OpenGauge compatibility untested. Vendor documents Classic Bluetooth for Windows and no MS-CAN/SW-CAN | Follow the prepared allowlisted read-only discovery; exact variant/firmware, Windows serial path, vehicle/PID support, rates, and failure behavior; never assume J1939 or raw CAN |

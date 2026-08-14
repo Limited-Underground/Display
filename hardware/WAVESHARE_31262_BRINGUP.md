@@ -1,18 +1,26 @@
 # Waveshare SKU 31262 Round Display Arrival and Bring-up
 
-Status: arrival observation and partial read-only Phase-B evidence recorded
-2026-08-14; manual recovery, flashing, and visual acceptance remain unexecuted.
+Status: arrival, read-only Phase-B, and partial vendor-image Phase-C evidence
+recorded 2026-08-14. `OG-DISP-001` passed battery-free cold BOOT recovery,
+visibly ran the verified official HelloWorld image, and returned to a visually
+good demo after verified official-factory rollback. Labeled `OG-DISP-002`
+remained disconnected and untouched. Touch and other peripherals, resources,
+timing, stability, power, heat, OpenGauge firmware, and compatibility remain
+unexecuted.
 The owner reports two units on hand. A package label identifies the public
 model `ESP32-S3-Touch-AMOLED-1.75-B` with case, one underside case label names
 `ESP32-S3 Touch AMOLED 1.75` and prints a component map, and one photographed
 unit renders a powered launcher and public demo information. No supplied
-label shows SKU `31262` or a board revision, and the package, physical unit,
-and public-safe unit IDs have not yet been associated. Printed component names
-and displayed demo metadata are identification evidence only, not working-
+label shows SKU `31262` or a board revision. The operator associated the active
+package and physical candidate as `OG-DISP-001` and labeled the disconnected
+reference `OG-DISP-002`; this does not establish an exact board revision.
+Printed component names and displayed demo metadata are identification evidence
+only, not working-
 peripheral or firmware-version evidence. No OpenGauge compatibility result is
 claimed. See the dated
 [arrival observation](../tests/hardware/OG-012A-ARRIVAL-2026-08-14.md) and
-[Phase-B evidence](../tests/hardware/OG-012A-PHASE-B-2026-08-14.md).
+[Phase-B evidence](../tests/hardware/OG-012A-PHASE-B-2026-08-14.md) and
+[Phase-C evidence](../tests/hardware/OG-012A-PHASE-C-2026-08-14.md).
 
 ## Exact candidate
 
@@ -95,6 +103,15 @@ powered demo does not return. Do not open the case, improvise another
 control, or proceed to flashing.
 
 ## Phase C: vendor-example baseline
+
+Partial evidence: on 2026-08-14, `OG-DISP-001` passed the prerequisite
+battery-free cold BOOT recovery, a non-erasing/force-free write of the exact
+hash-pinned official HelloWorld combined image visibly rendered `Hello World`,
+and a matching write of the exact hash-pinned official factory image returned
+to a visually good demo. `OG-DISP-002` remained disconnected and untouched.
+This passes only the bounded recovery-first image/display checkpoint; the
+remaining steps below are still required. See the
+[dated Phase-C record](../tests/hardware/OG-012A-PHASE-C-2026-08-14.md).
 
 Download the official example archive/repository and record its source URL,
 commit/release, toolchain version, filenames, and SHA-256 hashes. Build before
