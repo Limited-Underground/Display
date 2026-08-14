@@ -32,6 +32,50 @@ bool usable_layout_selection(
            load.slot_b == configuration::LayoutSlotState::empty;
 }
 
+bool same_label(
+    const GaugeWidgetLabel& left,
+    const GaugeWidgetLabel& right) {
+    if (left.length != right.length) {
+        return false;
+    }
+    for (std::size_t index = 0; index < left.bytes.size(); ++index) {
+        if (left.bytes[index] != right.bytes[index]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool same_widget(
+    const GaugeWidgetConfiguration& left,
+    const GaugeWidgetConfiguration& right) {
+    return left.widget_id == right.widget_id &&
+           left.signal_code == right.signal_code &&
+           left.kind == right.kind &&
+           same_label(left.label, right.label) &&
+           left.stale_after_ms == right.stale_after_ms &&
+           left.scale_min_raw == right.scale_min_raw &&
+           left.scale_max_raw == right.scale_max_raw;
+}
+
+bool same_layout(
+    const configuration::GaugeLayout& left,
+    const configuration::GaugeLayout& right) {
+    if (left.generation != right.generation ||
+        left.layout_id != right.layout_id ||
+        left.brightness_percent != right.brightness_percent ||
+        left.theme != right.theme ||
+        left.widget_count != right.widget_count) {
+        return false;
+    }
+    for (std::size_t index = 0; index < left.widgets.size(); ++index) {
+        if (!same_widget(left.widgets[index], right.widgets[index])) {
+            return false;
+        }
+    }
+    return true;
+}
+
 void increment_saturated(std::uint32_t& value) {
     if (value != std::numeric_limits<std::uint32_t>::max()) {
         ++value;
@@ -119,6 +163,7 @@ GaugeDashboardLoopStartResult GaugeDashboardLoop::start(
         return result;
     }
 
+    safe_default_ = loop_configuration.safe_default;
     active_layout_ = selected;
     frame_ = {};
     status_ = {};
@@ -139,6 +184,7 @@ void GaugeDashboardLoop::stop() {
     const auto ignored = view_model_.clear_widgets();
     static_cast<void>(ignored);
     active_layout_ = {};
+    safe_default_ = {};
     frame_ = {};
     status_ = {};
 }
@@ -204,12 +250,87 @@ GaugeDashboardLoopCycleResult GaugeDashboardLoop::service(
     return result;
 }
 
+GaugeDashboardLayoutActivationResult
+GaugeDashboardLoop::activate_persisted_layout(
+    std::uint64_t expected_generation) {
+    GaugeDashboardLayoutActivationResult result{};
+    result.expected_generation = expected_generation;
+    result.active_generation = active_layout_.generation;
+    if (!status_.running || !receiver_.status().running ||
+        !view_model_.status().running) {
+        return result;
+    }
+    if (expected_generation == 0) {
+        result.error = GaugeDashboardLoopError::invalid_configuration;
+        return result;
+    }
+
+    configuration::GaugeLayout selected{};
+    result.layout_load = layout_store_.load(safe_default_, selected);
+    if (result.layout_load.error !=
+        configuration::GaugeLayoutStoreError::none) {
+        result.error = GaugeDashboardLoopError::layout_load_failure;
+        return result;
+    }
+    // Activation is only authority to use a record that was actually selected
+    // from persistent media. The compiled safe default remains start-only.
+    if (result.layout_load.source !=
+            configuration::GaugeLayoutSource::slot_a &&
+        result.layout_load.source !=
+            configuration::GaugeLayoutSource::slot_b) {
+        result.error = GaugeDashboardLoopError::no_usable_layout;
+        return result;
+    }
+    if (selected.generation != expected_generation) {
+        result.error = GaugeDashboardLoopError::layout_generation_mismatch;
+        return result;
+    }
+
+    if (same_layout(selected, active_layout_)) {
+        result.frame_metadata_changed =
+            status_.layout_load.source != result.layout_load.source ||
+            status_.layout_load.recovery_required !=
+                result.layout_load.recovery_required;
+        status_.layout_load = result.layout_load;
+        if (result.frame_metadata_changed) {
+            frame_ = {};
+            status_.has_frame = false;
+        }
+        result.error = GaugeDashboardLoopError::none;
+        result.active_generation = active_layout_.generation;
+        return result;
+    }
+
+    result.view_error = view_model_.replace_widgets(
+        selected.widgets.data(), selected.widget_count);
+    if (result.view_error != GaugeViewModelError::none) {
+        result.error = GaugeDashboardLoopError::view_configuration_failure;
+        return result;
+    }
+
+    active_layout_ = selected;
+    frame_ = {};
+    status_.has_frame = false;
+    status_.layout_load = result.layout_load;
+    status_.view = view_model_.status();
+    result.error = GaugeDashboardLoopError::none;
+    result.active_generation = selected.generation;
+    result.layout_changed = true;
+    result.frame_metadata_changed = true;
+    return result;
+}
+
 bool GaugeDashboardLoop::copy_frame(GaugeDashboardFrame& output) const {
     if (!status_.has_frame) {
         return false;
     }
     output = frame_;
     return true;
+}
+
+bool GaugeDashboardLoop::bound_to(
+    const configuration::GaugeLayoutStore& store) const {
+    return &layout_store_ == &store;
 }
 
 GaugeDashboardLoopStatus GaugeDashboardLoop::status() const {

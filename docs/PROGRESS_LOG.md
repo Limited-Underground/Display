@@ -6,6 +6,32 @@ public chronology.
 
 ## 2026-08-14
 
+### Atomic confirmed running-layout activation
+
+- Added one display-side facade that owns local layout confirmation for the
+  exact store bound to the running dashboard. Store identity, running state,
+  and absence of accepted renderer work in flight are checked before
+  confirmation can consume the prompt or write.
+- Successful changed or unchanged persistence reloads only its exact
+  generation and atomically updates live model/visible metadata. A changed
+  model or metadata invalidates the dashboard copy and discards only unoffered
+  pending runtime work; an exact no-op preserves frame and pending work.
+  Activation performs no renderer offer/service or time/telemetry cycle, so an
+  existing presented front may remain while later new-generation presentation
+  is explicitly pending.
+- Commit uncertainty has unknown generation, blocks new mutation, and requires
+  reconstruction/restart reconciliation. A definite post-persist activation
+  failure instead latches the exact generation; retry performs no confirmation
+  or write, rejects generation drift, and preserves the old model/frame until
+  exact activation succeeds.
+- Ten focused scenario groups pass strict C++17 validation and 100/100
+  independent repeats, and the complete 50-executable host matrix passes.
+  The host script compiles 51 named programs because one physical CLI is
+  intentionally not executed. Target serialization, source authority, rendered
+  prompt/physical input, ESP-IDF storage, pixels, and physical display evidence
+  remain separate gates. See the
+  [activation contract](configuration/GAUGE_LAYOUT_ACTIVATION_WORKFLOW_V0.md).
+
 ### Round-display official-image write and rollback
 
 - The operator assigned the connected battery-free USB candidate public-safe

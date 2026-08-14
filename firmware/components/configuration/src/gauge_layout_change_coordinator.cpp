@@ -155,6 +155,11 @@ GaugeLayoutChangeError GaugeLayoutChangeCoordinator::service(
                : GaugeLayoutChangeError::none;
 }
 
+bool GaugeLayoutChangeCoordinator::bound_to(
+    const GaugeLayoutStore& store) const {
+    return &store_ == &store;
+}
+
 GaugeLayoutChangeStatus GaugeLayoutChangeCoordinator::status() const {
     return status_;
 }

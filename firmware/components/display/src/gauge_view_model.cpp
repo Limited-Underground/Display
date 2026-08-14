@@ -148,6 +148,38 @@ GaugeViewModelError GaugeViewModel::clear_widgets() {
     return GaugeViewModelError::none;
 }
 
+GaugeViewModelError GaugeViewModel::replace_widgets(
+    const GaugeWidgetConfiguration* configurations,
+    std::size_t configuration_count) {
+    if (configurations == nullptr || configuration_count == 0) {
+        return GaugeViewModelError::invalid_configuration;
+    }
+    if (configuration_count > widgets_.size()) {
+        return GaugeViewModelError::widget_capacity_full;
+    }
+
+    std::array<GaugeWidgetConfiguration, kMaximumGaugeWidgets> candidate{};
+    for (std::size_t index = 0; index < configuration_count; ++index) {
+        const auto validation =
+            validate_gauge_widget_configuration(configurations[index]);
+        if (validation != GaugeViewModelError::none) {
+            return validation;
+        }
+        for (std::size_t prior = 0; prior < index; ++prior) {
+            if (candidate[prior].widget_id ==
+                configurations[index].widget_id) {
+                return GaugeViewModelError::duplicate_widget;
+            }
+        }
+        candidate[index] = configurations[index];
+    }
+
+    widgets_ = candidate;
+    widget_count_ = configuration_count;
+    status_.widget_count = widget_count_;
+    return GaugeViewModelError::none;
+}
+
 GaugeViewModelError GaugeViewModel::start() {
     if (status_.running || !receiver_.status().running ||
         widget_count_ == 0) {

@@ -77,6 +77,7 @@ public:
     [[nodiscard]] GaugeLayoutChangeError cancel(
         std::uint32_t request_id);
     [[nodiscard]] GaugeLayoutChangeError service(std::uint64_t now_ms);
+    [[nodiscard]] bool bound_to(const GaugeLayoutStore& store) const;
     [[nodiscard]] GaugeLayoutChangeStatus status() const;
 
 private:

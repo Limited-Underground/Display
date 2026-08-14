@@ -75,6 +75,7 @@ public:
         std::uint64_t now_ms);
     [[nodiscard]] GaugeLayoutChangeWorkflowResult service(
         std::uint64_t now_ms);
+    [[nodiscard]] bool bound_to(const GaugeLayoutStore& store) const;
 
 private:
     [[nodiscard]] GaugeLayoutChangeWorkflowResult project(

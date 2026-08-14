@@ -302,6 +302,73 @@ void test_output_capacity_and_receiver_failure_leave_output_unchanged() {
     EXPECT(view.status().receiver_failures == 1);
 }
 
+void test_running_widget_replacement_is_atomic_and_preserves_counters() {
+    FakeEspNowTransport transport{};
+    wireless::GaugeTelemetryReceiver receiver{transport};
+    EXPECT(receiver.start(receiver_configuration()) ==
+           wireless::GaugeReceiverError::none);
+    display::GaugeViewModel view{receiver};
+    EXPECT(view.add_widget(widget(1)) == display::GaugeViewModelError::none);
+    EXPECT(view.start() == display::GaugeViewModelError::none);
+    std::array<display::GaugeWidgetSnapshot, 2> output{};
+    EXPECT(view.refresh(0, output.data(), output.size()).refreshed());
+    const auto before = view.status();
+
+    std::array<display::GaugeWidgetConfiguration, 2> invalid{{
+        widget(2), widget(2)}};
+    EXPECT(view.replace_widgets(invalid.data(), invalid.size()) ==
+           display::GaugeViewModelError::duplicate_widget);
+    auto after = view.status();
+    EXPECT(after.running);
+    EXPECT(after.widget_count == 1);
+    EXPECT(after.refreshes_completed == before.refreshes_completed);
+    EXPECT(view.refresh(1, output.data(), output.size()).refreshed());
+    EXPECT(output[0].widget_id == 1);
+
+    invalid[1].widget_id = 3;
+    invalid[1].stale_after_ms = 0;
+    const auto before_invalid = view.status();
+    EXPECT(view.replace_widgets(invalid.data(), invalid.size()) ==
+           display::GaugeViewModelError::invalid_configuration);
+    after = view.status();
+    EXPECT(after.widget_count == 1);
+    EXPECT(after.refreshes_completed == before_invalid.refreshes_completed);
+
+    std::array<display::GaugeWidgetConfiguration,
+               display::kMaximumGaugeWidgets + 1> oversized{};
+    EXPECT(view.replace_widgets(oversized.data(), oversized.size()) ==
+           display::GaugeViewModelError::widget_capacity_full);
+    EXPECT(view.replace_widgets(nullptr, 1) ==
+           display::GaugeViewModelError::invalid_configuration);
+    EXPECT(view.replace_widgets(invalid.data(), 0) ==
+           display::GaugeViewModelError::invalid_configuration);
+
+    std::array<display::GaugeWidgetConfiguration, 2> replacement{{
+        widget(10),
+        widget(
+            11,
+            wireless::TelemetrySignalCode::engine_speed,
+            display::GaugeWidgetKind::bar,
+            "RPM Bar")}};
+    const auto before_success = view.status();
+    EXPECT(view.replace_widgets(replacement.data(), replacement.size()) ==
+           display::GaugeViewModelError::none);
+    after = view.status();
+    EXPECT(after.running);
+    EXPECT(after.widget_count == 2);
+    EXPECT(after.refreshes_completed == before_success.refreshes_completed);
+    EXPECT(after.receiver_failures == before_success.receiver_failures);
+    EXPECT(view.refresh(2, output.data(), output.size()).refreshed());
+    EXPECT(output[0].widget_id == 10);
+    EXPECT(output[1].widget_id == 11);
+
+    const auto single = widget(12);
+    EXPECT(view.replace_widgets(&single, 1) ==
+           display::GaugeViewModelError::none);
+    EXPECT(view.refresh(3, output.data(), 1).refreshed());
+    EXPECT(output[0].widget_id == 12);
+}
+
 }  // namespace
 
 int main() {
@@ -312,11 +379,12 @@ int main() {
     test_unavailable_error_and_session_metadata_are_projected();
     test_multiple_widgets_share_signal_without_aliasing_configuration();
     test_output_capacity_and_receiver_failure_leave_output_unchanged();
+    test_running_widget_replacement_is_atomic_and_preserves_counters();
 
     if (failures != 0) {
         std::cerr << failures << " gauge view-model assertion(s) failed\n";
         return EXIT_FAILURE;
     }
-    std::cout << "PASS: 7 gauge view-model scenario groups\n";
+    std::cout << "PASS: 8 gauge view-model scenario groups\n";
     return EXIT_SUCCESS;
 }

@@ -117,6 +117,7 @@ GaugeRendererRuntimeCycleResult GaugeRendererRuntime::service(
             accepted_frame_ = pending_frame_;
             status_.has_last_accepted_frame = true;
             status_.has_pending_frame = false;
+            status_.has_renderer_frame_in_flight = true;
             increment_saturated(status_.offers_accepted);
         } else if (result.renderer_offer.error == GaugeRendererError::busy) {
             increment_saturated(status_.renderer_busy_cycles);
@@ -134,10 +135,71 @@ GaugeRendererRuntimeCycleResult GaugeRendererRuntime::service(
         record_error(
             result, GaugeRendererRuntimeError::renderer_service_failure);
     }
+    if (result.renderer_service.serviced() &&
+        result.renderer_service.frame_presented) {
+        status_.has_renderer_frame_in_flight = false;
+        if (status_.presentation_pending &&
+            accepted_frame_.layout_generation ==
+                status_.presentation_generation) {
+            status_.presentation_pending = false;
+            status_.presentation_generation = 0;
+        }
+    }
 
     result.pending_after_cycle = status_.has_pending_frame;
     status_.last_error = result.error;
     return result;
+}
+
+GaugeRendererRuntimeActivationResult
+GaugeRendererRuntime::activate_persisted_layout(
+    std::uint64_t expected_generation) {
+    GaugeRendererRuntimeActivationResult result{};
+    if (!status_.running || !dashboard_.status().running ||
+        !renderer_.is_running()) {
+        return result;
+    }
+    if (status_.has_renderer_frame_in_flight) {
+        result.error = GaugeRendererRuntimeError::renderer_frame_in_flight;
+        return result;
+    }
+
+    result.dashboard = dashboard_.activate_persisted_layout(
+        expected_generation);
+    if (!result.dashboard.activated()) {
+        result.error = GaugeRendererRuntimeError::layout_activation_failure;
+        return result;
+    }
+
+    if ((result.dashboard.layout_changed ||
+         result.dashboard.frame_metadata_changed) &&
+        status_.has_pending_frame) {
+        pending_frame_ = {};
+        status_.has_pending_frame = false;
+        result.discarded_pending_frame = true;
+        increment_saturated(
+            status_.pending_frames_discarded_for_activation);
+    }
+    if (result.dashboard.layout_changed ||
+        result.dashboard.frame_metadata_changed) {
+        increment_saturated(status_.layout_activations);
+        status_.presentation_pending = true;
+        status_.presentation_generation = expected_generation;
+    }
+    result.error = GaugeRendererRuntimeError::none;
+    result.presentation_pending = status_.presentation_pending;
+    return result;
+}
+
+bool GaugeRendererRuntime::layout_activation_ready() const {
+    return status_.running && dashboard_.status().running &&
+           renderer_.is_running() &&
+           !status_.has_renderer_frame_in_flight;
+}
+
+bool GaugeRendererRuntime::bound_to(
+    const configuration::GaugeLayoutStore& store) const {
+    return dashboard_.bound_to(store);
 }
 
 GaugeRendererRuntimeStatus GaugeRendererRuntime::status() const {

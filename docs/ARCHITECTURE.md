@@ -231,6 +231,21 @@ Its explicit restore-default entrypoint uses the same confirmed save path and
 stores the validated compiled default as a normal next generation; it never
 invokes destructive two-slot erase.
 
+The host-tested
+[running-layout activation facade](configuration/GAUGE_LAYOUT_ACTIVATION_WORKFLOW_V0.md)
+owns that change workflow for the exact store used by the running dashboard.
+It requires matching store identity, running components, and no accepted
+renderer frame in flight before confirmation can persist. A successful changed
+or unchanged save is then reloaded only at its exact generation and applied to
+the live model atomically. Model or visible metadata change invalidates the
+dashboard copy and discards only unoffered pending runtime work; an exact no-op
+preserves both. Activation performs no renderer offer/service call, so an old
+presented front may remain while the new generation is explicitly pending.
+Commit uncertainty blocks new mutation for restart reconciliation; definite
+post-persist failure latches one exact generation for zero-write retry. Target
+serialization, source/UI authority, physical presence, ESP-IDF storage, pixels,
+and hardware behavior remain unresolved.
+
 Its [local import boundary](configuration/GAUGE_LAYOUT_IMPORT_V0.md) accepts
 only one exact canonical `OGL0` record, preserves codec validation errors,
 returns a bounded structural summary, and stages decoded content through that

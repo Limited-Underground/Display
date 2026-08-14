@@ -99,6 +99,11 @@ GaugeLayoutChangeWorkflowResult GaugeLayoutChangeWorkflow::service(
     return project(observation, now_ms);
 }
 
+bool GaugeLayoutChangeWorkflow::bound_to(
+    const GaugeLayoutStore& store) const {
+    return coordinator_.bound_to(store);
+}
+
 GaugeLayoutChangeWorkflowResult GaugeLayoutChangeWorkflow::project(
     const GaugeLayoutChangeObservation& observation,
     std::uint64_t now_ms) const {

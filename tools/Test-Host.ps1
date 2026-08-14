@@ -748,6 +748,38 @@ Invoke-HostTest `
     )
 
 Invoke-HostTest `
+    -Name 'gauge_layout_activation_workflow_tests' `
+    -Description 'Atomic confirmed running-layout activation workflow' `
+    -IncludeDirectories @(
+        (Join-Path $projectRoot 'firmware\components\configuration\include'),
+        (Join-Path $projectRoot 'firmware\components\configuration\test_support'),
+        (Join-Path $projectRoot 'firmware\components\display\include'),
+        (Join-Path $projectRoot 'firmware\components\display\test_support'),
+        (Join-Path $projectRoot 'firmware\components\telemetry\include'),
+        (Join-Path $projectRoot 'firmware\components\wireless\include'),
+        (Join-Path $projectRoot 'firmware\components\wireless\test_support')
+    ) `
+    -Sources @(
+        (Join-Path $projectRoot 'firmware\components\configuration\src\gauge_layout.cpp'),
+        (Join-Path $projectRoot 'firmware\components\configuration\src\gauge_layout_change_coordinator.cpp'),
+        (Join-Path $projectRoot 'firmware\components\configuration\src\gauge_layout_change_operator_status.cpp'),
+        (Join-Path $projectRoot 'firmware\components\configuration\src\gauge_layout_change_workflow.cpp'),
+        (Join-Path $projectRoot 'firmware\components\configuration\test_support\fake_gauge_layout_storage.cpp'),
+        (Join-Path $projectRoot 'firmware\components\display\src\gauge_dashboard_loop.cpp'),
+        (Join-Path $projectRoot 'firmware\components\display\src\gauge_layout_activation_workflow.cpp'),
+        (Join-Path $projectRoot 'firmware\components\display\src\gauge_renderer.cpp'),
+        (Join-Path $projectRoot 'firmware\components\display\src\gauge_renderer_runtime.cpp'),
+        (Join-Path $projectRoot 'firmware\components\display\src\gauge_view_model.cpp'),
+        (Join-Path $projectRoot 'firmware\components\display\test_support\fake_gauge_renderer.cpp'),
+        (Join-Path $projectRoot 'firmware\components\telemetry\src\normalized_signal.cpp'),
+        (Join-Path $projectRoot 'firmware\components\wireless\src\esp_now_transport.cpp'),
+        (Join-Path $projectRoot 'firmware\components\wireless\src\telemetry_packet.cpp'),
+        (Join-Path $projectRoot 'firmware\components\wireless\src\gauge_telemetry_receiver.cpp'),
+        (Join-Path $projectRoot 'firmware\components\wireless\test_support\fake_esp_now_transport.cpp'),
+        (Join-Path $projectRoot 'tests\host\gauge_layout_activation_workflow_tests.cpp')
+    )
+
+Invoke-HostTest `
     -Name 'gauge_trend_buffer_tests' `
     -Description 'Bounded fail-visible gauge trend buffer' `
     -IncludeDirectories @(

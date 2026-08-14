@@ -20,6 +20,7 @@ enum class GaugeDashboardLoopError : std::uint8_t {
     view_configuration_failure,
     receiver_start_failure,
     view_start_failure,
+    layout_generation_mismatch,
     receiver_service_failure,
     view_refresh_failure,
     clock_regression,
@@ -39,6 +40,20 @@ struct GaugeDashboardLoopStartResult {
     GaugeViewModelError view_error{GaugeViewModelError::none};
 
     [[nodiscard]] constexpr bool started() const {
+        return error == GaugeDashboardLoopError::none;
+    }
+};
+
+struct GaugeDashboardLayoutActivationResult {
+    GaugeDashboardLoopError error{GaugeDashboardLoopError::invalid_state};
+    configuration::GaugeLayoutLoadResult layout_load{};
+    GaugeViewModelError view_error{GaugeViewModelError::none};
+    std::uint64_t expected_generation{0};
+    std::uint64_t active_generation{0};
+    bool layout_changed{false};
+    bool frame_metadata_changed{false};
+
+    [[nodiscard]] constexpr bool activated() const {
         return error == GaugeDashboardLoopError::none;
     }
 };
@@ -108,14 +123,25 @@ public:
     [[nodiscard]] GaugeDashboardLoopCycleResult service(
         std::uint64_t now_ms);
 
+    // Reloads the exact committed generation from this loop's bound store and
+    // atomically replaces the live widget set. It does not service time,
+    // receive data, publish a frame, or mutate storage. The prior complete
+    // frame is invalidated only when model or visible layout metadata changes;
+    // an exact no-op preserves it. Renderer-owned front frames are separate.
+    [[nodiscard]] GaugeDashboardLayoutActivationResult
+    activate_persisted_layout(std::uint64_t expected_generation);
+
     // Returns false and preserves output until one complete frame exists.
     [[nodiscard]] bool copy_frame(GaugeDashboardFrame& output) const;
+    [[nodiscard]] bool bound_to(
+        const configuration::GaugeLayoutStore& store) const;
     [[nodiscard]] GaugeDashboardLoopStatus status() const;
 
 private:
     configuration::GaugeLayoutStore& layout_store_;
     wireless::GaugeTelemetryReceiver& receiver_;
     GaugeViewModel& view_model_;
+    configuration::GaugeLayout safe_default_{};
     configuration::GaugeLayout active_layout_{};
     GaugeDashboardFrame frame_{};
     GaugeDashboardLoopStatus status_{};

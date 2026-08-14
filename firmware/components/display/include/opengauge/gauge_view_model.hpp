@@ -111,6 +111,11 @@ public:
     [[nodiscard]] GaugeViewModelError add_widget(
         const GaugeWidgetConfiguration& configuration);
     [[nodiscard]] GaugeViewModelError clear_widgets();
+    // Validates the complete candidate before changing any live widget. This
+    // is the only widget mutation allowed while running.
+    [[nodiscard]] GaugeViewModelError replace_widgets(
+        const GaugeWidgetConfiguration* configurations,
+        std::size_t configuration_count);
     [[nodiscard]] GaugeViewModelError start();
     void stop();
 

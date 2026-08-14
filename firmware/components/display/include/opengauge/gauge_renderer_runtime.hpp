@@ -16,6 +16,8 @@ enum class GaugeRendererRuntimeError : std::uint8_t {
     renderer_busy,
     renderer_offer_failure,
     renderer_service_failure,
+    renderer_frame_in_flight,
+    layout_activation_failure,
     clock_regression,
 };
 
@@ -47,10 +49,26 @@ struct GaugeRendererRuntimeCycleResult {
     }
 };
 
+struct GaugeRendererRuntimeActivationResult {
+    GaugeRendererRuntimeError error{
+        GaugeRendererRuntimeError::invalid_state};
+    GaugeDashboardLayoutActivationResult dashboard{};
+    bool discarded_pending_frame{false};
+    bool presentation_pending{false};
+
+    [[nodiscard]] constexpr bool activated() const {
+        return error == GaugeRendererRuntimeError::none &&
+               dashboard.activated();
+    }
+};
+
 struct GaugeRendererRuntimeStatus {
     bool running{false};
     bool has_pending_frame{false};
     bool has_last_accepted_frame{false};
+    bool has_renderer_frame_in_flight{false};
+    bool presentation_pending{false};
+    std::uint64_t presentation_generation{0};
     bool has_service_time{false};
     std::uint64_t last_service_time_ms{0};
     std::uint32_t cycles_serviced{0};
@@ -63,6 +81,8 @@ struct GaugeRendererRuntimeStatus {
     std::uint32_t renderer_busy_cycles{0};
     std::uint32_t renderer_offer_failures{0};
     std::uint32_t renderer_service_failures{0};
+    std::uint32_t layout_activations{0};
+    std::uint32_t pending_frames_discarded_for_activation{0};
     GaugeRendererRuntimeError last_error{GaugeRendererRuntimeError::none};
 };
 
@@ -83,6 +103,14 @@ public:
 
     [[nodiscard]] GaugeRendererRuntimeCycleResult service(
         std::uint64_t now_ms);
+    // Performs no renderer offer/service call. A changed activation discards
+    // an older runtime-owned, not-yet-offered pending frame. An already
+    // accepted renderer frame must finish before activation can begin.
+    [[nodiscard]] GaugeRendererRuntimeActivationResult
+    activate_persisted_layout(std::uint64_t expected_generation);
+    [[nodiscard]] bool layout_activation_ready() const;
+    [[nodiscard]] bool bound_to(
+        const configuration::GaugeLayoutStore& store) const;
     [[nodiscard]] GaugeRendererRuntimeStatus status() const;
 
 private:
