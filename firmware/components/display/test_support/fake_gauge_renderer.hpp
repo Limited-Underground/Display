@@ -37,6 +37,7 @@ public:
         GaugeRendererError error = GaugeRendererError::backend_failure);
     void fail_next_service(
         GaugeRendererError error = GaugeRendererError::backend_failure);
+    void report_spurious_presentation_next_service();
 
     [[nodiscard]] bool copy_queued_frame(
         GaugeDashboardFrame& output) const;
@@ -55,6 +56,7 @@ private:
     bool has_service_time_{false};
     bool busy_{false};
     bool hold_presentations_{false};
+    bool spurious_presentation_next_service_{false};
     bool next_start_leaves_partial_state_{false};
 };
 

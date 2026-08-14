@@ -70,6 +70,7 @@ This is the organized entry point for OpenGauge design, evidence, and engineerin
 - [Operator-status projection](configuration/GAUGE_LAYOUT_CHANGE_OPERATOR_STATUS_V0.md)
 - [Layout-change workflow](configuration/GAUGE_LAYOUT_CHANGE_WORKFLOW_V0.md)
 - [Atomic confirmed running-layout activation](configuration/GAUGE_LAYOUT_ACTIVATION_WORKFLOW_V0.md)
+- [Exact-generation layout presentation completion](configuration/GAUGE_LAYOUT_PRESENTATION_COMPLETION_V0.md)
 - [Layout import](configuration/GAUGE_LAYOUT_IMPORT_V0.md)
 - [Layout export](configuration/GAUGE_LAYOUT_EXPORT_V0.md)
 - [Cross-store layout transfer](configuration/GAUGE_LAYOUT_TRANSFER_V0.md)

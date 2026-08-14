@@ -357,17 +357,20 @@ void test_changed_confirm_updates_model_then_presents_later() {
     EXPECT(view_after.refreshes_completed == view_before.refreshes_completed);
 
     deliver_rpm(fixture.sender, 1600000, 100, 1);
-    const auto refresh_failed = fixture.runtime.service(12);
+    const auto refresh_failed = fixture.workflow.service_presentation(12);
     EXPECT(refresh_failed.error ==
+           display::GaugeLayoutActivationWorkflowError::presentation_failure);
+    EXPECT(refresh_failed.runtime.error ==
            display::GaugeRendererRuntimeError::dashboard_service_failure);
-    EXPECT(refresh_failed.dashboard.error ==
+    EXPECT(refresh_failed.runtime.dashboard.error ==
            display::GaugeDashboardLoopError::view_refresh_failure);
     EXPECT(!fixture.dashboard.copy_frame(old_dashboard));
     EXPECT(fixture.renderer.copy_presented_frame(old_front));
     EXPECT(old_front.layout_id == layout().layout_id);
     EXPECT(fixture.runtime.status().presentation_pending);
 
-    EXPECT(fixture.runtime.service(100).succeeded());
+    const auto presented = fixture.workflow.service_presentation(100);
+    EXPECT(presented.presentation_completed());
     display::GaugeDashboardFrame new_front{};
     EXPECT(fixture.renderer.copy_presented_frame(new_front));
     EXPECT(new_front.layout_id == 2);
@@ -610,7 +613,8 @@ void test_maximum_widgets_and_restart_reload_exact_persisted_layout() {
     EXPECT(fixture.workflow.confirm_and_activate(1, 2).completed());
     EXPECT(fixture.view.status().widget_count ==
            display::kMaximumGaugeWidgets);
-    EXPECT(fixture.runtime.service(2).succeeded());
+    EXPECT(fixture.workflow.service_presentation(2)
+               .presentation_completed());
     display::GaugeDashboardFrame frame{};
     EXPECT(fixture.renderer.copy_presented_frame(frame));
     EXPECT(frame.widget_count == display::kMaximumGaugeWidgets);

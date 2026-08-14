@@ -18,6 +18,9 @@ persisted OGL0 generation ----> exact-generation model activation
                                          |
                                          v
                               presentation remains pending
+                                         |
+                                         v
+                              exact-generation completion
 ```
 
 The result keeps three claims separate:
@@ -30,6 +33,10 @@ The result keeps three claims separate:
 - **presentation pending** means a later runtime cycle must still publish,
   offer, and successfully present a frame for that generation.
 
+The separate
+[presentation-completion contract](GAUGE_LAYOUT_PRESENTATION_COMPLETION_V0.md)
+defines the exact one-shot receipt that closes the final obligation.
+
 Persistence success alone is not model activation, and model activation alone
 is not evidence that a renderer front frame or physical pixel changed.
 
@@ -41,6 +48,11 @@ or storage is written unless all of the following are true:
 - the workflow and dashboard runtime are bound to the same exact layout store;
 - the runtime, dashboard, and renderer report running; and
 - the renderer owns no accepted frame still in flight.
+
+It also rejects before confirmation or storage whenever an earlier changed
+activation still has an exact presentation generation pending. Every other
+facade mutation is blocked at the same boundary until that presentation
+completes or reconstruction reconciles a detected ownership divergence.
 
 An already presented renderer front frame may exist. Runtime-owned pending work
 that has not been offered may also exist; it remains under the activation rules
@@ -92,6 +104,26 @@ changed model or metadata still remains presentation-pending until later
 runtime service presents that exact generation. Unknown-generation commit
 uncertainty cannot use this retry path and requires reconstruction/restart
 reconciliation.
+
+## Exact-generation presentation completion
+
+Changed model or renderer-visible metadata activation latches the same exact
+generation in this facade and the renderer runtime. While latched,
+`service_presentation(now_ms)` is the sole serialized path through runtime
+service. A successful renderer service produces a cycle-local tracked receipt
+only for a frame previously accepted by that runtime. The facade clears its
+latch only when the completed generation exactly matches its expected
+generation; the receipt cannot replay.
+
+Busy, offer, renderer-service, and clock failures preserve a coherent pending
+obligation. An exact receipt may still complete when an unrelated earlier
+dashboard or frame-observation error remains in the nested cycle result. Direct
+runtime service or stop, facade/runtime latch mismatch, and a tracked
+wrong-generation presentation instead fail closed to restart-required
+reconstruction and keep new mutation blocked. An untracked or spurious
+renderer signal is not proof and remains ordinary pending. See the
+[exact-generation presentation contract](GAUGE_LAYOUT_PRESENTATION_COMPLETION_V0.md)
+for the complete ownership and recovery rules.
 
 ## Host evidence
 

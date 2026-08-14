@@ -50,6 +50,7 @@ GaugeRendererError FakeGaugeRenderer::start() {
     status_.has_presented_frame = false;
     has_service_time_ = false;
     last_service_time_ms_ = 0;
+    spurious_presentation_next_service_ = false;
     return GaugeRendererError::none;
 }
 
@@ -62,6 +63,7 @@ void FakeGaugeRenderer::stop() {
     presented_frame_ = {};
     has_service_time_ = false;
     last_service_time_ms_ = 0;
+    spurious_presentation_next_service_ = false;
 }
 
 GaugeRendererOfferResult FakeGaugeRenderer::offer(
@@ -103,6 +105,11 @@ GaugeRendererServiceResult FakeGaugeRenderer::service(
     }
     has_service_time_ = true;
     last_service_time_ms_ = now_ms;
+    if (spurious_presentation_next_service_ &&
+        !status_.has_queued_frame) {
+        spurious_presentation_next_service_ = false;
+        return {GaugeRendererError::none, true};
+    }
     if (hold_presentations_ || !status_.has_queued_frame) {
         return {GaugeRendererError::none, false};
     }
@@ -135,6 +142,10 @@ void FakeGaugeRenderer::fail_next_offer(GaugeRendererError error) {
 
 void FakeGaugeRenderer::fail_next_service(GaugeRendererError error) {
     next_service_error_ = error;
+}
+
+void FakeGaugeRenderer::report_spurious_presentation_next_service() {
+    spurious_presentation_next_service_ = true;
 }
 
 bool FakeGaugeRenderer::copy_queued_frame(

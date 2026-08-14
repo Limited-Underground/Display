@@ -6,6 +6,31 @@ public chronology.
 
 ## 2026-08-14
 
+### Exact-generation layout presentation completion gate
+
+- Added one facade-owned presentation latch after changed running-layout
+  activation. While the facade or runtime still owns that exact generation,
+  all new layout mutations fail before confirmation-token consumption or a
+  storage write, and `service_presentation` is the sole serialized runtime
+  service route.
+- A successful renderer service produces a one-cycle receipt only for a frame
+  accepted and generation-tracked by that runtime. Only an exact matching
+  generation completes the facade gate; the receipt cannot replay. An exact
+  receipt may complete despite an unrelated nested dashboard or
+  frame-observation error, which remains available diagnostically.
+- Busy, offer, renderer-service, and clock failures retain coherent pending
+  work. Direct runtime service or stop, latch/generation mismatch, or a tracked
+  wrong-generation presentation instead requires reconstruction and keeps
+  mutation blocked. Spurious untracked signals remain ordinary pending; an
+  exact no-op creates no new obligation, while zero-write activation retry can
+  transition into the same gate.
+- Eleven focused strict C++17 scenario groups pass 100/100 independent
+  repeats. The inherited renderer-runtime 11 groups and activation-workflow ten
+  groups pass, and the complete host run passes 51 executed test binaries, 52
+  compiled names, and publication-safety scans. One compiled physical CLI is
+  intentionally not executed. See the
+  [presentation-completion contract](configuration/GAUGE_LAYOUT_PRESENTATION_COMPLETION_V0.md).
+
 ### Atomic confirmed running-layout activation
 
 - Added one display-side facade that owns local layout confirmation for the

@@ -56,12 +56,31 @@ still busy. Renderer service failure preserves its in-flight frame and prior
 presented frame, while subsequent cycles continue to service the dashboard so
 telemetry still ages to exact-boundary stale/no-value.
 
-Every published dashboard frame is offered, including one whose visible
-content is semantically equal to the last pending or accepted frame. Fieldwise
-semantic comparison is diagnostic only: it excludes publication sequence,
-publication time, and unused widget capacity, while comparing every active
-renderer-visible layout and widget field. Publication sequence is therefore
-not treated as a uniqueness key.
+When an offer is accepted, the runtime also records the complete frame's layout
+generation as renderer-owned bookkeeping. A successful renderer service with
+`frame_presented` creates a one-cycle `tracked_frame_presented` receipt only
+when the runtime actually owns an accepted frame in flight. The receipt carries
+that frame's generation. Unpaired and duplicate renderer signals create no
+tracked receipt.
+
+If an exact layout presentation generation is pending, a matching tracked
+receipt clears the runtime latch and returns `presentation_completed` plus the
+exact completed generation. A tracked old or otherwise different generation
+does not clear that latch. This presentation transition may coexist with an
+unrelated earlier dashboard or frame-observation error in the same cycle; the
+first-error diagnostic remains available even though the renderer's exact
+transition is valid. Renderer-service failure cannot produce the transition.
+Start and stop clear accepted-generation and presentation bookkeeping.
+
+Every published dashboard frame is observed. While renderer-owned work remains
+in flight, later complete frames coalesce into the one newest pending copy, so
+intermediate frames need not be offered. The newest pending frame becomes
+eligible for one offer only when no renderer frame is in flight. Semantic
+equality does not itself suppress an otherwise eligible offer. Fieldwise
+comparison is diagnostic only: it excludes publication sequence, publication
+time, and unused widget capacity, while comparing every active renderer-visible
+layout and widget field. Publication sequence is therefore not treated as a
+uniqueness key.
 
 Runtime and fake-renderer diagnostic counters saturate instead of wrapping.
 The focused suite verifies their ordinary increments and state transitions; it
@@ -93,6 +112,14 @@ does not force each counter to its maximum value.
 
 The suite compiles as C++17 with warnings-as-errors and passes 100/100 focused
 repeats. It joins the complete 49-executable Windows host matrix.
+
+The later
+[exact-generation presentation gate](../configuration/GAUGE_LAYOUT_PRESENTATION_COMPLETION_V0.md)
+adds facade/runtime latch reconciliation and one-shot completion acceptance.
+Its separate 11-group focused suite exercises matching, wrong-generation,
+spurious, failure, clock, no-op, retry, and direct-service divergence cases;
+complete-matrix acceptance is recorded in that contract rather than rewriting
+this OG-012E acceptance-time count.
 
 ## Explicit limits
 

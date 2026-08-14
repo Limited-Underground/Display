@@ -555,9 +555,11 @@ void test_renderer_service_failure_keeps_inflight_and_dashboard_aging() {
     EXPECT(!cycle.pending_after_cycle);
 
     cycle = fixture.runtime.service(100);
-    EXPECT(cycle.error == display::GaugeRendererRuntimeError::renderer_busy);
+    EXPECT(cycle.succeeded());
     EXPECT(cycle.pending_after_cycle);
+    EXPECT(!cycle.offer_attempted);
     EXPECT(cycle.renderer_service.frame_presented);
+    EXPECT(cycle.tracked_frame_presented);
     cycle = fixture.runtime.service(100);
     EXPECT(cycle.offer_attempted);
     EXPECT(cycle.renderer_service.frame_presented);
@@ -634,8 +636,7 @@ void test_caller_clock_rollback_has_no_side_effect() {
     fixture.renderer.set_hold_presentations(true);
     EXPECT(fixture.runtime.start(configuration()).started());
     EXPECT(fixture.runtime.service(10).succeeded());
-    EXPECT(fixture.runtime.service(11).error ==
-           display::GaugeRendererRuntimeError::renderer_busy);
+    EXPECT(fixture.runtime.service(11).succeeded());
     EXPECT(fixture.runtime.status().has_pending_frame);
     display::GaugeDashboardFrame queued_before{};
     EXPECT(fixture.renderer.copy_queued_frame(queued_before));
@@ -679,14 +680,17 @@ void test_accepted_offer_clears_only_runtime_pending_copy() {
     EXPECT(fixture.renderer.status().has_queued_frame);
 
     const auto second = fixture.runtime.service(1);
-    EXPECT(second.error == display::GaugeRendererRuntimeError::renderer_busy);
+    EXPECT(second.succeeded());
     EXPECT(second.pending_after_cycle);
+    EXPECT(!second.offer_attempted);
     EXPECT(fixture.renderer.status().has_queued_frame);
     fixture.renderer.set_hold_presentations(false);
     const auto third = fixture.runtime.service(2);
-    EXPECT(third.error == display::GaugeRendererRuntimeError::renderer_busy);
+    EXPECT(third.succeeded());
     EXPECT(third.pending_after_cycle);
+    EXPECT(!third.offer_attempted);
     EXPECT(third.renderer_service.frame_presented);
+    EXPECT(third.tracked_frame_presented);
     const auto fourth = fixture.runtime.service(3);
     EXPECT(fourth.succeeded());
     EXPECT(!fourth.pending_after_cycle);

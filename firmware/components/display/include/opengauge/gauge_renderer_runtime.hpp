@@ -43,6 +43,13 @@ struct GaugeRendererRuntimeCycleResult {
     bool frame_semantically_equal{false};
     bool offer_attempted{false};
     bool pending_after_cycle{false};
+    // One-cycle receipt for a renderer-owned frame accepted by this runtime.
+    // A renderer's unpaired or duplicate frame_presented signal never creates
+    // this receipt.
+    bool tracked_frame_presented{false};
+    std::uint64_t presented_generation{0};
+    bool presentation_completed{false};
+    std::uint64_t completed_presentation_generation{0};
 
     [[nodiscard]] constexpr bool succeeded() const {
         return error == GaugeRendererRuntimeError::none;
@@ -122,6 +129,7 @@ private:
     GaugeRenderer& renderer_;
     GaugeDashboardFrame pending_frame_{};
     GaugeDashboardFrame accepted_frame_{};
+    std::uint64_t renderer_frame_generation_{0};
     GaugeRendererRuntimeStatus status_{};
 };
 

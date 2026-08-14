@@ -157,9 +157,14 @@ failed offers retain bounded newest work; failed renderer service retains its
 accepted in-flight frame and prior complete front frame while dashboard aging
 continues. The runtime reports the first cycle failure in execution order while
 preserving exact nested errors, and caller-time regression changes no downstream
-state. It does not draw pixels or prove fonts, localization, accessibility,
-input, ESP-IDF scheduling/drivers, target allocation, or physical display
-behavior.
+state. Accepted work now retains its exact layout generation, and successful
+renderer service returns a one-cycle tracked presentation receipt. Only a
+matching tracked generation clears a pending runtime presentation; unpaired or
+duplicate renderer signals do not. A valid renderer transition can coexist
+with an unrelated earlier dashboard or frame-observation error, which remains
+available diagnostically.
+It does not draw pixels or prove fonts, localization, accessibility, input,
+ESP-IDF scheduling/drivers, target allocation, or physical display behavior.
 
 A host-tested volatile trend core retains up to four fixed series of 2 through
 120 points with independent exact minimum intervals. Valid/suspect points keep
@@ -245,6 +250,17 @@ Commit uncertainty blocks new mutation for restart reconciliation; definite
 post-persist failure latches one exact generation for zero-write retry. Target
 serialization, source/UI authority, physical presence, ESP-IDF storage, pixels,
 and hardware behavior remain unresolved.
+
+The host-tested
+[presentation-completion gate](configuration/GAUGE_LAYOUT_PRESENTATION_COMPLETION_V0.md)
+extends that ownership through the first exact renderer-front transition. While
+a facade/runtime generation is latched, every new layout mutation fails before
+token consumption or storage write and `service_presentation` is the sole
+serialized runtime-service route. A matching one-shot receipt releases the
+gate. Direct runtime service or stop, latch/generation divergence, or a tracked
+wrong-generation transition fails closed to restart-required reconstruction;
+untracked signals remain ordinary pending. This remains renderer-front
+evidence, not physical-pixel evidence.
 
 Its [local import boundary](configuration/GAUGE_LAYOUT_IMPORT_V0.md) accepts
 only one exact canonical `OGL0` record, preserves codec validation errors,

@@ -13,7 +13,7 @@ configuration::GaugeLayoutChangeWorkflowResult
 GaugeLayoutActivationWorkflow::start(
     const configuration::GaugeLayoutChangePolicy& policy,
     std::uint64_t now_ms) {
-    if (status_.activation_pending || status_.restart_required) {
+    if (change_blocked()) {
         return blocked_change(now_ms);
     }
     return change_workflow_.start(policy, now_ms);
@@ -21,7 +21,7 @@ GaugeLayoutActivationWorkflow::start(
 
 configuration::GaugeLayoutChangeWorkflowResult
 GaugeLayoutActivationWorkflow::stop(std::uint64_t now_ms) {
-    if (status_.activation_pending || status_.restart_required) {
+    if (change_blocked()) {
         return blocked_change(now_ms);
     }
     return change_workflow_.stop(now_ms);
@@ -37,7 +37,7 @@ GaugeLayoutActivationWorkflow::stage(
     std::uint32_t request_id,
     const configuration::GaugeLayout& desired,
     std::uint64_t now_ms) {
-    if (status_.activation_pending || status_.restart_required) {
+    if (change_blocked()) {
         return blocked_change(now_ms);
     }
     return change_workflow_.stage(request_id, desired, now_ms);
@@ -48,7 +48,7 @@ GaugeLayoutActivationWorkflow::stage_restore_default(
     std::uint32_t request_id,
     const configuration::GaugeLayout& compiled_default,
     std::uint64_t now_ms) {
-    if (status_.activation_pending || status_.restart_required) {
+    if (change_blocked()) {
         return blocked_change(now_ms);
     }
     return change_workflow_.stage_restore_default(
@@ -61,7 +61,7 @@ GaugeLayoutActivationWorkflow::stage_import_record(
     const std::uint8_t* record,
     std::size_t size,
     std::uint64_t now_ms) {
-    if (!status_.activation_pending && !status_.restart_required) {
+    if (!change_blocked()) {
         return change_workflow_.stage_import_record(
             request_id, record, size, now_ms);
     }
@@ -74,7 +74,7 @@ configuration::GaugeLayoutChangeWorkflowResult
 GaugeLayoutActivationWorkflow::cancel(
     std::uint32_t request_id,
     std::uint64_t now_ms) {
-    if (status_.activation_pending || status_.restart_required) {
+    if (change_blocked()) {
         return blocked_change(now_ms);
     }
     return change_workflow_.cancel(request_id, now_ms);
@@ -82,7 +82,7 @@ GaugeLayoutActivationWorkflow::cancel(
 
 configuration::GaugeLayoutChangeWorkflowResult
 GaugeLayoutActivationWorkflow::service(std::uint64_t now_ms) {
-    if (status_.activation_pending || status_.restart_required) {
+    if (change_blocked()) {
         return blocked_change(now_ms);
     }
     return change_workflow_.service(now_ms);
@@ -96,6 +96,13 @@ GaugeLayoutActivationWorkflow::confirm_and_activate(
     if (status_.restart_required && !status_.activation_pending) {
         result.error = GaugeLayoutActivationWorkflowError::restart_required;
         result.restart_required = true;
+        return result;
+    }
+    if (status_.presentation_pending) {
+        result.error =
+            GaugeLayoutActivationWorkflowError::presentation_pending;
+        result.expected_generation = status_.presentation_generation;
+        result.presentation_pending = true;
         return result;
     }
     if (status_.activation_pending) {
@@ -141,6 +148,9 @@ GaugeLayoutActivationWorkflow::confirm_and_activate(
 
     result.error = GaugeLayoutActivationWorkflowError::none;
     result.presentation_pending = result.activation.presentation_pending;
+    if (result.presentation_pending) {
+        latch_presentation(result.expected_generation);
+    }
     return result;
 }
 
@@ -176,6 +186,75 @@ GaugeLayoutActivationWorkflow::retry_activation() {
     result.restart_required = false;
     result.presentation_pending = result.activation.presentation_pending;
     clear_activation_pending();
+    if (result.presentation_pending) {
+        latch_presentation(result.expected_generation);
+    }
+    return result;
+}
+
+GaugeLayoutPresentationServiceResult
+GaugeLayoutActivationWorkflow::service_presentation(
+    std::uint64_t now_ms) {
+    GaugeLayoutPresentationServiceResult result{};
+    result.expected_generation = status_.presentation_generation;
+    if (status_.restart_required && !status_.activation_pending) {
+        result.error = GaugeLayoutActivationWorkflowError::restart_required;
+        result.restart_required = true;
+        return result;
+    }
+    if (!status_.presentation_pending ||
+        status_.presentation_generation == 0) {
+        return result;
+    }
+    const auto runtime_before = renderer_runtime_.status();
+    if (!runtime_before.running || !runtime_before.presentation_pending ||
+        runtime_before.presentation_generation !=
+            status_.presentation_generation) {
+        require_restart_after_presentation_divergence();
+        result.error = GaugeLayoutActivationWorkflowError::restart_required;
+        result.restart_required = true;
+        return result;
+    }
+
+    result.runtime_service_attempted = true;
+    result.presentation_pending = true;
+    result.runtime = renderer_runtime_.service(now_ms);
+    if (result.runtime.presentation_completed &&
+        result.runtime.completed_presentation_generation ==
+            status_.presentation_generation) {
+        result.error = GaugeLayoutActivationWorkflowError::none;
+        result.completion_receipt = true;
+        result.presentation_pending = false;
+        status_.presentation_pending = false;
+        status_.presentation_generation = 0;
+        return result;
+    }
+    if (result.runtime.tracked_frame_presented &&
+        result.runtime.presented_generation !=
+            status_.presentation_generation) {
+        require_restart_after_presentation_divergence();
+        result.error = GaugeLayoutActivationWorkflowError::restart_required;
+        result.restart_required = true;
+        result.presentation_pending = false;
+        return result;
+    }
+    const auto runtime_after = renderer_runtime_.status();
+    if (!runtime_after.running || !runtime_after.presentation_pending ||
+        runtime_after.presentation_generation !=
+            status_.presentation_generation) {
+        require_restart_after_presentation_divergence();
+        result.error = GaugeLayoutActivationWorkflowError::restart_required;
+        result.restart_required = true;
+        result.presentation_pending = false;
+        return result;
+    }
+    if (result.runtime.error == GaugeRendererRuntimeError::none) {
+        result.error =
+            GaugeLayoutActivationWorkflowError::presentation_pending;
+        return result;
+    }
+    result.error =
+        GaugeLayoutActivationWorkflowError::presentation_failure;
     return result;
 }
 
@@ -205,7 +284,31 @@ GaugeLayoutActivationWorkflow::preflight() const {
 }
 
 void GaugeLayoutActivationWorkflow::clear_activation_pending() {
-    status_ = {};
+    status_.activation_pending = false;
+    status_.restart_required = false;
+    status_.pending_generation = 0;
+}
+
+void GaugeLayoutActivationWorkflow::latch_presentation(
+    std::uint64_t generation) {
+    if (generation == 0) {
+        return;
+    }
+    status_.presentation_pending = true;
+    status_.presentation_generation = generation;
+}
+
+void GaugeLayoutActivationWorkflow::
+require_restart_after_presentation_divergence() {
+    status_.presentation_pending = false;
+    status_.presentation_generation = 0;
+    status_.restart_required = true;
+}
+
+bool GaugeLayoutActivationWorkflow::change_blocked() const {
+    return status_.activation_pending || status_.restart_required ||
+           status_.presentation_pending ||
+           renderer_runtime_.status().presentation_pending;
 }
 
 }  // namespace opengauge::display
