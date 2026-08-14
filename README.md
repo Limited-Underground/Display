@@ -11,7 +11,7 @@ The goal is a dependable base system that can operate with compact round gauges 
 | Area | Current state |
 | --- | --- |
 | Phase | Architecture, host-tested components, and bounded bench integration |
-| Proven so far | A 47-executable Windows host-test matrix and limited three-radio alert/acknowledgement evidence |
+| Proven so far | A 48-executable Windows host-test matrix and limited three-radio alert/acknowledgement evidence |
 | Not yet proven | Vehicle CAN/J1939 hardware, ESP32 target adapters, production security, physical gauge displays, power interruption, or field use |
 | Next focus | Select exact gateway hardware and bind the existing CAN-to-radio path to target adapters; evaluate arriving display candidates separately |
 
@@ -62,7 +62,7 @@ These are design goals unless the linked evidence explicitly says otherwise.
 
 ## Hardware status
 
-No hardware is supported yet. Candidate equipment includes two owner-reported-on-hand Waveshare ESP32-S3 1.75-inch round touch displays, an owner-reported-ordered ESP32-S3 development board, an owner-reported-ordered Wio Tracker L1 Pro GNSS/LoRa unit, and an on-hand consumer OBD-II adapter. The round-display arrival observation records public package/underside labels, a printed component map, one rendered powered demo, and privacy-safe USB enumeration; these do not validate the printed peripherals or firmware. Each item remains unverified until its exact revision, recovery path, interfaces, performance, power behavior, and failure handling are recorded.
+No hardware is supported yet. Candidate equipment includes two owner-reported-on-hand Waveshare ESP32-S3 1.75-inch round touch displays, an owner-reported-ordered ESP32-S3 development board, an owner-reported-ordered Wio Tracker L1 Pro GNSS/LoRa unit, and an on-hand consumer OBD-II adapter. The round-display evidence now records public labels and one powered demo plus a bounded read-only pass on one unassociated unit: ESP32-S3, 16 MB flash, disabled Secure Boot and flash encryption, repeat USB re-enumeration, and an exact-size private backup retained outside Git. The second unit remained untouched. No visual post-reset application confirmation, manual recovery, flash write, peripheral behavior, or compatibility result exists, so every item remains unverified pending its exact revision, recovery path, interfaces, performance, power behavior, and failure handling. See the [dated Phase-B evidence](tests/hardware/OG-012A-PHASE-B-2026-08-14.md).
 
 See the [hardware inventory](hardware/INVENTORY.md) and prepared bring-up procedures before testing or making compatibility claims.
 

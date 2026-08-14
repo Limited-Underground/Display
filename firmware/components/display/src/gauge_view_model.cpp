@@ -254,6 +254,11 @@ GaugeViewModelStatus GaugeViewModel::status() const {
     return status_;
 }
 
+bool GaugeViewModel::bound_to(
+    const wireless::GaugeTelemetryReceiver& receiver) const {
+    return &receiver_ == &receiver;
+}
+
 std::size_t GaugeViewModel::find_widget(std::uint16_t widget_id) const {
     for (std::size_t index = 0; index < widget_count_; ++index) {
         if (widgets_[index].widget_id == widget_id) {

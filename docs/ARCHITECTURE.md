@@ -141,6 +141,15 @@ states retain a value; missing still carries expected type/unit for stable UI
 chrome without inventing a measurement. Rendering, localization, touch, and
 hardware performance remain unresolved.
 
+The host-tested [dashboard loop](display/GAUGE_DASHBOARD_LOOP_V0.md) now owns
+one bounded gauge-side runtime sequence: select the safe/newest usable `OGL0`
+layout, start an exactly bound receiver/view pair, service the receiver once,
+and publish one complete fixed-capacity renderer-neutral frame. Typed receiver
+rejections still allow retained state to age stale, caller-time regression has
+no downstream side effect, and refresh failure preserves the prior complete
+frame. ESP-IDF scheduling, renderer/input binding, concrete-adapter allocation,
+RF, and physical display behavior remain unresolved.
+
 A host-tested volatile trend core retains up to four fixed series of 2 through
 120 points with independent exact minimum intervals. Valid/suspect points keep
 their value; missing/stale/unavailable/error/out-of-range/unknown points are

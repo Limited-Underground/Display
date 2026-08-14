@@ -6,6 +6,48 @@ public chronology.
 
 ## 2026-08-14
 
+### Bounded gauge dashboard runtime loop
+
+- Added a single-owner display-side loop that selects the validated safe or
+  newest usable `OGL0` layout, verifies the view model is bound to the exact
+  receiver, and publishes one complete fixed-capacity renderer-neutral frame
+  only after servicing the receiver once and refreshing every widget.
+- Typed receiver rejection, malformed input, transport failure, and packet-time
+  regression cannot replace good state, while elapsed time still advances it
+  to exact-boundary stale/no-value. Caller-time rollback is rejected before
+  receiver, transport, or view work; refresh failure preserves the prior
+  complete frame.
+- Twelve focused groups pass with C++17 warnings-as-errors and 100/100 repeats.
+  They include real encrypted fake delivery through the packet decoder and
+  receiver into numeric, needle, and bar snapshots, plus safe/newest/degraded
+  layout selection, session clearing, and restart reload. The complete
+  48-executable host matrix also passes. Renderer/input binding, ESP-IDF
+  scheduling, target storage, RF, and physical display acceptance remain
+  separate gates.
+
+### Round-display read-only Phase-B evidence
+
+- With the second display disconnected and untouched, esptool 5.3.1 without its
+  RAM stub identified the connected target as ESP32-S3, reported 16 MB flash,
+  and reported Secure Boot and flash encryption disabled. The redacted result
+  did not separately expose Secure Download state, so that mode remains
+  unreported and unknown in the public record. A separate `flash-id` command
+  completed, but no broader security inference is accepted.
+- The sole privacy-safe Started `303A:1001` interface returned after both
+  metadata resets. A default-stub backup attempt failed before flash transfer
+  with no retained partial file; a 4 KiB probe and then a 16,777,216-byte
+  full-flash read through the ESP ROM loader using `--no-stub` completed, with
+  the full capture hashed and retained privately outside Git.
+  The interface returned after that reset as well. No raw log, port, MAC,
+  private backup hash, or private path is published.
+- The pinned Waveshare factory image and v1.0.1 HelloWorld ZIP/combined image
+  matched their public SHA-256 values and offset-`0x0` manifests; the packaged
+  script contains no erase, force, or security override. No image was written.
+- The display was not visually checked after reset, manual BOOT recovery was
+  not attempted, and the box/unit/public-ID association remains open. OG-012A
+  therefore remains planned and candidate-only. See the
+  [dated Phase-B evidence](../tests/hardware/OG-012A-PHASE-B-2026-08-14.md).
+
 ### Round-display arrival observation
 
 - Recorded the owner's report that two 1.75-inch round-display candidates are

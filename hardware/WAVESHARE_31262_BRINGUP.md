@@ -1,6 +1,7 @@
 # Waveshare SKU 31262 Round Display Arrival and Bring-up
 
-Status: arrival observation recorded 2026-08-14; procedure not yet executed.
+Status: arrival observation and partial read-only Phase-B evidence recorded
+2026-08-14; manual recovery, flashing, and visual acceptance remain unexecuted.
 The owner reports two units on hand. A package label identifies the public
 model `ESP32-S3-Touch-AMOLED-1.75-B` with case, one underside case label names
 `ESP32-S3 Touch AMOLED 1.75` and prints a component map, and one photographed
@@ -10,7 +11,8 @@ and public-safe unit IDs have not yet been associated. Printed component names
 and displayed demo metadata are identification evidence only, not working-
 peripheral or firmware-version evidence. No OpenGauge compatibility result is
 claimed. See the dated
-[arrival observation](../tests/hardware/OG-012A-ARRIVAL-2026-08-14.md).
+[arrival observation](../tests/hardware/OG-012A-ARRIVAL-2026-08-14.md) and
+[Phase-B evidence](../tests/hardware/OG-012A-PHASE-B-2026-08-14.md).
 
 ## Exact candidate
 
@@ -41,7 +43,7 @@ Official references:
   of automotive power, environmental, impact, or thermal suitability.
 - Do not flash both units at once. Preserve one known-good unit while the other
   is the active experiment.
-- Record the shipping demo before erasing it. Any private flash backup stays
+- Record the currently installed powered demo before erasing it. Any private flash backup stays
   outside Git and is never published without a licensing and secret review.
 - Keep display brightness moderate during stationary bench tests and inspect
   for heat, flicker, resets, and image retention.
@@ -57,32 +59,40 @@ For each unit:
 2. Confirm `31262` and `ESP32-S3-Touch-AMOLED-1.75-B`; stop if either unit is
    `-G`, `1.75C`, or another revision because its pin/peripheral assumptions may
    differ.
-3. Connect USB, observe Windows enumeration and the shipping demo, and record
+3. Connect USB, observe Windows enumeration and the currently installed demo, and record
    screen/touch/button/audio behavior before changing anything.
 4. Record visible firmware/demo version and boot log if available. Do not infer
    a pass from the screen merely lighting.
 
 ## Phase B: read-only silicon and recovery evidence
 
-After the shipping demo is recorded and its serial port is identified, use the
-installed `python -m esptool` for read-only metadata:
+After the currently installed demo is recorded and its serial port is privately identified,
+use installed `python -m esptool` for bounded read-only metadata. Keep the port
+value process-local and redact raw output because normal connection setup can
+print the device MAC:
 
 ```powershell
-python -m esptool --port COMx chip-id
-python -m esptool --port COMx flash-id
-python -m esptool --port COMx get-security-info
+$ogPort = '<private runtime-only port>'
+python -m esptool --chip esp32s3 --port $ogPort --connect-attempts 1 --before usb-reset --after hard-reset --no-stub get-security-info
+python -m esptool --chip esp32s3 --port $ogPort --connect-attempts 1 --before usb-reset --after hard-reset --no-stub flash-id
 ```
 
-Record MCU revision, flash size, PSRAM report where available, crystal, and
-security state. COM numbers can change after reset.
+Do not use `chip-id` for public evidence on ESP32-S3 because esptool 5.3.1 falls
+back to printing the MAC. Record only redacted MCU, flash-size, and security
+results. Port names can change after reset.
 
-Prove download-mode recovery without flashing: hold `BOOT`, press and release
-`RESET`, then release `BOOT`. Waveshare documents this as the recovery path when
-USB flashing fails. Confirm the ROM port appears, then reset back to the
-shipping application.
+The cased `-B` exposes `PWR` and `BOOT`; an exposed ESP32 reset control has not
+been confirmed. `PWR` is part of the AXP2101 power path and must not be treated
+as `RESET`. Prefer native-USB automatic reset, but require visual confirmation
+that the application returned; USB re-enumeration alone is insufficient. To
+prove a physical fallback, use a battery-free, USB-only unit: disconnect USB and
+verify the unit is fully off, hold `BOOT`, reconnect USB, wait for the ROM USB
+interface, then release `BOOT`. Exit by disconnecting and reconnecting USB
+without holding `BOOT`, then visually verify the previously photographed powered demo.
 
-If any read-only query leaves the unit in download mode, manually reset it and
-verify the original demo returns before proceeding.
+Stop if full depower is uncertain, the ROM interface does not appear, or the
+powered demo does not return. Do not open the case, improvise another
+control, or proceed to flashing.
 
 ## Phase C: vendor-example baseline
 
@@ -103,8 +113,10 @@ Test one unit in this order:
 7. TF/audio only after their connectors/media and expected behavior are
    understood; they are not first-boot gates.
 
-If the vendor demo does not recover, use Waveshare's published firmware and
-BOOT/RESET path before experimenting with OpenGauge.
+If the vendor demo does not recover, stop. Use Waveshare's published firmware
+only after visual application return through native-USB reset or the
+battery-free cold BOOT-strap recovery path is proven. Do not experiment with
+OpenGauge first.
 
 ## Phase D: OpenGauge display feasibility
 

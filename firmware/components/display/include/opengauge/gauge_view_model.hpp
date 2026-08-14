@@ -119,6 +119,8 @@ public:
         GaugeWidgetSnapshot* output,
         std::size_t output_capacity);
 
+    [[nodiscard]] bool bound_to(
+        const wireless::GaugeTelemetryReceiver& receiver) const;
     [[nodiscard]] GaugeViewModelStatus status() const;
 
 private:
