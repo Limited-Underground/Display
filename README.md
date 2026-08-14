@@ -62,7 +62,7 @@ These are design goals unless the linked evidence explicitly says otherwise.
 
 ## Hardware status
 
-No hardware is supported yet. Candidate equipment includes two reported-ordered Waveshare ESP32-S3 1.75-inch round touch displays, an ESP32-S3 development board, a Wio Tracker L1 Pro GNSS/LoRa unit, and an on-hand consumer OBD-II adapter. Each item remains unverified until its exact revision, recovery path, interfaces, performance, power behavior, and failure handling are recorded.
+No hardware is supported yet. Candidate equipment includes two owner-reported-on-hand Waveshare ESP32-S3 1.75-inch round touch displays, an owner-reported-ordered ESP32-S3 development board, an owner-reported-ordered Wio Tracker L1 Pro GNSS/LoRa unit, and an on-hand consumer OBD-II adapter. The round-display arrival observation records public package/underside labels, a printed component map, one rendered powered demo, and privacy-safe USB enumeration; these do not validate the printed peripherals or firmware. Each item remains unverified until its exact revision, recovery path, interfaces, performance, power behavior, and failure handling are recorded.
 
 See the [hardware inventory](hardware/INVENTORY.md) and prepared bring-up procedures before testing or making compatibility claims.
 

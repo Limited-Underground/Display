@@ -1,13 +1,24 @@
 # Waveshare SKU 31262 Round Display Arrival and Bring-up
 
-Status: prepared procedure only, 2026-08-09. The two ordered units have not
-arrived and no OpenGauge compatibility result is claimed.
+Status: arrival observation recorded 2026-08-14; procedure not yet executed.
+The owner reports two units on hand. A package label identifies the public
+model `ESP32-S3-Touch-AMOLED-1.75-B` with case, one underside case label names
+`ESP32-S3 Touch AMOLED 1.75` and prints a component map, and one photographed
+unit renders a powered launcher and public demo information. No supplied
+label shows SKU `31262` or a board revision, and the package, physical unit,
+and public-safe unit IDs have not yet been associated. Printed component names
+and displayed demo metadata are identification evidence only, not working-
+peripheral or firmware-version evidence. No OpenGauge compatibility result is
+claimed. See the dated
+[arrival observation](../tests/hardware/OG-012A-ARRIVAL-2026-08-14.md).
 
 ## Exact candidate
 
-The ordered item is reported as **ESP32-S3-Touch-AMOLED-1.75-B**, Waveshare SKU
-`31262`: the standard (non-GPS) board supplied in its protective case. This is
-not the `-G` GPS version and not the newer `1.75C` aluminum-case board.
+The acquired candidate is reported as **ESP32-S3-Touch-AMOLED-1.75-B**, with
+procurement mapping Waveshare SKU `31262`: the standard (non-GPS) board supplied
+in its protective case. The procurement target is not the `-G` GPS version or
+the newer `1.75C` aluminum-case board; the received units still require exact
+identification.
 
 Waveshare currently documents the 31262 board with an ESP32-S3R8, 8 MB PSRAM,
 16 MB flash, 466x466 QSPI CO5300 AMOLED, CST9217 I2C touch controller, QMI8658

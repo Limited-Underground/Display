@@ -1,6 +1,6 @@
 # OpenGauge Hardware Inventory and Evidence
 
-Status date: 2026-08-09
+Status date: 2026-08-14
 
 This inventory separates acquisition state from compatibility evidence.
 `Ordered` and `on hand` do not mean supported. Hardware becomes validated only
@@ -11,7 +11,7 @@ wiring, procedure, and result.
 
 | Role | Exact item | Acquisition state | Evidence state | Intended first check |
 | --- | --- | --- | --- | --- |
-| Round gauge display | 2 x Waveshare ESP32-S3-Touch-AMOLED-1.75-B, SKU 31262, in protective case | Owner reports ordered; not yet received | Candidate only | Follow `hardware/WAVESHARE_31262_BRINGUP.md`: preserve the shipping demo, identify both units, prove USB recovery, then measure vendor display/touch/power/IMU and synthetic-gauge behavior |
+| Round gauge display | 2 x Waveshare ESP32-S3-Touch-AMOLED-1.75-B candidates, procurement mapping SKU 31262, in protective case | Owner reports two on hand; one was connected and one temporarily disconnected during the arrival observation | Candidate only; package label names the public `-B` model with case, an underside case label names the 1.75-inch family and prints a component map, and one powered demo was photographed, but exact board revision, unit association, recovery, peripherals, and OpenGauge behavior remain untested | Follow `hardware/WAVESHARE_31262_BRINGUP.md`: preserve one untouched unit and the powered demo, associate public-safe IDs, prove USB recovery, then measure vendor display/touch/power/IMU and synthetic-gauge behavior |
 | ESP32-S3 bench mule | Espressif ESP32-S3-DevKitC-1-N8R8 | Owner reports ordered; not yet received | Candidate only | Record revision; run USB/serial recovery and deterministic GPIO/synthetic-telemetry smoke test |
 | Generic OBD-II discovery adapter | Veepeak OBDCheck BLE, Amazon ASIN B073XKQQQW | Owner reports on hand | Candidate only; no OpenGauge test | Follow `hardware/VEEPEAK_OBDCHECK_BLE_BRINGUP.md`: identify the exact variant, enumerate the Windows Classic-Bluetooth path, and perform allowlisted read-only capability/rate discovery with the vehicle stationary |
 | CAN/J1939 gateway | No protected CAN/J1939 interface selected | Not acquired | Missing | Select controller/transceiver, protection, connector, power, and isolation appropriate to the target vehicle and bus |

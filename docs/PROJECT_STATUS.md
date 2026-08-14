@@ -1,6 +1,6 @@
 # OpenGauge Project Status, Assumptions, and Open Questions
 
-Status date: 2026-08-10
+Status date: 2026-08-14
 
 ## Conceptual goals
 
@@ -17,6 +17,20 @@ not required. Both remain candidate shapes pending separate physical
 readability, touch, timing, memory, power, heat, recovery, and independent-
 failure acceptance. The vehicle gateway remains a separate required role, while
 GNSS, extra displays, OpenTrail bridging, and auxiliary functions are optional.
+
+The owner now reports both round-display candidates on hand. Arrival evidence
+shows a package label naming the public `ESP32-S3-Touch-AMOLED-1.75-B` model with
+case, an underside case label naming `ESP32-S3 Touch AMOLED 1.75` and printing
+a component map, one unit rendering powered-demo screens, and a privacy-safe
+Windows Port-class `303A:1001` interface count changing from two to one when one
+unit was disconnected. The visible labels do not establish SKU `31262`, board
+revision, or a package-to-unit association. Printed component names and the
+demo's displayed `Waveshare` manufacturer and `ESP-Brookesia` UI-framework
+fields do not prove hardware function, firmware version, source, or
+authenticity. No port was opened and no reset, metadata query, firmware
+operation, or compatibility test was performed, so the displays remain
+unvalidated candidates. The public-safe details are retained in the
+[dated arrival observation](../tests/hardware/OG-012A-ARRIVAL-2026-08-14.md).
 
 The critical-alert semantic interface has bounded host validation in this and
 the OpenTrail repository. Two strengthened role-reversed Heltec/SenseCAP cycles
@@ -126,7 +140,7 @@ hardware remain unvalidated.
 
 | Item | Current status | Required evidence |
 | --- | --- | --- |
-| 2 x Waveshare ESP32-S3-Touch-AMOLED-1.75-B, SKU 31262 | Owner reports ordered; not received or tested. Vendor identifies this as the standard non-GPS board in its protective case | Follow the prepared arrival procedure for exact unit/revision, shipping-demo preservation, display/touch/IMU, flash/PSRAM, USB recovery, power, paired independence, build and performance tests |
+| 2 x Waveshare ESP32-S3-Touch-AMOLED-1.75-B candidates, procurement mapping SKU 31262 | Owner reports two on hand. Public package/underside labels, one rendered powered demo, and a privacy-safe two-to-one USB-interface count are recorded; no visible label establishes SKU 31262 or a board revision, and no function or compatibility test has run | Associate public-safe unit IDs while preserving one untouched unit, then follow the prepared procedure for exact revision, powered-demo preservation, display/touch/IMU, flash/PSRAM, USB recovery, power, paired independence, build, and performance tests |
 | Espressif ESP32-S3-DevKitC-1-N8R8 | Owner reports ordered as a bench mule; not received or tested | Exact revision, USB/serial recovery, synthetic telemetry and interface smoke test |
 | Seeed Studio Wio Tracker L1 Pro MeshCore companion | Owner reports ordered; not received or tested. Shipping MeshCore/GNSS behavior and OpenGauge adapter are unverified | Preserve/record the shipping image, prove USB recovery, baseline MeshCore and GNSS no-fix/fix/reacquisition/rate/power, then test an authenticated normalized adapter without publishing identifiers or coordinates |
 | Veepeak OBDCheck BLE, ASIN B073XKQQQW | Owner reports on hand; OpenGauge compatibility untested. Vendor documents Classic Bluetooth for Windows and no MS-CAN/SW-CAN | Follow the prepared allowlisted read-only discovery; exact variant/firmware, Windows serial path, vehicle/PID support, rates, and failure behavior; never assume J1939 or raw CAN |

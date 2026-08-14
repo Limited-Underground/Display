@@ -4,6 +4,34 @@ Progress is grouped by calendar day, newest first. Detailed acceptance criteria
 remain in [the engineering backlog](../tasks/BACKLOG.md); this log is the concise
 public chronology.
 
+## 2026-08-14
+
+### Round-display arrival observation
+
+- Recorded the owner's report that two 1.75-inch round-display candidates are
+  on hand, with one temporarily disconnected during the observation.
+- The supplied package photo names the public
+  `ESP32-S3-Touch-AMOLED-1.75-B` model with case. The visible label does not
+  show SKU `31262` or a board revision, so the procurement mapping and exact
+  physical-unit association remain open.
+- An underside label names `ESP32-S3 Touch AMOLED 1.75` and prints a public
+  component map for a 466x466 AMOLED, CST9217, CO5300, 16 MB flash, 8 MB PSRAM,
+  QMI8658, AXP2101, PCF85063, TCA9554, ES8311, and labeled Micro SD, speaker,
+  battery, USB-C, microphone, BOOT, power, and header interfaces. These are
+  printed identification/specification claims, not functional validation.
+- One supplied photo shows a powered launcher rendering SquareLine,
+  Calculator, DrawPanel, AIChats, status icons, and page indicators. This proves
+  only power and display rendering, not touch or peripheral behavior. A second
+  demo screen displays manufacturer `Waveshare` and UI framework
+  `ESP-Brookesia`; it establishes no version, source commit, authenticity, or
+  second-unit result.
+- A privacy-safe Windows Port-class roster changed from two `303A:1001`
+  interfaces to one when a unit was disconnected; the interface description
+  was `USB Serial Device`, manufacturer `Microsoft`, state `Started`. No port was
+  opened and no unit was reset, queried with esptool, flashed, or otherwise
+  changed. OG-012A remains planned and no hardware support claim was added. See
+  the [dated arrival observation](../tests/hardware/OG-012A-ARRIVAL-2026-08-14.md).
+
 ## 2026-08-12
 
 ### Product roles and display alternatives
