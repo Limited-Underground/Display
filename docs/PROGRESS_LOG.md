@@ -6,6 +6,25 @@ public chronology.
 
 ## 2026-08-14
 
+### Vehicle-product naming decision
+
+- Locked **Limited Underground** as the working parent brand and **Limited
+  Underground Display** as the working customer-facing vehicle firmware and
+  software family, while preserving `OpenGauge`, `opengauge`, `OG-`, protocol,
+  schema, storage, cryptographic, and board identifiers as stable engineering
+  names.
+- Reserved **Limited Underground Display Premium Bundle** for an exact hardware
+  and software combination that has passed its documented acceptance gates.
+  **Display Gateway** remains a component name unless it is deliberately sold
+  and supported separately.
+- Recorded the shared **Limited Underground Firmware Loader** name. Until real
+  flashing and recovery are physically verified, customer presentation remains
+  **Limited Underground Firmware Loader — Preview** with inspection-only
+  wording. All names remain provisional pending comprehensive clearance; no
+  registered-mark claim is made. This naming decision changes no V1 completion
+  evidence or production-readiness claim. See the [product-naming
+  decision](PRODUCT_NAMING.md).
+
 ### Fixed-capacity round-gauge render-plan compiler
 
 - Added a backend-neutral compiler from one complete dashboard frame to a

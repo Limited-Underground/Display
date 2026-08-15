@@ -1,8 +1,23 @@
 # OpenGauge Product Boundaries v0
 
-Status: release-planning architecture, updated 2026-08-12. Hardware remains
+Status: release-planning architecture, updated 2026-08-14. Hardware remains
 candidate or missing until its own bring-up and physical acceptance evidence
 passes.
+
+## Product naming boundary
+
+The owner-approved working vehicle firmware and software family is **Limited
+Underground Display**, under the **Limited Underground** parent brand. An exact
+tested hardware-and-software offering may be called **Limited Underground
+Display Premium Bundle** only after its documented compatibility and acceptance
+gates pass. **Display Gateway** remains a component label unless the gateway is
+deliberately sold and supported as a separate public product.
+
+These names remain provisional pending comprehensive clearance. The `OpenGauge`
+repository, `opengauge` namespaces, `OG-` IDs, protocols, schemas, cryptographic
+contexts, storage keys, and board identifiers remain stable technical names.
+The full naming and loader rules are recorded in [the product-naming
+decision](PRODUCT_NAMING.md).
 
 ## Required system roles
 

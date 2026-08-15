@@ -79,6 +79,17 @@ hardware remain unvalidated.
 
 ## Decisions captured
 
+- `OpenGauge` remains the stable engineering/repository identity. The locked
+  working customer hierarchy is **Limited Underground** as parent, **Limited
+  Underground Display** as the vehicle firmware/software family, and **Limited
+  Underground Display Premium Bundle** only for a fully tested exact hardware
+  and software combination. **Display Gateway** is a component unless sold and
+  supported separately. The shared customer tool is **Limited Underground
+  Firmware Loader**; it remains a Preview with inspection-only wording until
+  physical flashing and recovery are verified. All public names are
+  provisional pending clearance, no registered-mark symbol is authorized, and
+  technical identifiers remain unchanged. See [the canonical naming
+  decision](PRODUCT_NAMING.md).
 - Gateway and displays are separate roles with independent failure boundaries.
 - The initial CAN path is passive/listen-only. Its v0 host interface contains no transmit operation and carries canonical Classical frames, capture time, bus state, and overflow metadata. Eight fake-receiver groups cover lifecycle, policy/filtering, malformed frames, FIFO/clock behavior, overflow, bus-off, hardware failure, restart, and EEC1 receive-to-cache integration. This is not evidence of an electrically passive production adapter.
 - Raw J1939 frames are not the default gauge-network payload; the gateway publishes normalized selected signals.

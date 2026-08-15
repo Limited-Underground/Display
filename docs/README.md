@@ -7,6 +7,7 @@ This is the organized entry point for OpenGauge design, evidence, and engineerin
 | Document | Use it for |
 | --- | --- |
 | [Architecture](ARCHITECTURE.md) | System roles, component boundaries, protocols, and failure behavior |
+| [Product naming](PRODUCT_NAMING.md) | Locked working customer names, engineering-name stability, and release safeguards |
 | [Product boundaries](PRODUCT_BOUNDARIES_V0.md) | Required and optional devices, display choices, allowed data, and degraded operation |
 | [Project status](PROJECT_STATUS.md) | Current assumptions, candidate hardware, unresolved decisions, and the next checkpoint |
 | [Progress log](PROGRESS_LOG.md) | Public chronology grouped by date, newest first |

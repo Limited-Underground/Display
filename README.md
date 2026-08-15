@@ -2,7 +2,14 @@
 
 [![Host validation](https://github.com/nbjelanovic/OpenGauge/actions/workflows/host-validation.yml/badge.svg)](https://github.com/nbjelanovic/OpenGauge/actions/workflows/host-validation.yml)
 
-OpenGauge is a free and open-source ESP32 platform for modular vehicle gauges and telemetry. A separate, initially listen-only gateway reads vehicle data, converts it into validated signals, and sends only the information each gauge needs.
+OpenGauge is the stable engineering and repository name for the free and
+open-source ESP32 platform behind the owner-approved working customer family
+**Limited Underground Display**. The customer-facing name remains provisional
+pending comprehensive clearance; engineering identifiers stay unchanged. See
+the [product-naming decision](docs/PRODUCT_NAMING.md).
+
+A separate, initially listen-only gateway reads vehicle data, converts it into
+validated signals, and sends only the information each gauge needs.
 
 The goal is a dependable base system that can operate with compact round gauges or larger displays while keeping GPS, remote alerts, and future auxiliary functions optional.
 
