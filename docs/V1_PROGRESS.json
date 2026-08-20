@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "project_key": "opengauge",
+  "display_name": "OpenGauge",
+  "as_of": "2026-08-12",
+  "v1_definition": "V1 requires a listen-only vehicle gateway and at least one physical gauge that show validated data, stale states, and warnings without affecting vehicle operation.",
+  "milestones": [
+    {
+      "id": "telemetry-safety-core",
+      "name": "Telemetry and safety core",
+      "description": "CAN abstraction, J1939 parsing, normalized signals, cache behavior, alarms, and diagnostics have broad host-test coverage.",
+      "weight": 20,
+      "completion": 85,
+      "evidence_status": "Host tested",
+      "evidence_refs": ["README.md#project-status", "firmware/components", "tests/host", "tasks/BACKLOG.md"],
+      "next_gate": "Complete the remaining reviewed contracts and target-facing safety composition."
+    },
+    {
+      "id": "gauge-logic-recovery",
+      "name": "Gauge logic and recovery",
+      "description": "Display-neutral view models, trends, configuration records, and recovery behavior exist without a finished physical renderer.",
+      "weight": 15,
+      "completion": 75,
+      "evidence_status": "Host tested",
+      "evidence_refs": ["tasks/BACKLOG.md", "firmware/components", "tests/host"],
+      "next_gate": "Bind the view model, input, storage, and recovery behavior to a selected display target."
+    },
+    {
+      "id": "vehicle-gateway",
+      "name": "Vehicle gateway firmware",
+      "description": "The bounded gateway path exists in components; target adapters, protected hardware, wiring, and passive vehicle proof remain.",
+      "weight": 20,
+      "completion": 35,
+      "evidence_status": "Target pending",
+      "evidence_refs": ["README.md", "tasks/BACKLOG.md", "hardware/INVENTORY.md"],
+      "next_gate": "Select the gateway hardware and prove passive target operation on authorized vehicle data."
+    },
+    {
+      "id": "round-display",
+      "name": "Round-display firmware",
+      "description": "The planned compact gauge experience and display-neutral model are defined, but no physical renderer, touch target, or candidate display has been validated.",
+      "weight": 15,
+      "completion": 15,
+      "evidence_status": "Hardware pending",
+      "evidence_refs": ["README.md#hardware-status", "hardware/INVENTORY.md", "tasks/BACKLOG.md"],
+      "next_gate": "Receive and characterize the selected display, then run native gauge firmware on it."
+    },
+    {
+      "id": "opentrail-alert-bridge",
+      "name": "OpenTrail alert bridge",
+      "description": "Normalized alert and acknowledgement contracts have host and limited three-radio bench evidence across both projects.",
+      "weight": 10,
+      "completion": 70,
+      "evidence_status": "Bench tested",
+      "evidence_refs": ["tasks/BACKLOG.md", "docs/PROGRESS_LOG.md"],
+      "next_gate": "Bind authenticated target transport and prove restart-safe physical delivery."
+    },
+    {
+      "id": "vehicle-field-validation",
+      "name": "Vehicle and field validation",
+      "description": "No specific vehicle, production power path, physical gauge, interruption test, or road-use result is currently supported.",
+      "weight": 20,
+      "completion": 0,
+      "evidence_status": "Not started",
+      "evidence_refs": ["README.md#project-status", "hardware/INVENTORY.md"],
+      "next_gate": "Pass the frozen gateway and gauge acceptance plan on real hardware and an authorized vehicle."
+    }
+  ],
+  "change_log": [
+    {
+      "date": "2026-08-12",
+      "overall": 45,
+      "reason": "Established the first evidence-weighted V1 baseline for public progress reporting."
+    }
+  ]
+}
