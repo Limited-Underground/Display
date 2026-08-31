@@ -1,11 +1,11 @@
-# OpenGauge
+# Limited Underground Display
 
-[![Host validation](https://github.com/nbjelanovic/OpenGauge/actions/workflows/host-validation.yml/badge.svg)](https://github.com/nbjelanovic/OpenGauge/actions/workflows/host-validation.yml)
+[![Host validation](https://github.com/Limited-Underground/Display/actions/workflows/host-validation.yml/badge.svg)](https://github.com/Limited-Underground/Display/actions/workflows/host-validation.yml)
 
-OpenGauge is the stable engineering and repository name for the free and
-open-source ESP32 platform behind the owner-approved working customer family
-**Limited Underground Display**. The customer-facing name remains provisional
-pending comprehensive clearance; engineering identifiers stay unchanged. See
+**Limited Underground Display** is the owner-approved working customer family
+for this free and open-source ESP32 platform. `OpenGauge`, `opengauge`, and
+`OG-` remain its stable engineering and compatibility identifiers. The
+customer-facing name remains provisional pending comprehensive clearance. See
 the [product-naming decision](docs/PRODUCT_NAMING.md).
 
 A separate, initially listen-only gateway reads vehicle data, converts it into

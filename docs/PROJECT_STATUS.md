@@ -1,6 +1,16 @@
 # OpenGauge Project Status, Assumptions, and Open Questions
 
-Status date: 2026-08-14
+Status date: 2026-08-31
+
+Public repository: <https://github.com/Limited-Underground/Display>
+
+The repository moved from `nbjelanovic/OpenGauge` to the Limited Underground
+organization and was renamed `Display` without changing its immutable GitHub
+repository identity, `main` history, pull requests, Actions history, or public
+visibility. Git redirects the former URL to the current repository. Stable
+`OpenGauge`, `opengauge`, and `OG-` engineering identifiers remain unchanged.
+This administrative migration changes no hardware, V1 evidence, or readiness
+claim.
 
 ## Conceptual goals
 

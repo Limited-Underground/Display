@@ -4,6 +4,20 @@ Progress is grouped by calendar day, newest first. Detailed acceptance criteria
 remain in [the engineering backlog](../tasks/BACKLOG.md); this log is the concise
 public chronology.
 
+## 2026-08-31
+
+### Limited Underground organization migration
+
+- Transferred the public repository into the `Limited-Underground`
+  organization and renamed it from `OpenGauge` to `Display`. GitHub repository
+  ID `1328425491`, `main` history, two merged pull requests, workflow ID
+  `330673065`, and all 54 existing Actions runs were preserved; the former URL
+  redirects to <https://github.com/Limited-Underground/Display>.
+- Updated the public landing-page title and Host validation badge while
+  preserving `OpenGauge`, `opengauge`, and `OG-` engineering, protocol,
+  storage, schema, and compatibility identifiers. This administrative change
+  does not alter V1 progress, hardware evidence, or readiness.
+
 ## 2026-08-14
 
 ### Vehicle-product naming decision
