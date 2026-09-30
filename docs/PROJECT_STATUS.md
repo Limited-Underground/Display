@@ -1,6 +1,6 @@
 # OpenGauge Project Status, Assumptions, and Open Questions
 
-Status date: 2026-08-31
+Status date: 2026-09-23
 
 Public repository: <https://github.com/Limited-Underground/Display>
 
@@ -11,6 +11,10 @@ visibility. Git redirects the former URL to the current repository. Stable
 `OpenGauge`, `opengauge`, and `OG-` engineering identifiers remain unchanged.
 This administrative migration changes no hardware, V1 evidence, or readiness
 claim.
+
+## Evidence reconciliation
+
+[OG-0021a](testing/OG-0021a-EVIDENCE-RECONCILIATION-2026-09-23.md) maps the five Display outcomes to existing host components, bounded historical physical evidence and missing target/vehicle gates. This evidence reconciliation is owner-accepted. Completed host work is not reopened; no new hardware, support or V1 completion claim is added.
 
 ## Conceptual goals
 
