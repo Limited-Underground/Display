@@ -124,3 +124,10 @@ completed OG-010D loop to selected ESP-IDF CAN and radio adapters without confus
 host-tested interface with on-device or RF acceptance.
 Incoming display work may begin with OG-012A vendor-example and recovery
 evidence, but does not bypass the normalized-data path.
+
+## Accepted Display evidence reconciliation
+
+OG-0021a is owner-accepted. The [evidence map](../docs/testing/OG-0021a-EVIDENCE-RECONCILIATION-2026-09-23.md)
+separates reusable host components and bounded historical observations from
+missing target, selected-vehicle and physical acceptance. Completed host work
+remains complete; this reconciliation adds no hardware support or V1 credit.
