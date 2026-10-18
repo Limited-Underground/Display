@@ -4,6 +4,67 @@ Progress is grouped by calendar day, newest first. Detailed acceptance criteria
 remain in [the engineering backlog](../tasks/BACKLOG.md); this log is the concise
 public chronology.
 
+## 2026-10-17
+
+### Publish remaining Display proposals and blocked recovery diagnosis
+
+Published the dependency plan and the October 12 recovery diagnosis through
+[PR #4](https://github.com/Limited-Underground/Display/pull/4), commits `e543fc5`
+and `86868fe`. The [remaining plan](REMAINING_DISPLAY_PLAN.md) is planning only;
+its proposed children do not gain owner approval or implementation credit from
+publication. The [recovery diagnosis](testing/OG-0021c-DISPLAY-CANDIDATE-RECOVERY-PLAN.md)
+remains blocked on exact received-board revision and a current private-original
+provenance/restore decision. Historical factory rollback is distinct from original
+byte restoration. Publication does not establish hardware, vehicle, target or V1
+acceptance and does not change public website capability status.
+
+## 2026-10-12
+
+### OG-0021c Record the smallest unresolved display recovery prerequisite
+
+Evidence review found the exact received-board revision remains unknown; model
+and procurement mapping cannot establish it. The dated vendor HelloWorld/factory
+return remains useful candidate evidence, while the private original backup was
+not restore-tested or currently verified by this diagnosis. Independent review
+approved the blocked diagnosis only. Revision evidence and an original-image
+provenance/restore decision precede a complete recovery plan and separately
+authorized physical trials. [Owning diagnosis](testing/OG-0021c-DISPLAY-CANDIDATE-RECOVERY-PLAN.md)
+was published later in PR #4; no new physical result is implied by that publication.
+
+## 2026-09-30
+
+### Publish accepted evidence reconciliation
+
+[PR #3](https://github.com/Limited-Underground/Display/pull/3), merge `e123417`,
+published the owner-accepted OG-0021a reconciliation prepared on September 23,
+with documentation commit `1623fae` on September 29. The publication preserves
+completed host work and missing target/vehicle gates; it creates no new device,
+vehicle or production acceptance.
+[Evidence map](testing/OG-0021a-EVIDENCE-RECONCILIATION-2026-09-23.md).
+
+## 2026-09-23
+
+### OG-0021a Reconcile reusable host work against five remaining outcomes
+
+The accepted [evidence map](testing/OG-0021a-EVIDENCE-RECONCILIATION-2026-09-23.md)
+separates gateway/signals, screens/fault behavior, authenticated telemetry/recovery,
+physical supported combinations and release evidence. Existing host-tested parser,
+cache, alarms, layouts and recovery are reused. Vendor display return and
+host-mediated radio alert/ACK observations remain bounded historical evidence;
+they do not prove selected-vehicle passivity, target ESP-NOW authentication,
+physical pixels/touch, protected persistence or field behavior. Historical test
+counts belong to their individual records and were not rerun for this log update.
+
+## 2026-09-09
+
+### Record workspace and documentation ownership
+
+Recorded project/worktree rules and separated engineering status, backlog,
+progress mechanics and historical evidence ownership. Display remains optional
+to base Trail V1. This governance update changes no hardware or completion
+acceptance. Commit `3c45358`; [engineering status](PROJECT_STATUS.md) and
+[backlog](../tasks/BACKLOG.md) retain their respective authority.
+
 ## 2026-08-31
 
 ### Limited Underground organization migration
