@@ -31,6 +31,22 @@ provenance/restore decision precede a complete recovery plan and separately
 authorized physical trials. [Owning diagnosis](testing/OG-0021c-DISPLAY-CANDIDATE-RECOVERY-PLAN.md)
 was published later in PR #4; no new physical result is implied by that publication.
 
+## 2026-10-11
+
+### OG-0021b Prepare the vehicle/signals and protected-gateway decision proposal
+
+Prepared the source-backed angle-first vehicle/signals and protected-gateway
+proposal for owner review. Documentation/publication-safety checks and all
+14 internal links passed; independent review approved owner-review submission
+with zero actionable findings. The retained
+`OG-0021b-VEHICLE-SIGNALS-HARDWARE-DECISION.md` records this document-preparation
+milestone, not target implementation, supported-vehicle or installation
+acceptance. Received-hardware, passive-signal, electrical-passivity and power
+qualification remained open; no physical measurements or device execution
+occurred. No owner acceptance is recorded in that report; any later acceptance
+date or original task-completion timestamp is outside this preparation evidence.
+No build, release or public website capability acceptance was earned.
+
 ## 2026-09-30
 
 ### Publish accepted evidence reconciliation
