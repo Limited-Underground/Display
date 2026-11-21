@@ -37,12 +37,12 @@ Vehicle CAN/J1939
   |                         |
 round gauge          larger display(s)
 
-Optional: GNSS, OpenTrail critical-event bridge, auxiliary modules
+Optional: GNSS, MeshTrail critical-event bridge, auxiliary modules
 ```
 
 - The **gateway** owns vehicle acquisition, decoding, validation, alarms, and wireless publication.
 - A **gauge endpoint** owns its local display, layout, stale-data behavior, and recovery. A 1.75-inch round touch unit can be a complete compact gauge; a larger screen is an alternative, not a requirement.
-- **Optional modules** must fail independently. OpenTrail receives only documented normalized events—not raw CAN/J1939 frames.
+- **Optional modules** must fail independently. MeshTrail receives only documented normalized events—not raw CAN/J1939 frames.
 
 Read the [product role and display map](docs/PRODUCT_BOUNDARIES_V0.md) for required versus optional hardware and degraded behavior.
 
@@ -53,7 +53,7 @@ Read the [product role and display map](docs/PRODUCT_BOUNDARIES_V0.md) for requi
 - Selected telemetry distributed over ESP-NOW instead of broadcasting raw CAN traffic
 - Configurable numeric, needle, bar, warning, trend, and status displays
 - Local alarms, configuration recovery, diagnostics, and version-aware updates
-- Optional GNSS and normalized critical-event integration with OpenTrail
+- Optional GNSS and normalized critical-event integration with MeshTrail
 
 These are design goals unless the linked evidence explicitly says otherwise.
 

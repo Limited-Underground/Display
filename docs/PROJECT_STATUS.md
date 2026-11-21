@@ -21,7 +21,7 @@ claim.
 - Separate ESP32 CAN/J1939 gateway and round touchscreen gauge nodes
 - Normalized, validated telemetry delivered over ESP-NOW
 - Configurable gauges, warnings, local persistence, and stale-data behavior
-- Optional GPS, APU/auxiliary, OpenTrail event, and recoverable OTA modules
+- Optional GPS, APU/auxiliary, MeshTrail event, and recoverable OTA modules
 
 The product role map now treats the compact 1.75-inch round touch display and a
 larger touchscreen as alternative gauge endpoints over the same display-neutral
@@ -30,7 +30,7 @@ larger display may show more simultaneous widgets and richer navigation but is
 not required. Both remain candidate shapes pending separate physical
 readability, touch, timing, memory, power, heat, recovery, and independent-
 failure acceptance. The vehicle gateway remains a separate required role, while
-GNSS, extra displays, OpenTrail bridging, and auxiliary functions are optional.
+GNSS, extra displays, MeshTrail bridging, and auxiliary functions are optional.
 
 The owner now reports both round-display candidates on hand. Arrival evidence
 shows a package label naming the public `ESP32-S3-Touch-AMOLED-1.75-B` model with
@@ -167,7 +167,7 @@ hardware remain unvalidated.
 - The cache-to-alarm evaluator scans all 16 latest snapshots at each monotonic poll rather than only changed generations, so unchanged values advance debounce, exact cache staleness, and reminders. It preflights the whole poll, aggregates up to 16 events, skips unruled signals, and treats a cache epoch as a runtime-reset boundary without inventing clears. Seven host groups cover capacity/lifecycle, unchanged state, stale/reminder boundaries, reset/reassert, aggregation, incompatible input, cache failure, and clock regression. Target-task timing and event consumers remain.
 - ESP-NOW and persistent formats use explicit versioned serialization, not raw C/C++ memory layouts.
 - Optional GPS and APU behavior remains modular; control functions are outside the initial core.
-- OpenTrail receives normalized critical events and never needs J1939 knowledge.
+- MeshTrail receives normalized critical events and never needs J1939 knowledge.
 - The OpenTrail alert v0 frame is a fixed 64-byte explicit codec with canonical units and separate event/condition IDs. CRC is corruption detection only; transport authentication and authorization remain mandatory.
 - The alarm-to-critical-alert exporter maps 16 allowlisted rule IDs to only final assert/clear transitions, keeps stable condition and unique event IDs, derives monotonic age, converts six canonical units, and refuses local reminder/ack/latch events, nonvalid assertions, lifecycle conflicts, unsupported values, and codec failures without state/ID commit. Seven host groups cover mapping/capacity, codec round-trip, local-only events, quality/lifecycle, units, rollback, freshness, restart, and exhaustion. Reviewed mappings, persistent ID allocation, and physical authenticated transport remain.
 - The eight-entry critical-alert outbox reserves emergency capacity and priority, validates retained `OGA0` event uniqueness, separates local queue rejection/acceptance from exact event+condition+lifecycle application ACK, and bounds abandoned prepare tokens, backoff, attempts, late ACK, lifetime, and terminal failure. Eight host groups plus 100 refined repeat runs cover malformed/capacity/order/priority, two-phase send, exact timers, retry/failure, late/mismatched ACK, and clocks. OG-018I completed accepted physical responses, OG-018J processed terminal stale rejections, OG-018K released rate-limit retries, and OG-018L enforced exact backoff/same-frame preparation before a second physical accepted ACK completed both role-reversed lifecycles. Persistent live target state and authenticated on-device OpenTrail delivery remain.
@@ -223,7 +223,7 @@ No hardware is considered supported until repeatable test evidence is recorded.
 
 ### Optional integrations and governance
 
-- GPS topology, APU protocol/control safety, OpenTrail physical event transport/key lifecycle/replay protection, cellular/SMS scope; the semantic v0 schema is host-tested
+- GPS topology, APU protocol/control safety, MeshTrail physical event transport/key lifecycle/replay protection, cellular/SMS scope; the semantic v0 schema is host-tested
 - Code of conduct, CI, release process, supported hardware/vehicle evidence, and safety/legal disclaimers; Apache-2.0 licensing, contribution guidance, and security reporting are established
 
 ## Next decision checkpoint

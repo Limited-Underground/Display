@@ -22,13 +22,13 @@ After the minimal workspace bootstrap, read only project documents relevant to t
 6. Early CAN work is listen-only. Do not perform safety-critical vehicle control without a separately reviewed and accepted fail-safe design, explicit scope, and explicit authorization.
 7. Do not hard-code credentials, pairing secrets, private keys, or vehicle-specific identifiers.
 
-## OpenTrail relationship
+## MeshTrail relationship
 
-- Only bounded, normalized, versioned alerts may cross into OpenTrail.
-- Raw CAN/J1939, VINs, unrestricted text, credentials, keys, and vehicle-control commands must not enter OpenTrail, LoRa, or Trail Server.
+- Only bounded, normalized, versioned alerts may cross into MeshTrail.
+- Raw CAN/J1939, VINs, unrestricted text, credentials, keys, and vehicle-control commands must not enter MeshTrail, LoRa, or MeshTrail Server.
 - Cross-project contracts must be versioned, independently implemented, and backed by mirrored normative fixtures.
 - Transport authentication, authorization, replay protection, and key lifecycle must be explicit; CRC alone is only corruption detection.
-- OpenGauge and OpenTrail remain optional to one another.
+- OpenGauge and MeshTrail remain optional to one another.
 
 ## Vehicle and hardware safety
 

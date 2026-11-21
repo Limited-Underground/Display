@@ -22,7 +22,7 @@ Vehicle CAN/J1939
 
 [optional GPS target] ------ normalized navigation telemetry
 [optional APU target] ------ separate authenticated module/interface
-[OpenTrail] <--------------- normalized critical-event interface only
+[MeshTrail] <--------------- normalized critical-event interface only
 ```
 
 Roles are separately deployable target applications assembled from bounded components. A failure or restart in one display cannot block the gateway or other displays.
@@ -31,7 +31,7 @@ The [product boundary map](PRODUCT_BOUNDARIES_V0.md) makes the display choice
 explicit: a compact round gauge and a larger touchscreen are alternative gauge
 targets over the same display-neutral telemetry/state contracts. Neither is a
 gateway, and the larger screen is not required for base instrumentation.
-GNSS, OpenTrail bridging, extra displays, and auxiliary functions remain
+GNSS, MeshTrail bridging, extra displays, and auxiliary functions remain
 optional fail-independent roles.
 
 ## Layer boundaries
@@ -301,15 +301,15 @@ loss, rejects duplicate/backward samples and receiver-clock regression, accepts
 normal sequence wrap/restart, and combines source age only with local monotonic
 elapsed time. At the exact stale boundary it removes position, motion,
 accuracy, and UTC values. Local-gateway, dedicated-node, authorized
-OpenTrail/MeshCore bridge, and gauge-local GNSS topologies remain possible; the
+MeshTrail/MeshCore bridge, and gauge-local GNSS topologies remain possible; the
 ordered Wio Tracker L1 Pro is only a candidate. Transport/authentication,
 parser/driver, rate, privacy, and physical GNSS evidence remain unresolved.
 
 APU/auxiliary support is a separate module and protocol. Any future start/stop or actuation requires authenticated authorization, replay protection, interlocks, fail-safe defaults, auditability, and a dedicated safety review. It is not part of the initial telemetry proof of concept.
 
-## OpenTrail boundary
+## MeshTrail boundary
 
-OpenGauge exports normalized critical events, not raw frames. A transport-neutral event should contain schema version, type, severity, source/vehicle identity, event time/age, optional typed value/unit, validity, and diagnostic context. OpenTrail independently validates/rate-limits the input and adds its own GPS/radio context.
+OpenGauge exports normalized critical events, not raw frames. A transport-neutral event should contain schema version, type, severity, source/vehicle identity, event time/age, optional typed value/unit, validity, and diagnostic context. MeshTrail independently validates/rate-limits the input and adds its own GPS/radio context.
 
 The bounded v0 contract is specified in
 `docs/integration/OPENGAUGE_CRITICAL_ALERT_V0.md`. OpenGauge explicitly encodes
@@ -424,7 +424,7 @@ redaction audit remain unresolved.
 
 - Gateway loss makes gauge values stale/unknown; it does not freeze the last value as current.
 - Display failure does not affect acquisition or other displays.
-- GPS/APU/OpenTrail absence does not impair core instrumentation.
+- GPS/APU/MeshTrail absence does not impair core instrumentation.
 - Corrupt/incompatible wireless messages are safely rejected.
 - OpenGauge does not alter vehicle operation in the initial architecture.
 

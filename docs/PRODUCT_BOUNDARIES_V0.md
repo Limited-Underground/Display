@@ -58,18 +58,18 @@ measurement.
 | --- | --- | --- | --- |
 | GNSS source | Speed/position/altitude/heading/time/fix context | Validated normalized fix fields with quality, presence, source age, and local staleness | Navigation fields become unavailable/stale; vehicle gauges continue |
 | Additional gauge endpoint | Another independently selected view | Same authorized normalized telemetry | One display failure does not block gateway or other displays |
-| OpenTrail bridge | Group delivery of selected critical vehicle events | Versioned normalized critical alerts and application ACKs only | Local gauges/alarms continue; remote group delivery becomes unavailable |
+| MeshTrail bridge | Group delivery of selected critical vehicle events | Versioned normalized critical alerts and application ACKs only | Local gauges/alarms continue; remote group delivery becomes unavailable |
 | Auxiliary/APU module | Future telemetry and separately reviewed functions | Telemetry first; any control uses a separate authenticated/interlocked interface | Core gateway/gauges continue; no unsafe implicit control fallback |
 | Diagnostic discovery adapter | Early signal/bus investigation | Explicit read-only discovery data under a separate test procedure | Never becomes a production gateway or safety claim by inference |
 
 ## Project boundary
 
 OpenGauge owns vehicle acquisition, decode/normalization, local alarms, gauge
-rendering, and its local telemetry network. OpenTrail owns group communication,
-group/location context, and its own delivery/security behavior. OpenTrail never
+rendering, and its local telemetry network. MeshTrail owns group communication,
+group/location context, and its own delivery/security behavior. MeshTrail never
 needs raw CAN/J1939 knowledge.
 
-No display, GNSS source, OpenTrail connection, or auxiliary module has production
+No display, GNSS source, MeshTrail connection, or auxiliary module has production
 support status yet. Moving any optional role into the required base requires a
 new versioned architecture/support decision and corresponding recovery,
 security, hardware, and field evidence.
